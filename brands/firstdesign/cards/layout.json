@@ -1,0 +1,841 @@
+{
+ "size": 1080,
+ "pt_height": 810.0,
+ "bg": "FFFFFF",
+ "slide_bg": [
+  "4195A2",
+  "4195A2",
+  "4195A2",
+  "4195A2",
+  "4195A2",
+  "FFFFFF",
+  "4195A2",
+  "4195A2"
+ ],
+ "theme_recolor": false,
+ "photo_round": 0.0,
+ "slides": [
+  [
+   {
+    "role": "deco",
+    "box": [
+     67,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s0_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     59,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s0_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     51,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s0_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     984,
+     133,
+     129,
+     29
+    ],
+    "asset": "s0_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     973,
+     140,
+     129,
+     16
+    ],
+    "asset": "s0_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     163,
+     911,
+     3
+    ],
+    "asset": "s0_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     76,
+     124,
+     65
+    ],
+    "asset": "s0_6.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     87,
+     379,
+     907,
+     675
+    ]
+   },
+   {
+    "role": "headline",
+    "box": [
+     57,
+     159,
+     965,
+     149
+    ],
+    "text": "",
+    "size": 80.0,
+    "color": "4195A2",
+    "align": "center"
+   },
+   {
+    "role": "subtitle",
+    "box": [
+     64,
+     297,
+     952,
+     56
+    ],
+    "text": "",
+    "size": 30.0,
+    "color": "9E9E9E",
+    "align": "center"
+   },
+   {
+    "role": "label",
+    "box": [
+     636,
+     93,
+     333,
+     28
+    ],
+    "text": "FIRST DESIGN | 퍼스트디자인",
+    "size": 15.0,
+    "color": "4195A2",
+    "align": "left"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     67,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s1_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     59,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s1_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     51,
+     51,
+     980,
+     1031
+    ],
+    "asset": "s1_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     984,
+     133,
+     129,
+     29
+    ],
+    "asset": "s1_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     973,
+     140,
+     129,
+     16
+    ],
+    "asset": "s1_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     163,
+     911,
+     3
+    ],
+    "asset": "s1_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     76,
+     124,
+     65
+    ],
+    "asset": "s1_6.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     87,
+     429,
+     904,
+     619
+    ]
+   },
+   {
+    "role": "label",
+    "box": [
+     636,
+     93,
+     333,
+     28
+    ],
+    "text": "FIRST DESIGN | 퍼스트디자인",
+    "size": 15.0,
+    "color": "4195A2",
+    "align": "left"
+   },
+   {
+    "role": "headline",
+    "box": [
+     81,
+     245,
+     916,
+     112
+    ],
+    "text": "",
+    "size": 60.0,
+    "color": "4195A2",
+    "align": "center"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     67,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s2_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     59,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s2_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     51,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s2_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     984,
+     133,
+     129,
+     29
+    ],
+    "asset": "s2_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     973,
+     140,
+     129,
+     16
+    ],
+    "asset": "s2_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     163,
+     911,
+     3
+    ],
+    "asset": "s2_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     76,
+     124,
+     65
+    ],
+    "asset": "s2_6.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     87,
+     429,
+     904,
+     619
+    ]
+   },
+   {
+    "role": "label",
+    "box": [
+     636,
+     93,
+     333,
+     28
+    ],
+    "text": "FIRST DESIGN | 퍼스트디자인",
+    "size": 15.0,
+    "color": "4195A2",
+    "align": "left"
+   },
+   {
+    "role": "headline",
+    "box": [
+     105,
+     245,
+     869,
+     112
+    ],
+    "text": "",
+    "size": 60.0,
+    "color": "4195A2",
+    "align": "center"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     67,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s3_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     59,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s3_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     51,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s3_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     984,
+     133,
+     129,
+     29
+    ],
+    "asset": "s3_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     973,
+     140,
+     129,
+     16
+    ],
+    "asset": "s3_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     163,
+     911,
+     3
+    ],
+    "asset": "s3_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     76,
+     124,
+     65
+    ],
+    "asset": "s3_6.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     87,
+     429,
+     904,
+     619
+    ]
+   },
+   {
+    "role": "label",
+    "box": [
+     636,
+     93,
+     333,
+     28
+    ],
+    "text": "FIRST DESIGN | 퍼스트디자인",
+    "size": 15.0,
+    "color": "4195A2",
+    "align": "left"
+   },
+   {
+    "role": "headline",
+    "box": [
+     105,
+     197,
+     869,
+     208
+    ],
+    "text": "",
+    "size": 60.0,
+    "color": "4195A2",
+    "align": "center"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     67,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s4_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     59,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s4_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     51,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s4_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     984,
+     133,
+     129,
+     29
+    ],
+    "asset": "s4_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     973,
+     140,
+     129,
+     16
+    ],
+    "asset": "s4_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     163,
+     911,
+     3
+    ],
+    "asset": "s4_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     76,
+     124,
+     65
+    ],
+    "asset": "s4_6.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     87,
+     429,
+     904,
+     619
+    ]
+   },
+   {
+    "role": "label",
+    "box": [
+     636,
+     93,
+     333,
+     28
+    ],
+    "text": "FIRST DESIGN | 퍼스트디자인",
+    "size": 15.0,
+    "color": "4195A2",
+    "align": "left"
+   },
+   {
+    "role": "headline",
+    "box": [
+     105,
+     197,
+     869,
+     208
+    ],
+    "text": "",
+    "size": 60.0,
+    "color": "4195A2",
+    "align": "center"
+   }
+  ],
+  [
+   {
+    "role": "photo",
+    "box": [
+     0,
+     476,
+     1133,
+     619
+    ]
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     67,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s6_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     59,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s6_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     51,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s6_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     984,
+     133,
+     129,
+     29
+    ],
+    "asset": "s6_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     973,
+     140,
+     129,
+     16
+    ],
+    "asset": "s6_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     163,
+     911,
+     3
+    ],
+    "asset": "s6_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     76,
+     124,
+     65
+    ],
+    "asset": "s6_6.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     87,
+     429,
+     904,
+     619
+    ]
+   },
+   {
+    "role": "label",
+    "box": [
+     636,
+     93,
+     333,
+     28
+    ],
+    "text": "FIRST DESIGN | 퍼스트디자인",
+    "size": 15.0,
+    "color": "4195A2",
+    "align": "left"
+   },
+   {
+    "role": "headline",
+    "box": [
+     105,
+     197,
+     869,
+     208
+    ],
+    "text": "",
+    "size": 60.0,
+    "color": "4195A2",
+    "align": "center"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     67,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s7_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     59,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s7_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     51,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s7_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     984,
+     133,
+     129,
+     29
+    ],
+    "asset": "s7_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     973,
+     140,
+     129,
+     16
+    ],
+    "asset": "s7_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     163,
+     911,
+     3
+    ],
+    "asset": "s7_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     76,
+     124,
+     65
+    ],
+    "asset": "s7_6.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     87,
+     429,
+     904,
+     619
+    ]
+   },
+   {
+    "role": "label",
+    "box": [
+     636,
+     93,
+     333,
+     28
+    ],
+    "text": "FIRST DESIGN | 퍼스트디자인",
+    "size": 15.0,
+    "color": "4195A2",
+    "align": "left"
+   },
+   {
+    "role": "headline",
+    "box": [
+     105,
+     245,
+     869,
+     112
+    ],
+    "text": "",
+    "size": 60.0,
+    "color": "4195A2",
+    "align": "center"
+   }
+  ]
+ ]
+}

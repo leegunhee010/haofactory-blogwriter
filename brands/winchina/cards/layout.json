@@ -1,0 +1,670 @@
+{
+ "size": 1080,
+ "pt_height": 810.0,
+ "bg": "FFFFFF",
+ "slide_bg": [
+  "C0E1D2",
+  "C0E1D2",
+  "C0E1D2",
+  "C0E1D2",
+  "C0E1D2",
+  "C0E1D2"
+ ],
+ "theme_recolor": false,
+ "photo_round": 0.0,
+ "slides": [
+  [
+   {
+    "role": "deco",
+    "box": [
+     80,
+     80,
+     920,
+     920
+    ],
+    "asset": "s0_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     455,
+     953,
+     171,
+     85
+    ],
+    "asset": "s0_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     455,
+     41,
+     171,
+     85
+    ],
+    "asset": "s0_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     632,
+     775,
+     359,
+     359
+    ],
+    "asset": "s0_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     39,
+     775,
+     279,
+     279
+    ],
+    "asset": "s0_4.png",
+    "recolor": false
+   },
+   {
+    "role": "headline",
+    "box": [
+     68,
+     293,
+     944,
+     331
+    ],
+    "text": "",
+    "size": 95.0,
+    "color": "000000",
+    "align": "center"
+   },
+   {
+    "role": "subtitle",
+    "box": [
+     123,
+     651,
+     836,
+     127
+    ],
+    "text": "",
+    "size": 34.0,
+    "color": "000000",
+    "align": "center"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     944,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     944,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     60,
+     603,
+     960,
+     420
+    ],
+    "asset": "s1_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     944,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_6.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     108,
+     273,
+     865,
+     465
+    ]
+   },
+   {
+    "role": "headline",
+    "box": [
+     39,
+     120,
+     1001,
+     88
+    ],
+    "text": "",
+    "size": 47.0,
+    "color": "000000",
+    "align": "center"
+   },
+   {
+    "role": "body",
+    "box": [
+     133,
+     795,
+     815,
+     153
+    ],
+    "text": "",
+    "size": 19.0,
+    "color": "000000",
+    "align": "center"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     944,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     944,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     60,
+     603,
+     960,
+     420
+    ],
+    "asset": "s1_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     944,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_6.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     108,
+     273,
+     865,
+     465
+    ]
+   },
+   {
+    "role": "headline",
+    "box": [
+     39,
+     120,
+     1001,
+     88
+    ],
+    "text": "",
+    "size": 47.0,
+    "color": "000000",
+    "align": "center"
+   },
+   {
+    "role": "body",
+    "box": [
+     133,
+     795,
+     815,
+     153
+    ],
+    "text": "",
+    "size": 19.0,
+    "color": "000000",
+    "align": "center"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     944,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     944,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     60,
+     603,
+     960,
+     420
+    ],
+    "asset": "s1_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     944,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_6.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     108,
+     273,
+     865,
+     465
+    ]
+   },
+   {
+    "role": "headline",
+    "box": [
+     39,
+     120,
+     1001,
+     88
+    ],
+    "text": "",
+    "size": 47.0,
+    "color": "000000",
+    "align": "center"
+   },
+   {
+    "role": "body",
+    "box": [
+     133,
+     795,
+     815,
+     153
+    ],
+    "text": "",
+    "size": 19.0,
+    "color": "000000",
+    "align": "center"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     944,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     944,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     60,
+     603,
+     960,
+     420
+    ],
+    "asset": "s1_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     944,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_6.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     108,
+     273,
+     865,
+     465
+    ]
+   },
+   {
+    "role": "headline",
+    "box": [
+     39,
+     120,
+     1001,
+     88
+    ],
+    "text": "",
+    "size": 47.0,
+    "color": "000000",
+    "align": "center"
+   },
+   {
+    "role": "body",
+    "box": [
+     133,
+     795,
+     815,
+     153
+    ],
+    "text": "",
+    "size": 19.0,
+    "color": "000000",
+    "align": "center"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     944,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     944,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     60,
+     603,
+     960,
+     420
+    ],
+    "asset": "s1_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     944,
+     944,
+     136,
+     136
+    ],
+    "asset": "s1_6.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     108,
+     273,
+     865,
+     465
+    ]
+   },
+   {
+    "role": "headline",
+    "box": [
+     39,
+     120,
+     1001,
+     88
+    ],
+    "text": "",
+    "size": 47.0,
+    "color": "000000",
+    "align": "center"
+   },
+   {
+    "role": "body",
+    "box": [
+     133,
+     795,
+     815,
+     153
+    ],
+    "text": "",
+    "size": 19.0,
+    "color": "000000",
+    "align": "center"
+   }
+  ]
+ ]
+}

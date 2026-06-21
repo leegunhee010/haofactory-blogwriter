@@ -1,0 +1,21 @@
+# 빌드 산출물
+build/
+dist/
+dist_update/
+app_bundle.zip
+__pycache__/
+*.pyc
+*.spec.bak
+
+# 사용자/생성 데이터
+출력/
+작성기_설정.json
+*.docx
+_test_*/
+_t_*/
+
+# 레거시(미사용)
+템플릿/
+cardnews_engine.py
+
+# update.zip 은 추적함(자동업데이트용) — 무시하지 않음

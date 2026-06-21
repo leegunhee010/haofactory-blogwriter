@@ -1,0 +1,484 @@
+{
+ "size": 1080,
+ "bg": "FFFFFF",
+ "slides": [
+  [
+   {
+    "role": "deco",
+    "box": [
+     -1,
+     141,
+     1088,
+     956
+    ],
+    "asset": "s0_0.png",
+    "recolor": true
+   },
+   {
+    "role": "headline",
+    "box": [
+     -11,
+     172,
+     1099,
+     131
+    ],
+    "text": "",
+    "size": 70.0,
+    "align": "center"
+   },
+   {
+    "role": "logo",
+    "box": [
+     68,
+     44,
+     107,
+     61
+    ],
+    "asset": "s0_2.png",
+    "recolor": false
+   },
+   {
+    "role": "line",
+    "box": [
+     207,
+     75,
+     823,
+     1
+    ],
+    "asset": "s0_3.png",
+    "recolor": true
+   },
+   {
+    "role": "photo",
+    "box": [
+     51,
+     359,
+     979,
+     657
+    ],
+    "asset": null,
+    "recolor": false
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     -24,
+     819,
+     1127,
+     268
+    ],
+    "asset": "s1_0.png",
+    "recolor": true
+   },
+   {
+    "role": "deco",
+    "box": [
+     129,
+     519,
+     171,
+     49
+    ],
+    "asset": "s1_1.png",
+    "recolor": true
+   },
+   {
+    "role": "headline",
+    "box": [
+     44,
+     181,
+     993,
+     103
+    ],
+    "text": "",
+    "size": 55.0,
+    "align": "center"
+   },
+   {
+    "role": "line",
+    "box": [
+     51,
+     75,
+     772,
+     1
+    ],
+    "asset": "s1_3.png",
+    "recolor": true
+   },
+   {
+    "role": "photo",
+    "box": [
+     56,
+     357,
+     979,
+     657
+    ],
+    "asset": null,
+    "recolor": false
+   },
+   {
+    "role": "label",
+    "box": [
+     869,
+     63,
+     163,
+     23
+    ],
+    "text": "HAOFACTORY",
+    "size": 14.0,
+    "align": "left"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     -4,
+     839,
+     1084,
+     243
+    ],
+    "asset": "s2_0.png",
+    "recolor": true
+   },
+   {
+    "role": "deco",
+    "box": [
+     129,
+     519,
+     171,
+     49
+    ],
+    "asset": "s2_1.png",
+    "recolor": true
+   },
+   {
+    "role": "headline",
+    "box": [
+     44,
+     181,
+     993,
+     103
+    ],
+    "text": "",
+    "size": 55.0,
+    "align": "center"
+   },
+   {
+    "role": "line",
+    "box": [
+     51,
+     75,
+     772,
+     1
+    ],
+    "asset": "s2_3.png",
+    "recolor": true
+   },
+   {
+    "role": "photo",
+    "box": [
+     52,
+     364,
+     977,
+     657
+    ],
+    "asset": null,
+    "recolor": false
+   },
+   {
+    "role": "label",
+    "box": [
+     869,
+     63,
+     163,
+     23
+    ],
+    "text": "HAOFACTORY",
+    "size": 14.0,
+    "align": "left"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     -4,
+     839,
+     1084,
+     243
+    ],
+    "asset": "s3_0.png",
+    "recolor": true
+   },
+   {
+    "role": "deco",
+    "box": [
+     129,
+     519,
+     171,
+     49
+    ],
+    "asset": "s3_1.png",
+    "recolor": true
+   },
+   {
+    "role": "headline",
+    "box": [
+     44,
+     181,
+     993,
+     103
+    ],
+    "text": "",
+    "size": 55.0,
+    "align": "center"
+   },
+   {
+    "role": "line",
+    "box": [
+     51,
+     75,
+     772,
+     1
+    ],
+    "asset": "s3_3.png",
+    "recolor": true
+   },
+   {
+    "role": "photo",
+    "box": [
+     55,
+     356,
+     977,
+     657
+    ],
+    "asset": null,
+    "recolor": false
+   },
+   {
+    "role": "label",
+    "box": [
+     869,
+     63,
+     163,
+     23
+    ],
+    "text": "HAOFACTORY",
+    "size": 14.0,
+    "align": "left"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     -4,
+     839,
+     1084,
+     243
+    ],
+    "asset": "s4_0.png",
+    "recolor": true
+   },
+   {
+    "role": "deco",
+    "box": [
+     129,
+     519,
+     171,
+     49
+    ],
+    "asset": "s4_1.png",
+    "recolor": true
+   },
+   {
+    "role": "headline",
+    "box": [
+     44,
+     181,
+     993,
+     103
+    ],
+    "text": "",
+    "size": 55.0,
+    "align": "center"
+   },
+   {
+    "role": "line",
+    "box": [
+     51,
+     75,
+     772,
+     1
+    ],
+    "asset": "s4_3.png",
+    "recolor": true
+   },
+   {
+    "role": "photo",
+    "box": [
+     52,
+     357,
+     977,
+     657
+    ],
+    "asset": null,
+    "recolor": false
+   },
+   {
+    "role": "label",
+    "box": [
+     869,
+     63,
+     163,
+     23
+    ],
+    "text": "HAOFACTORY",
+    "size": 14.0,
+    "align": "left"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     -4,
+     839,
+     1084,
+     243
+    ],
+    "asset": "s5_0.png",
+    "recolor": true
+   },
+   {
+    "role": "deco",
+    "box": [
+     129,
+     519,
+     171,
+     49
+    ],
+    "asset": "s5_1.png",
+    "recolor": true
+   },
+   {
+    "role": "headline",
+    "box": [
+     43,
+     184,
+     995,
+     103
+    ],
+    "text": "",
+    "size": 55.0,
+    "align": "center"
+   },
+   {
+    "role": "line",
+    "box": [
+     51,
+     75,
+     772,
+     1
+    ],
+    "asset": "s5_3.png",
+    "recolor": true
+   },
+   {
+    "role": "photo",
+    "box": [
+     55,
+     357,
+     977,
+     657
+    ],
+    "asset": null,
+    "recolor": false
+   },
+   {
+    "role": "label",
+    "box": [
+     869,
+     63,
+     163,
+     23
+    ],
+    "text": "HAOFACTORY",
+    "size": 14.0,
+    "align": "left"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     -4,
+     839,
+     1084,
+     243
+    ],
+    "asset": "s6_0.png",
+    "recolor": true
+   },
+   {
+    "role": "deco",
+    "box": [
+     129,
+     519,
+     171,
+     49
+    ],
+    "asset": "s6_1.png",
+    "recolor": true
+   },
+   {
+    "role": "headline",
+    "box": [
+     41,
+     179,
+     993,
+     103
+    ],
+    "text": "",
+    "size": 55.0,
+    "align": "center"
+   },
+   {
+    "role": "line",
+    "box": [
+     51,
+     75,
+     772,
+     1
+    ],
+    "asset": "s6_3.png",
+    "recolor": true
+   },
+   {
+    "role": "photo",
+    "box": [
+     57,
+     357,
+     977,
+     657
+    ],
+    "asset": null,
+    "recolor": false
+   },
+   {
+    "role": "label",
+    "box": [
+     869,
+     63,
+     163,
+     23
+    ],
+    "text": "HAOFACTORY",
+    "size": 14.0,
+    "align": "left"
+   }
+  ]
+ ]
+}
