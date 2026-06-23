@@ -489,15 +489,22 @@ def make_cards(photo_paths, headlines, out_dir, assets_dir, theme=None, subtitle
     elif uses_auto and photo_paths and os.path.isfile(photo_paths[0]):
         accent = _accent_from_image(photo_paths[0])
     pngs, cards = [], []
-    hi = 0   # 카드 헤드라인은 '제목소스가 아닌 헤드라인 슬라이드'에만 순서대로
+    # 헤드라인 슬라이드는 '헤드라인과 같은 인덱스의 사진'을 써서 제목-사진을 맞춘다.
+    # 사진만 슬라이드(예: 퍼스트디자인 s5)는 여분 사진을 써서 뒤 카드가 밀리지 않게 한다.
+    n_heads = sum(1 for sl in slides
+                  if any(it.get("role") == "headline" and it.get("source") != "title" for it in sl))
+    hi = 0; spare = n_heads
     for i in range(n):
-        src = photo_paths[i % len(photo_paths)] if photo_paths else ""
         head_item = next((it for it in slides[i] if it.get("role") == "headline"), None)
         head = bod = ""
         if head_item is not None and head_item.get("source") != "title":
             head = headlines[hi] if hi < len(headlines) else ""
             bod = bodies[hi] if hi < len(bodies) else ""
+            src = photo_paths[hi % len(photo_paths)] if photo_paths else ""
             hi += 1
+        else:
+            src = photo_paths[spare % len(photo_paths)] if photo_paths else ""
+            spare += 1
         sub = subtitle if any(it.get("role") == "subtitle" for it in slides[i]) else ""
         out = os.path.join(out_dir, "card%02d.png" % (i + 1))
         render_card(i, src, head, theme, out, assets_dir, seed=f"{salt}:{i}", subtitle=sub, body=bod, title=title, accent=accent)
