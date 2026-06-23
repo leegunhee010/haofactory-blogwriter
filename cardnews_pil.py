@@ -325,7 +325,7 @@ def _two_lines(text):
     return " ".join(words[:best_i]) + "\n" + " ".join(words[best_i:])
 
 
-def _draw_kw_title(canvas, box, keyword, title, font_path, kw_size, title_size, color, pt2px, align="right"):
+def _draw_kw_title(canvas, box, keyword, title, font_path, kw_size, title_size, color, pt2px, align="right", gap=0, dy=0):
     """키워드(큰글씨) + 제목(작은글씨)을 각자 원본 사이즈로, 정렬·세로가운데 그대로 렌더."""
     x, y, w, h = box
     col = (color[0], color[1], color[2], 255)
@@ -367,13 +367,18 @@ def _draw_kw_title(canvas, box, keyword, title, font_path, kw_size, title_size, 
             tlines = [one]
     ka, kd = kf.getmetrics(); klh = ka + kd
     ta, td = tf.getmetrics(); tlh = ta + td
-    total = klh * len(klines) + tlh * len(tlines)
-    cy = y + (h - total) / 2
-    for lines, fnt, lh in ((klines, kf, klh), (tlines, tf, tlh)):
-        for ln in lines:
-            tw = d.textlength(ln, font=fnt)
-            tx = x + w - tw if align == "right" else (x + (w - tw) / 2 if align == "center" else x)
-            d.text((tx, cy), ln, font=fnt, fill=col); cy += lh
+    g = gap if (klines and tlines) else 0
+    total = klh * len(klines) + tlh * len(tlines) + g
+    cy = y + (h - total) / 2 + dy                       # dy = 전체 아래로 이동
+    def drawline(ln, fnt):
+        tw = d.textlength(ln, font=fnt)
+        tx = x + w - tw if align == "right" else (x + (w - tw) / 2 if align == "center" else x)
+        d.text((tx, cy), ln, font=fnt, fill=col)
+    for ln in klines:
+        drawline(ln, kf); cy += klh
+    cy += g                                             # gap = 키워드와 제목 줄 사이 간격
+    for ln in tlines:
+        drawline(ln, tf); cy += tlh
     return Image.alpha_composite(canvas, layer)
 
 
@@ -439,7 +444,8 @@ def render_card(slide_idx, photo_path, headline, theme, out_path, assets_dir,
                     kw += ","
                 canvas = _draw_kw_title(canvas, box, kw, ti, fp,
                                         it.get("kw_size", it.get("size", 80)), it.get("title_size", 54),
-                                        col, pt2px, it.get("align", "right"))
+                                        col, pt2px, it.get("align", "right"),
+                                        it.get("gap", 0), it.get("dy", 0))
             else:
                 txt = (title or "") if it.get("source") == "title" else (headline or "")
                 if it.get("lines") == 2:
