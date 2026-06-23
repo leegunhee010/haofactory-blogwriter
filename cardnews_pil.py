@@ -251,6 +251,16 @@ def _accent_from_image(path, light_bg=True):
     return (r, g, b)
 
 
+def _random_accent():
+    """생성마다 다른 선명한 색(밝은배경 위 가독·장식 recolor 겸용 중간명도)."""
+    import colorsys
+    h = random.random()
+    s = random.uniform(0.45, 0.78)
+    v = random.uniform(0.52, 0.70)
+    r, g, b = colorsys.hsv_to_rgb(h, s, v)
+    return (int(round(r * 255)), int(round(g * 255)), int(round(b * 255)))
+
+
 def _shorten_title(t, maxlen=24):
     """제목이 너무 길면 어절·구두점 경계에서 줄임(표지 글자수 한계)."""
     t = " ".join(str(t).split())
@@ -471,10 +481,12 @@ def make_cards(photo_paths, headlines, out_dir, assets_dir, theme=None, subtitle
     slides = lay["slides"]
     n = len(slides)
     salt = "%08x" % random.randrange(16 ** 8)
-    # 표지(0번) 사진 대표색으로 전 카드 색 통일
+    # 색 통일: random_theme=생성마다 랜덤색, 아니면 표지(0번) 사진 대표색
     uses_auto = lay.get("auto_theme") or any(it.get("auto_color") for sl in slides for it in sl)
     accent = None
-    if uses_auto and photo_paths and os.path.isfile(photo_paths[0]):
+    if lay.get("random_theme"):
+        accent = _random_accent()
+    elif uses_auto and photo_paths and os.path.isfile(photo_paths[0]):
         accent = _accent_from_image(photo_paths[0])
     pngs, cards = [], []
     hi = 0   # 카드 헤드라인은 '제목소스가 아닌 헤드라인 슬라이드'에만 순서대로

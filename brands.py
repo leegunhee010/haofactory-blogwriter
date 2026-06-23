@@ -40,12 +40,24 @@ def brand_dir(bid):
     return os.path.join(BRANDS_DIR, bid)
 
 
-def assets_dir(bid):
-    return os.path.join(brand_dir(bid), "cards")
+def assets_dir(bid, tpl="1"):
+    """카드 템플릿 에셋 폴더. tpl '1'(기본)→cards, 그 외→cards_<tpl>. 한 브랜드가 여러 디자인 보유."""
+    tpl = str(tpl or "1")
+    sub = "cards" if tpl in ("1", "", "None") else "cards_" + tpl
+    return os.path.join(brand_dir(bid), sub)
+
+
+def card_templates(bid):
+    """이 브랜드에 등록된 카드 디자인 목록(layout.json 있는 슬롯). 예: ['1','2','3']."""
+    out = []
+    for tpl in ("1", "2", "3", "4", "5"):
+        if os.path.isfile(os.path.join(assets_dir(bid, tpl), "layout.json")):
+            out.append(tpl)
+    return out
 
 
 def has_cards(bid):
-    return os.path.isfile(os.path.join(assets_dir(bid), "layout.json"))
+    return os.path.isfile(os.path.join(assets_dir(bid, "1"), "layout.json"))
 
 
 def load_brand(bid):
@@ -58,6 +70,7 @@ def load_brand(bid):
     out.update(c)
     out["id"] = bid
     out["has_cards"] = has_cards(bid)
+    out["card_templates"] = card_templates(bid)
     if not out.get("stages"):
         out["stages"] = DEFAULT_STAGES
     return out
@@ -79,7 +92,8 @@ def list_brands():
     for d in sorted(os.listdir(BRANDS_DIR)) if os.path.isdir(BRANDS_DIR) else []:
         if os.path.isfile(os.path.join(BRANDS_DIR, d, "brand.json")):
             b = load_brand(d)
-            out.append({"id": d, "name": b["name"] or d, "color": b["color"], "has_cards": b["has_cards"]})
+            out.append({"id": d, "name": b["name"] or d, "color": b["color"],
+                        "has_cards": b["has_cards"], "card_templates": b.get("card_templates", [])})
     return out
 
 

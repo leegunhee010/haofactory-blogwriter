@@ -736,10 +736,11 @@ def api_preview_cards():
     """브랜드 카드 템플릿을 샘플 사진/문구로 렌더 — 최종 체크용 미리보기."""
     b = request.get_json(force=True) or {}
     bid = b.get("brand") or "haofactory"
+    tpl = str(b.get("template") or "1")
     brand = brands.load_brand(bid)
-    if not brand["has_cards"]:
+    adir = brands.assets_dir(bid, tpl)
+    if not os.path.isfile(os.path.join(adir, "layout.json")):
         return jsonify(ok=False, msg="이 브랜드는 카드 템플릿이 없습니다.")
-    adir = brands.assets_dir(bid)
     # 샘플 사진: 탭 폴더 → 데스크톱 drive-download → Pictures 순
     files, folder = [], b.get("folder") or ""
     if folder and os.path.isdir(folder):
@@ -773,6 +774,41 @@ def api_preview_cards():
         return jsonify(ok=False, msg=str(e)[:200])
 
 
+def _sample_photo():
+    """썸네일용 샘플 사진 1장(데스크톱 drive-download → Pictures)."""
+    for cand in glob.glob(os.path.join(os.path.expanduser("~"), "Desktop", "drive-download*")) + \
+                [os.path.join(os.path.expanduser("~"), "Pictures")]:
+        if os.path.isdir(cand):
+            fl = list_images(cand, cap=50)
+            if fl:
+                return os.path.join(cand, fl[0])
+    return ""
+
+
+@app.route("/api/template-thumb")
+def api_template_thumb():
+    """카드 디자인 슬롯의 표지를 썸네일로 렌더(선택기용). layout.json 바뀌면 자동 갱신."""
+    bid = request.args.get("brand", "haofactory")
+    tpl = str(request.args.get("template", "1") or "1")
+    adir = brands.assets_dir(bid, tpl)
+    lp = os.path.join(adir, "layout.json")
+    if not os.path.isfile(lp):
+        return ("", 404)
+    cache = os.path.join(OUT_DIR, f"_thumb_{bid}_{tpl}.png")
+    if (not os.path.isfile(cache)) or os.path.getmtime(cache) < os.path.getmtime(lp):
+        brand = brands.load_brand(bid)
+        heads = brand.get("card_headlines") or []
+        kw = (re.sub(r"\([^)]*\)", "", heads[0]).strip() if heads else "") or "샘플 키워드"
+        try:
+            cardnews_pil.render_card(0, _sample_photo(), kw, (210, 90, 120), cache, adir,
+                                     subtitle="주제를 한 줄로 요약한 부제", title=kw)
+        except Exception as e:
+            return (str(e)[:120], 500)
+    r = send_file(cache)
+    r.headers["Cache-Control"] = "no-store, max-age=0"
+    return r
+
+
 @app.route("/api/brand-template", methods=["POST"])
 def api_brand_template():
     """브랜드 카드뉴스 PPTX 템플릿 등록 → 장식/레이아웃 추출."""
@@ -792,14 +828,15 @@ def api_brand_template():
 def api_brand_template_file():
     """브랜드 카드뉴스 PPTX 직접 업로드 → 추출(파일 선택 방식)."""
     bid = request.form.get("id", "")
+    slot = str(request.form.get("slot", "1") or "1")
     f = request.files.get("file")
     if not (bid and f and f.filename.lower().endswith(".pptx")):
         return jsonify(ok=False, msg="브랜드와 PPTX 파일이 필요합니다.")
     tmp = os.path.join(OUT_DIR, f"_tpl_{bid}.pptx")
     try:
         f.save(tmp)
-        r = cardnews_pil.extract_template(tmp, brands.assets_dir(bid))
-        return jsonify(ok=True, **r)
+        r = cardnews_pil.extract_template(tmp, brands.assets_dir(bid, slot))
+        return jsonify(ok=True, slot=slot, **r)
     except Exception as e:
         return jsonify(ok=False, msg=str(e)[:200])
     finally:
@@ -815,6 +852,7 @@ def api_generate():
     keyword = (b.get("keyword") or "").strip()
     folder = b.get("folder") or ""
     hint = (b.get("hint") or "").strip()
+    tpl = str(b.get("template") or "1")   # 카드 디자인 슬롯(b는 아래 루프에서 덮어써지므로 먼저 읽음)
     if not keyword:
         return jsonify(ok=False, msg="키워드를 입력하세요.")
     brand = brands.load_brand(b.get("brand") or "haofactory")
@@ -854,9 +892,10 @@ def api_generate():
     post["cardnews"] = ""
     # 카드 7장 = 서로 다른 사진(Claude 매칭 우선 + 폴더 전체에서 분산 채움)
     claude_picks = [b["file"] for b in post["blocks"] if b["type"] == "photo" and b.get("file")]
-    adir = brands.assets_dir(brand["id"])
+    adir = brands.assets_dir(brand["id"], tpl)
+    has_tpl = os.path.isfile(os.path.join(adir, "layout.json"))
     n_cards = 7
-    if brand["has_cards"]:
+    if has_tpl:
         try:
             n_cards = len(jload(os.path.join(adir, "layout.json"), {}).get("slides", [])) or 7
         except Exception:
@@ -864,7 +903,7 @@ def api_generate():
     card_files = pick_diverse(files, claude_picks, n_cards)
     post["cardnews_pngs"] = []
     post["cardnews_job"] = ""
-    if card_files and len(cards) >= 6 and brand["has_cards"]:
+    if card_files and len(cards) >= 6 and has_tpl:
         import uuid
         jid = uuid.uuid4().hex[:10]
         CARD_JOBS[jid] = {"status": "rendering"}
@@ -1128,6 +1167,13 @@ select:focus{border-color:var(--brand)}
 .naver-title{font-weight:800;font-size:14px;margin-bottom:10px}
 .naver-steps{font-size:12px;color:var(--ink2);margin-top:10px;line-height:1.6;font-weight:600}
 .naver-steps b{color:var(--brand-d)}
+.tplrow{display:flex;gap:10px;flex-wrap:wrap}
+.tplopt{cursor:pointer;border:2.5px solid transparent;border-radius:13px;padding:5px;background:#f3f5f7;transition:.15s;text-align:center}
+.tplopt:hover{background:#e9edf1}
+.tplopt img{width:124px;height:124px;object-fit:cover;border-radius:9px;display:block;background:#fff}
+.tplopt span{font-size:12px;font-weight:800;color:var(--ink2);display:block;margin-top:5px}
+.tplopt.sel{border-color:var(--brand);background:var(--brand-l)}
+.tplopt.sel span{color:var(--brand-d)}
 </style></head><body>
 <div class="top"><div class="logo">🖊</div><h1>블로그 작성기</h1>
   <select id="brandsel" onchange="switchBrand(this.value)" title="브랜드 선택"></select>
@@ -1253,6 +1299,10 @@ function render(){renderTabs();
     </div>
     <details class="opt" ${x.hint?'open':''}><summary>＋ 프로젝트 정보 (선택 — 실제 작업 건이면 현장·소재·특이사항)</summary>
       <textarea id="hint" oninput="t().hint=this.value" placeholder="예: 전남 광양, 황소 캐릭터, 벤치 포토존, FRP">${esc(x.hint)}</textarea></details>
+    ${(curBrand().card_templates||[]).length>1?`
+    <div class="field"><label>카드 디자인 (클릭해서 선택)</label>
+      <div class="tplrow">${(curBrand().card_templates).map(tp=>`<div class="tplopt ${(x.cardTpl||'1')==tp?'sel':''}" onclick="t().cardTpl='${tp}';render()" title="디자인 ${tp}">
+        <img src="/api/template-thumb?brand=${BRAND}&template=${tp}" loading="lazy" alt="디자인 ${tp}"><span>디자인 ${tp}</span></div>`).join('')}</div></div>`:''}
     <div class="gen-row"><button class="btn pri lg" id="genbtn" onclick="generate()" ${x.busy?'disabled':''}>${x.busy?'<span class=spin></span> 생성 중…':'✍ 생성하기'}</button>
       <select onchange="t().model=this.value">
         <option value="opus" ${(x.model||'opus')=='opus'?'selected':''}>Opus (품질)</option>
@@ -1308,7 +1358,7 @@ function pollOrg(){const iv=setInterval(()=>{fetch('/api/organize-status').then(
 });},1500);}
 function generate(){const x=t();if(!x.keyword){toast('키워드를 입력하세요','err');return;}
   x.busy=true;render();
-  fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,folder:x.folder,hint:x.hint,model:x.model||'opus',brand:BRAND})})
+  fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,folder:x.folder,hint:x.hint,model:x.model||'opus',brand:BRAND,template:x.cardTpl||'1'})})
    .then(r=>r.json()).then(d=>{x.busy=false;
      if(!d.ok){toast(d.msg||'생성 실패','err');render();return;}
      x.post=d.post;render();toast('✍ 원고 완성','ok');
@@ -1445,11 +1495,12 @@ function applyText(){const x=t().post;const c=(x.card_state||[])[TXT_CI]||{};con
 // ── 카드 미리보기 (최종 체크용) ──
 function pvBrandOptions(cur){return '<select onchange="openCardPreview(this.value)" style="border:1.5px solid var(--line);border-radius:9px;padding:6px 9px;font-size:12px;font-weight:700">'+
   BRANDS.filter(b=>b.has_cards).map(b=>`<option value="${b.id}" ${b.id==cur?'selected':''}>${esc(b.name)}</option>`).join('')+'</select>';}
-function openCardPreview(bid){el('previewmodal').style.display='block';el('pvbrandsel').innerHTML=pvBrandOptions(bid);
+function previewTpl(){openCardPreview(BRAND,(t().cardTpl||'1'));}
+function openCardPreview(bid,tpl){tpl=tpl||'1';el('previewmodal').style.display='block';el('pvbrandsel').innerHTML=pvBrandOptions(bid);
   el('pvtitle').textContent='🎴 카드 미리보기';
   el('pvgrid').innerHTML='<div style="padding:44px;color:#889;font-size:13px"><span class="spin" style="border-color:var(--brand);border-top-color:transparent;margin-right:8px"></span>샘플 사진으로 카드 그리는 중…</div>';
   const folder=(t()&&t().folder)||'';
-  fetch('/api/preview-cards',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({brand:bid,folder:folder})})
+  fetch('/api/preview-cards',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({brand:bid,folder:folder,template:tpl})})
    .then(r=>r.json()).then(d=>{if(!d.ok){el('pvgrid').innerHTML='<div style="padding:24px;color:#d55">'+esc(d.msg||'실패')+'</div>';return;}
      el('pvtitle').textContent='🎴 '+d.name+' 카드 미리보기 ('+d.pngs.length+'장)';
      el('pvgrid').innerHTML=d.pngs.map((p,i)=>{const nm=p.split(/[\\\\/]/).pop();
@@ -1496,8 +1547,11 @@ function renderBrandForm(){const b=BFORM;
     <details style="margin-top:10px"><summary style="font-size:12px;color:var(--muted);cursor:pointer">고급: 완전 커스텀 프롬프트 (있으면 위 설정 대신 이걸 사용)</summary>
       <textarea id="bf_prompt" style="height:120px;font-size:12px;margin-top:8px" placeholder="구조까지 완전히 직접 쓰고 싶을 때만. 비우면 공통 구조 + 위 톤/회사소개를 사용합니다.">${esc(b.prompt||'')}</textarea></details>
     <div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="btn pri" onclick="saveBrand()">💾 저장</button>
-      ${b.id?`<button class="btn" onclick="openTemplate('${b.id}')">🎴 카드 템플릿 ${b.has_cards?'교체':'등록'}</button>`:'<span style="font-size:12px;color:var(--muted)">먼저 저장하면 카드 템플릿(PPTX)을 등록할 수 있어요</span>'}
-      ${b.id&&b.has_cards?`<button class="btn" onclick="openCardPreview('${b.id}')">👁 카드 미리보기</button>`:''}</div>`;
+      ${b.id&&b.has_cards?`<button class="btn" onclick="openCardPreview('${b.id}')">👁 카드 미리보기</button>`:''}</div>
+    ${b.id?`<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      <span style="font-size:12px;color:var(--muted);font-weight:700">카드 디자인 (PPTX, 여러 개면 생성 시 선택):</span>
+      ${['1','2','3'].map(s=>{const has=(b.card_templates||[]).includes(s);return `<button class="btn" onclick="openTemplate('${b.id}','${s}')">${has?'🎴':'＋'} 디자인 ${s} ${has?'교체':'등록'}</button>`;}).join('')}
+     </div>`:'<div style="margin-top:10px;font-size:12px;color:var(--muted)">먼저 저장하면 카드 템플릿(PPTX)을 등록할 수 있어요</div>'}`;
 }
 function bval(k){const e=el('bf_'+k);return e?e.value:'';}
 function saveBrand(){const cfg={id:BFORM.id||'',name:bval('name'),label:bval('label'),color:bval('color'),homepage:bval('homepage'),industry:bval('industry'),
@@ -1508,12 +1562,12 @@ function saveBrand(){const cfg={id:BFORM.id||'',name:bval('name'),label:bval('la
      toast('💾 저장됨: '+d.brand.name,'ok');
      BFORM=Object.assign({},d.brand,{type_words:(d.brand.type_words||[]).join(', '),card_headlines:(d.brand.card_headlines||[]).join('\n')});
      BRAND=d.id;loadBrands(renderBrandForm);});}
-function openTemplate(id){const inp=document.createElement('input');inp.type='file';inp.accept='.pptx';
-  inp.onchange=()=>{const f=inp.files[0];if(!f)return;toast('🎴 템플릿 업로드·추출 중…');
-    const fd=new FormData();fd.append('id',id);fd.append('file',f);
+function openTemplate(id,slot){slot=slot||'1';const inp=document.createElement('input');inp.type='file';inp.accept='.pptx';
+  inp.onchange=()=>{const f=inp.files[0];if(!f)return;toast('🎴 디자인 '+slot+' 업로드·추출 중…');
+    const fd=new FormData();fd.append('id',id);fd.append('slot',slot);fd.append('file',f);
     fetch('/api/brand-template-file',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{
       if(!d.ok){toast(d.msg||'추출 실패','err');return;}
-      toast('🎴 카드 템플릿 등록됨 ('+d.slides+'장, 장식 '+d.assets+'개)','ok');loadBrands(()=>editBrand(id));});};
+      toast('🎴 디자인 '+(d.slot||slot)+' 등록됨 ('+d.slides+'장, 장식 '+d.assets+'개)','ok');loadBrands(()=>editBrand(id));});};
   inp.click();}
 init();
 </script></body></html>"""
