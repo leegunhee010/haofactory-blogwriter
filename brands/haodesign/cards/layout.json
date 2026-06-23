@@ -18,10 +18,10 @@
    {
     "role": "photo",
     "box": [
-     -125,
+     -112,
      -135,
-     913,
-     877
+     900,
+     865
     ],
     "shape": "circle"
    },
@@ -29,7 +29,7 @@
     "role": "deco",
     "box": [
      788,
-     599,
+     588,
      220,
      121
     ],
@@ -39,17 +39,19 @@
    {
     "role": "headline",
     "box": [
-     40,
-     730,
-     1000,
-     300
+     -12,
+     696,
+     1061,
+     324
     ],
-    "size": 56,
-    "color": "B1496F",
-    "align": "center",
     "text": "",
-    "source": "title",
-    "lines": 2
+    "size": 80.0,
+    "color": "66A044",
+    "font": "Gmarket Sans Bold",
+    "align": "left",
+    "kw_title": true,
+    "auto_color": true,
+    "title_max": 24
    }
   ],
   [
@@ -105,8 +107,10 @@
     ],
     "text": "",
     "size": 50.0,
-    "color": "B1496F",
-    "align": "center"
+    "color": "66A044",
+    "font": "Gmarket Sans Bold",
+    "align": "center",
+    "auto_color": true
    }
   ],
   [
@@ -162,8 +166,10 @@
     ],
     "text": "",
     "size": 50.0,
-    "color": "B1496F",
-    "align": "center"
+    "color": "66A044",
+    "font": "Gmarket Sans Bold",
+    "align": "center",
+    "auto_color": true
    }
   ],
   [
@@ -219,8 +225,10 @@
     ],
     "text": "",
     "size": 50.0,
-    "color": "B1496F",
-    "align": "center"
+    "color": "66A044",
+    "font": "Gmarket Sans Bold",
+    "align": "center",
+    "auto_color": true
    }
   ],
   [
@@ -276,8 +284,10 @@
     ],
     "text": "",
     "size": 50.0,
-    "color": "B1496F",
-    "align": "center"
+    "color": "66A044",
+    "font": "Gmarket Sans Bold",
+    "align": "center",
+    "auto_color": true
    }
   ],
   [
@@ -333,8 +343,10 @@
     ],
     "text": "",
     "size": 50.0,
-    "color": "B1496F",
-    "align": "center"
+    "color": "66A044",
+    "font": "Gmarket Sans Bold",
+    "align": "center",
+    "auto_color": true
    }
   ],
   [
@@ -390,8 +402,10 @@
     ],
     "text": "",
     "size": 50.0,
-    "color": "B1496F",
-    "align": "center"
+    "color": "66A044",
+    "font": "Gmarket Sans Bold",
+    "align": "center",
+    "auto_color": true
    }
   ]
  ]

@@ -113,7 +113,8 @@
     "text": "",
     "size": 80.0,
     "color": "4195A2",
-    "align": "center"
+    "align": "center",
+    "font": "GangwonEduPower"
    },
    {
     "role": "subtitle",
@@ -126,7 +127,8 @@
     "text": "",
     "size": 30.0,
     "color": "9E9E9E",
-    "align": "center"
+    "align": "center",
+    "font": "Pretendard Medium"
    },
    {
     "role": "label",
@@ -139,7 +141,8 @@
     "text": "FIRST DESIGN | 퍼스트디자인",
     "size": 15.0,
     "color": "4195A2",
-    "align": "left"
+    "align": "left",
+    "font": "Pretendard Bold"
    }
   ],
   [
@@ -240,7 +243,8 @@
     "text": "FIRST DESIGN | 퍼스트디자인",
     "size": 15.0,
     "color": "4195A2",
-    "align": "left"
+    "align": "left",
+    "font": "Pretendard Bold"
    },
    {
     "role": "headline",
@@ -253,7 +257,8 @@
     "text": "",
     "size": 60.0,
     "color": "4195A2",
-    "align": "center"
+    "align": "center",
+    "font": "GangwonEduPower"
    }
   ],
   [
@@ -354,7 +359,8 @@
     "text": "FIRST DESIGN | 퍼스트디자인",
     "size": 15.0,
     "color": "4195A2",
-    "align": "left"
+    "align": "left",
+    "font": "Pretendard Bold"
    },
    {
     "role": "headline",
@@ -367,7 +373,8 @@
     "text": "",
     "size": 60.0,
     "color": "4195A2",
-    "align": "center"
+    "align": "center",
+    "font": "GangwonEduPower"
    }
   ],
   [
@@ -468,7 +475,8 @@
     "text": "FIRST DESIGN | 퍼스트디자인",
     "size": 15.0,
     "color": "4195A2",
-    "align": "left"
+    "align": "left",
+    "font": "Pretendard Bold"
    },
    {
     "role": "headline",
@@ -481,7 +489,8 @@
     "text": "",
     "size": 60.0,
     "color": "4195A2",
-    "align": "center"
+    "align": "center",
+    "font": "GangwonEduPower"
    }
   ],
   [
@@ -582,7 +591,8 @@
     "text": "FIRST DESIGN | 퍼스트디자인",
     "size": 15.0,
     "color": "4195A2",
-    "align": "left"
+    "align": "left",
+    "font": "Pretendard Bold"
    },
    {
     "role": "headline",
@@ -595,7 +605,8 @@
     "text": "",
     "size": 60.0,
     "color": "4195A2",
-    "align": "center"
+    "align": "center",
+    "font": "GangwonEduPower"
    }
   ],
   [
@@ -707,7 +718,8 @@
     "text": "FIRST DESIGN | 퍼스트디자인",
     "size": 15.0,
     "color": "4195A2",
-    "align": "left"
+    "align": "left",
+    "font": "Pretendard Bold"
    },
    {
     "role": "headline",
@@ -720,7 +732,8 @@
     "text": "",
     "size": 60.0,
     "color": "4195A2",
-    "align": "center"
+    "align": "center",
+    "font": "GangwonEduPower"
    }
   ],
   [
@@ -821,7 +834,8 @@
     "text": "FIRST DESIGN | 퍼스트디자인",
     "size": 15.0,
     "color": "4195A2",
-    "align": "left"
+    "align": "left",
+    "font": "Pretendard Bold"
    },
    {
     "role": "headline",
@@ -834,7 +848,8 @@
     "text": "",
     "size": 60.0,
     "color": "4195A2",
-    "align": "center"
+    "align": "center",
+    "font": "GangwonEduPower"
    }
   ]
  ]

@@ -2,7 +2,7 @@
 """카드뉴스 PIL 엔진 — 브랜드별 템플릿을 순수 Pillow로 재현. PowerPoint 불필요.
 브랜드 에셋: brands/<id>/cards/ (layout.json + s*.png), 폰트: assets/fonts 공용.
 extract_template()으로 어떤 PPTX든 에셋+layout으로 추출(브랜드 등록용)."""
-import io, os, json, random
+import io, os, re, json, random
 from PIL import Image, ImageOps, ImageEnhance, ImageFilter, ImageDraw, ImageFont
 Image.MAX_IMAGE_PIXELS = None   # 사용자 본인 사진 — 대형 이미지 허용(압축폭탄 방어 해제)
 try:
@@ -17,6 +17,102 @@ _LABEL_FONT = os.path.join(FONTDIR, "GmarketSansTTFBold.ttf")
 _BODY_FONT = os.path.join(FONTDIR, "Pretendard-Regular.otf")
 if not os.path.isfile(_BODY_FONT):
     _BODY_FONT = _HEAD_FONT
+
+# 템플릿 원본 폰트명 → 동봉 폰트파일 (원본 디자인 그대로 재현). 없으면 기본폰트 fallback.
+FONT_FILES = {
+    "gmarket sans bold": "GmarketSansTTFBold.ttf", "gmarket sans": "GmarketSansTTFBold.ttf",
+    "gmarket sans medium": "GmarketSansTTFMedium.ttf", "gmarket sans ttf medium": "GmarketSansTTFMedium.ttf",
+    "210 sanullim regular": "210Sanullim.ttf", "210 sanullim": "210Sanullim.ttf",
+    "pretendard bold": "Pretendard-Bold.otf", "pretendard": "Pretendard-Bold.otf",
+    "pretendard medium": "Pretendard-Medium.otf", "pretendard semibold": "Pretendard-SemiBold.otf",
+    "pretendard regular": "Pretendard-Regular.otf", "pretendard black": "Pretendard-Black.otf",
+    "nexon lv1 gothic otf bold": "NEXONLv1GothicOTFBold.otf", "nexon lv1 gothic": "NEXONLv1GothicOTFBold.otf",
+    "gangwonedupower": "GangwonEduPowerExtraBoldA.otf", "gangwonedu": "GangwonEduPowerExtraBoldA.otf",
+    "paperlogy 7 bold": "Paperlogy-7Bold.ttf", "paperlogy": "Paperlogy-7Bold.ttf",
+}
+
+
+def _font_for(name, default_path):
+    """원본 폰트명으로 동봉 폰트파일 찾기. 없으면 default_path."""
+    if not name:
+        return default_path
+    key = re.sub(r"\s+", " ", str(name).strip().lower())
+    fn = FONT_FILES.get(key)
+    if not fn:  # 느슨한 매칭(앞부분 일치)
+        for k, v in FONT_FILES.items():
+            if key.startswith(k) or k.startswith(key):
+                fn = v; break
+    if fn:
+        p = os.path.join(FONTDIR, fn)
+        if os.path.isfile(p):
+            return p
+    # assets/fonts 에서 파일명으로 매칭(PPTX에서 추출한 임베드 폰트)
+    try:
+        for f in os.listdir(FONTDIR):
+            if not f.lower().endswith((".ttf", ".otf")):
+                continue
+            stem = re.sub(r"\s+", " ", os.path.splitext(f)[0].strip().lower())
+            if stem == key:
+                return os.path.join(FONTDIR, f)
+    except Exception:
+        pass
+    return default_path
+
+
+def embed_fonts_from_pptx(pptx_path):
+    """PPTX에 임베드된 폰트를 assets/fonts 로 추출(타이페이스명으로 저장). 추출된 폰트명 리스트 반환."""
+    import zipfile
+    from pptx.oxml.ns import qn as _qn
+    out = []
+    z = zipfile.ZipFile(pptx_path)
+    try:
+        pres = z.read("ppt/presentation.xml")
+        rels = z.read("ppt/_rels/presentation.xml.rels")
+    except KeyError:
+        return out
+    import xml.etree.ElementTree as ET
+    P = "{http://schemas.openxmlformats.org/presentationml/2006/main}"
+    R = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
+    rid2tgt = {}
+    for rel in ET.fromstring(rels):
+        rid2tgt[rel.get("Id")] = rel.get("Target")
+    for ef in ET.fromstring(pres).iter(P + "embeddedFont"):
+        fontEl = ef.find(P + "font")
+        if fontEl is None:
+            continue
+        typeface = fontEl.get("typeface")
+        rid = None
+        for tag in ("regular", "bold", "italic", "boldItalic"):
+            el = ef.find(P + tag)
+            if el is not None and el.get(R + "id"):
+                rid = el.get(R + "id"); break
+        if not (typeface and rid and rid in rid2tgt):
+            continue
+        import struct
+        tgt = rid2tgt[rid]
+        arc = "ppt/" + tgt[3:] if tgt.startswith("../") else "ppt/" + tgt
+        try:
+            data = z.read(arc.replace("ppt/ppt/", "ppt/"))
+        except KeyError:
+            continue
+        sigs = (b"OTTO", bytes([0, 1, 0, 0]), b"true", b"ttcf")
+        real = data
+        if data[:4] not in sigs and len(data) >= 16:   # PowerPoint 임베드 = EOT → 헤더 벗기기
+            fds = struct.unpack("<I", data[4:8])[0]
+            flags = struct.unpack("<I", data[12:16])[0]
+            if 0 < fds <= len(data) and not (flags & 0x4):   # 비압축 EOT
+                cand = data[len(data) - fds:]
+                if cand[:4] in sigs:
+                    real = cand
+        if real[:4] not in sigs:
+            continue                                   # 못 읽는 형식(압축 EOT 등) 건너뜀
+        ext = ".otf" if real[:4] == b"OTTO" else ".ttf"
+        safe = re.sub(r'[\\/:*?"<>|]', "", typeface).strip()
+        dst = os.path.join(FONTDIR, safe + ext)
+        with open(dst, "wb") as f:
+            f.write(real)
+        out.append(typeface)
+    return out
 
 PALETTE = {"orange": (253, 111, 34), "yellow": (242, 178, 52), "green": (80, 178, 40),
            "blue": (108, 121, 214), "pink": (224, 106, 140)}
@@ -35,7 +131,10 @@ def _layout(assets_dir):
 def _font(path, px):
     k = (path, px)
     if k not in _font_cache:
-        _font_cache[k] = ImageFont.truetype(path, px)
+        try:
+            _font_cache[k] = ImageFont.truetype(path, px)
+        except Exception:
+            _font_cache[k] = ImageFont.truetype(_HEAD_FONT, px)   # 못 읽는 폰트면 기본폰트
     return _font_cache[k]
 
 
@@ -124,6 +223,48 @@ def _circle(im):
     ImageDraw.Draw(m).ellipse([0, 0, W - 1, H - 1], fill=255)
     im.putalpha(m)
     return im
+
+
+def _accent_from_image(path, light_bg=True):
+    """사진에서 가장 또렷한 대표색 추출(글자색용). 밝은 배경 위 가독 위해 명도 캡."""
+    import colorsys
+    try:
+        im = Image.open(path).convert("RGB")
+    except Exception:
+        return None
+    im = ImageOps.exif_transpose(im).resize((48, 48))
+    scored = []
+    for r, g, b in im.getdata():
+        h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+        scored.append((s * (1 - abs(v - 0.55)), (r, g, b)))   # 채도 높고 중간밝기 우선
+    scored.sort(key=lambda x: x[0], reverse=True)
+    top = [c for _, c in scored[:160]]
+    if not top:
+        return None
+    r = sum(c[0] for c in top) // len(top)
+    g = sum(c[1] for c in top) // len(top)
+    b = sum(c[2] for c in top) // len(top)
+    h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+    if light_bg:
+        s = min(1.0, s * 1.25); v = min(v, 0.6)   # 밝은배경 가독: 채도↑·명도 캡
+    r, g, b = [int(round(x * 255)) for x in colorsys.hsv_to_rgb(h, s, v)]
+    return (r, g, b)
+
+
+def _shorten_title(t, maxlen=24):
+    """제목이 너무 길면 어절·구두점 경계에서 줄임(표지 글자수 한계)."""
+    t = " ".join(str(t).split())
+    if len(t) <= maxlen:
+        return t
+    cut = t[:maxlen]
+    best = -1
+    for sep in (" ", ",", "·", "—", "-"):
+        i = cut.rfind(sep)
+        if i > best and i > maxlen * 0.55:
+            best = i
+    if best > 0:
+        cut = cut[:best]
+    return cut.strip().rstrip(",·-— ")
 
 
 def _draw_text(canvas, box, text, font_path, size_pt, theme, align, pt2px):
@@ -220,16 +361,26 @@ def render_card(slide_idx, photo_path, headline, theme, out_path, assets_dir,
         elif role in ("deco", "line", "logo"):
             canvas = _paste(canvas, _asset(assets_dir, it["asset"], box, theme, it.get("recolor", False)), box[0], box[1])
         elif role == "headline":
-            txt = title if it.get("source") == "title" else (headline or "")
+            if it.get("kw_title"):                       # 표지: 키워드 + 제목(길면 줄임)
+                kw = (headline or "").strip().rstrip(",")
+                ti = _shorten_title(title or "", it.get("title_max", 24))
+                txt = (kw + "\n" + ti) if (kw and ti) else (kw or ti)
+            elif it.get("source") == "title":
+                txt = title or ""
+            else:
+                txt = headline or ""
             if it.get("lines") == 2:
                 txt = _two_lines(txt)
-            canvas = _draw_text(canvas, box, txt, _HEAD_FONT, it.get("size", 40), textcol(it), it.get("align", "center"), pt2px)
+            col = textcol(it)
+            if it.get("auto_color") and photo_path and os.path.isfile(photo_path):
+                col = _accent_from_image(photo_path) or col
+            canvas = _draw_text(canvas, box, txt, _font_for(it.get("font"), _HEAD_FONT), it.get("size", 40), col, it.get("align", "center"), pt2px)
         elif role == "subtitle":
-            canvas = _draw_text(canvas, box, subtitle or "", _HEAD_FONT, it.get("size", 28), textcol(it), it.get("align", "center"), pt2px)
+            canvas = _draw_text(canvas, box, subtitle or "", _font_for(it.get("font"), _HEAD_FONT), it.get("size", 28), textcol(it), it.get("align", "center"), pt2px)
         elif role == "body":
-            canvas = _draw_text(canvas, box, body or "", _BODY_FONT, it.get("size", 19), textcol(it), it.get("align", "center"), pt2px)
+            canvas = _draw_text(canvas, box, body or "", _font_for(it.get("font"), _BODY_FONT), it.get("size", 19), textcol(it), it.get("align", "center"), pt2px)
         elif role == "label":
-            canvas = _draw_text(canvas, box, it.get("text", ""), _LABEL_FONT, it.get("size", 14), textcol(it), it.get("align", "left"), pt2px)
+            canvas = _draw_text(canvas, box, it.get("text", ""), _font_for(it.get("font"), _LABEL_FONT), it.get("size", 14), textcol(it), it.get("align", "left"), pt2px)
     canvas.convert("RGB").save(out_path, "PNG")
     return out_path
 
@@ -374,18 +525,25 @@ def extract_template(pptx_path, out_assets_dir, theme_recolor=False, photo_round
             tf = sh.text_frame; p0 = tf.paragraphs[0]; run = p0.runs[0] if p0.runs else None
             txt = tf.text.strip()
             fsz = (run.font.size.pt if run and run.font.size else 40)
-            color = None
-            try:
-                if run and run.font.color and run.font.color.type is not None:
-                    color = str(run.font.color.rgb)
-            except Exception:
-                pass
+            color = None; font = None
+            if run is not None:
+                try:
+                    if run.font.color and run.font.color.type is not None:
+                        color = str(run.font.color.rgb)
+                except Exception:
+                    pass
+                rPr = run._r.find(qn("a:rPr"))   # 한글(ea) 폰트 우선, 없으면 latin
+                if rPr is not None:
+                    ea = rPr.find(qn("a:ea")); la = rPr.find(qn("a:latin"))
+                    font = (ea.get("typeface") if ea is not None else None) or \
+                           (la.get("typeface") if la is not None else None)
+                font = font or run.font.name
             # 슬라이드에서 가장 큰 글자 1개만 동적 헤드라인, 나머지는 고정 라벨(원문 유지)
             role = "headline" if (not head_used and fsz == maxsz and fsz >= 24) else "label"
             if role == "headline":
                 head_used = True
             items.append({"role": role, "box": box, "text": (txt if role == "label" else ""),
-                          "size": fsz, "color": color,
+                          "size": fsz, "color": color, "font": font,
                           "align": "center" if (p0.alignment and p0.alignment == 2) else "left"})
         spec["slide_bg"].append(slide_bg(s))
         spec["slides"].append(items)

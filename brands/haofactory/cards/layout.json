@@ -24,7 +24,8 @@
     ],
     "text": "",
     "size": 70.0,
-    "align": "center"
+    "align": "center",
+    "font": "Gmarket Sans Bold"
    },
    {
     "role": "logo",
@@ -93,7 +94,8 @@
     ],
     "text": "",
     "size": 55.0,
-    "align": "center"
+    "align": "center",
+    "font": "Gmarket Sans Bold"
    },
    {
     "role": "line",
@@ -127,7 +129,8 @@
     ],
     "text": "HAOFACTORY",
     "size": 14.0,
-    "align": "left"
+    "align": "left",
+    "font": "Gmarket Sans Bold"
    }
   ],
   [
@@ -163,7 +166,8 @@
     ],
     "text": "",
     "size": 55.0,
-    "align": "center"
+    "align": "center",
+    "font": "Gmarket Sans Bold"
    },
    {
     "role": "line",
@@ -197,7 +201,8 @@
     ],
     "text": "HAOFACTORY",
     "size": 14.0,
-    "align": "left"
+    "align": "left",
+    "font": "Gmarket Sans Bold"
    }
   ],
   [
@@ -233,7 +238,8 @@
     ],
     "text": "",
     "size": 55.0,
-    "align": "center"
+    "align": "center",
+    "font": "Gmarket Sans Bold"
    },
    {
     "role": "line",
@@ -267,7 +273,8 @@
     ],
     "text": "HAOFACTORY",
     "size": 14.0,
-    "align": "left"
+    "align": "left",
+    "font": "Gmarket Sans Bold"
    }
   ],
   [
@@ -303,7 +310,8 @@
     ],
     "text": "",
     "size": 55.0,
-    "align": "center"
+    "align": "center",
+    "font": "Gmarket Sans Bold"
    },
    {
     "role": "line",
@@ -337,7 +345,8 @@
     ],
     "text": "HAOFACTORY",
     "size": 14.0,
-    "align": "left"
+    "align": "left",
+    "font": "Gmarket Sans Bold"
    }
   ],
   [
@@ -373,7 +382,8 @@
     ],
     "text": "",
     "size": 55.0,
-    "align": "center"
+    "align": "center",
+    "font": "Gmarket Sans Bold"
    },
    {
     "role": "line",
@@ -407,7 +417,8 @@
     ],
     "text": "HAOFACTORY",
     "size": 14.0,
-    "align": "left"
+    "align": "left",
+    "font": "Gmarket Sans Bold"
    }
   ],
   [
@@ -443,7 +454,8 @@
     ],
     "text": "",
     "size": 55.0,
-    "align": "center"
+    "align": "center",
+    "font": "Gmarket Sans Bold"
    },
    {
     "role": "line",
@@ -477,7 +489,8 @@
     ],
     "text": "HAOFACTORY",
     "size": 14.0,
-    "align": "left"
+    "align": "left",
+    "font": "Gmarket Sans Bold"
    }
   ]
  ]

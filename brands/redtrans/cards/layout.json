@@ -169,7 +169,8 @@
     "text": "레드트랜스",
     "size": 40.0,
     "color": "ED9AAE",
-    "align": "center"
+    "align": "center",
+    "font": "Paperlogy 7 Bold"
    },
    {
     "role": "subtitle",
@@ -182,7 +183,8 @@
     "text": "",
     "size": 30.0,
     "color": "ED9AAE",
-    "align": "center"
+    "align": "center",
+    "font": "Paperlogy 7 Bold"
    },
    {
     "role": "label",
@@ -195,7 +197,8 @@
     "text": "REDTRANS",
     "size": 15.0,
     "color": "191919",
-    "align": "left"
+    "align": "left",
+    "font": "Pretendard Bold"
    },
    {
     "role": "headline",
@@ -208,7 +211,8 @@
     "text": "",
     "size": 80.0,
     "color": "191919",
-    "align": "center"
+    "align": "center",
+    "font": "Paperlogy 7 Bold"
    }
   ],
   [

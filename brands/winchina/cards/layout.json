@@ -80,7 +80,8 @@
     "text": "",
     "size": 95.0,
     "color": "000000",
-    "align": "center"
+    "align": "center",
+    "font": "210 Sanullim Regular"
    },
    {
     "role": "subtitle",
@@ -93,7 +94,8 @@
     "text": "",
     "size": 34.0,
     "color": "000000",
-    "align": "center"
+    "align": "center",
+    "font": "210 Sanullim Regular"
    }
   ],
   [
@@ -194,7 +196,8 @@
     "text": "",
     "size": 47.0,
     "color": "000000",
-    "align": "center"
+    "align": "center",
+    "font": "210 Sanullim Regular"
    },
    {
     "role": "body",
@@ -207,7 +210,8 @@
     "text": "",
     "size": 19.0,
     "color": "000000",
-    "align": "center"
+    "align": "center",
+    "font": "Gmarket Sans Medium"
    }
   ],
   [
@@ -308,7 +312,8 @@
     "text": "",
     "size": 47.0,
     "color": "000000",
-    "align": "center"
+    "align": "center",
+    "font": "210 Sanullim Regular"
    },
    {
     "role": "body",
@@ -321,7 +326,8 @@
     "text": "",
     "size": 19.0,
     "color": "000000",
-    "align": "center"
+    "align": "center",
+    "font": "Gmarket Sans Medium"
    }
   ],
   [
@@ -422,7 +428,8 @@
     "text": "",
     "size": 47.0,
     "color": "000000",
-    "align": "center"
+    "align": "center",
+    "font": "210 Sanullim Regular"
    },
    {
     "role": "body",
@@ -435,7 +442,8 @@
     "text": "",
     "size": 19.0,
     "color": "000000",
-    "align": "center"
+    "align": "center",
+    "font": "Gmarket Sans Medium"
    }
   ],
   [
@@ -536,7 +544,8 @@
     "text": "",
     "size": 47.0,
     "color": "000000",
-    "align": "center"
+    "align": "center",
+    "font": "210 Sanullim Regular"
    },
    {
     "role": "body",
@@ -549,7 +558,8 @@
     "text": "",
     "size": 19.0,
     "color": "000000",
-    "align": "center"
+    "align": "center",
+    "font": "Gmarket Sans Medium"
    }
   ],
   [
@@ -650,7 +660,8 @@
     "text": "",
     "size": 47.0,
     "color": "000000",
-    "align": "center"
+    "align": "center",
+    "font": "210 Sanullim Regular"
    },
    {
     "role": "body",
@@ -663,7 +674,8 @@
     "text": "",
     "size": 19.0,
     "color": "000000",
-    "align": "center"
+    "align": "center",
+    "font": "Gmarket Sans Medium"
    }
   ]
  ]
