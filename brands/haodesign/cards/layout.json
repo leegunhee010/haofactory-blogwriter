@@ -48,10 +48,12 @@
     "size": 80.0,
     "color": "66A044",
     "font": "Gmarket Sans Bold",
-    "align": "left",
+    "align": "right",
     "kw_title": true,
     "auto_color": true,
-    "title_max": 24
+    "kw_size": 80,
+    "title_size": 54,
+    "title_max": 22
    }
   ],
   [
@@ -95,7 +97,7 @@
      83
     ],
     "asset": "s1_3.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "headline",
@@ -154,7 +156,7 @@
      83
     ],
     "asset": "s2_3.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "headline",
@@ -213,7 +215,7 @@
      83
     ],
     "asset": "s3_3.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "headline",
@@ -272,7 +274,7 @@
      83
     ],
     "asset": "s4_3.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "headline",
@@ -331,7 +333,7 @@
      83
     ],
     "asset": "s5_3.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "headline",
@@ -390,7 +392,7 @@
      83
     ],
     "asset": "s6_3.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "headline",
@@ -408,5 +410,6 @@
     "auto_color": true
    }
   ]
- ]
+ ],
+ "auto_theme": true
 }

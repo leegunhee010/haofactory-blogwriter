@@ -25,7 +25,7 @@
      1103
     ],
     "asset": "s0_0.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "deco",
@@ -114,7 +114,8 @@
     "size": 80.0,
     "color": "4195A2",
     "align": "center",
-    "font": "GangwonEduPower"
+    "font": "GangwonEduPower",
+    "auto_color": true
    },
    {
     "role": "subtitle",
@@ -126,7 +127,7 @@
     ],
     "text": "",
     "size": 30.0,
-    "color": "9E9E9E",
+    "color": "1A1A1A",
     "align": "center",
     "font": "Pretendard Medium"
    },
@@ -142,7 +143,8 @@
     "size": 15.0,
     "color": "4195A2",
     "align": "left",
-    "font": "Pretendard Bold"
+    "font": "Pretendard Bold",
+    "auto_color": true
    }
   ],
   [
@@ -155,7 +157,7 @@
      1103
     ],
     "asset": "s1_0.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "deco",
@@ -244,7 +246,8 @@
     "size": 15.0,
     "color": "4195A2",
     "align": "left",
-    "font": "Pretendard Bold"
+    "font": "Pretendard Bold",
+    "auto_color": true
    },
    {
     "role": "headline",
@@ -258,7 +261,8 @@
     "size": 60.0,
     "color": "4195A2",
     "align": "center",
-    "font": "GangwonEduPower"
+    "font": "GangwonEduPower",
+    "auto_color": true
    }
   ],
   [
@@ -271,7 +275,7 @@
      1103
     ],
     "asset": "s2_0.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "deco",
@@ -360,7 +364,8 @@
     "size": 15.0,
     "color": "4195A2",
     "align": "left",
-    "font": "Pretendard Bold"
+    "font": "Pretendard Bold",
+    "auto_color": true
    },
    {
     "role": "headline",
@@ -374,7 +379,8 @@
     "size": 60.0,
     "color": "4195A2",
     "align": "center",
-    "font": "GangwonEduPower"
+    "font": "GangwonEduPower",
+    "auto_color": true
    }
   ],
   [
@@ -387,7 +393,7 @@
      1103
     ],
     "asset": "s3_0.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "deco",
@@ -476,7 +482,8 @@
     "size": 15.0,
     "color": "4195A2",
     "align": "left",
-    "font": "Pretendard Bold"
+    "font": "Pretendard Bold",
+    "auto_color": true
    },
    {
     "role": "headline",
@@ -490,7 +497,8 @@
     "size": 60.0,
     "color": "4195A2",
     "align": "center",
-    "font": "GangwonEduPower"
+    "font": "GangwonEduPower",
+    "auto_color": true
    }
   ],
   [
@@ -503,7 +511,7 @@
      1103
     ],
     "asset": "s4_0.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "deco",
@@ -592,7 +600,8 @@
     "size": 15.0,
     "color": "4195A2",
     "align": "left",
-    "font": "Pretendard Bold"
+    "font": "Pretendard Bold",
+    "auto_color": true
    },
    {
     "role": "headline",
@@ -606,7 +615,8 @@
     "size": 60.0,
     "color": "4195A2",
     "align": "center",
-    "font": "GangwonEduPower"
+    "font": "GangwonEduPower",
+    "auto_color": true
    }
   ],
   [
@@ -630,7 +640,7 @@
      1103
     ],
     "asset": "s6_0.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "deco",
@@ -719,7 +729,8 @@
     "size": 15.0,
     "color": "4195A2",
     "align": "left",
-    "font": "Pretendard Bold"
+    "font": "Pretendard Bold",
+    "auto_color": true
    },
    {
     "role": "headline",
@@ -733,7 +744,8 @@
     "size": 60.0,
     "color": "4195A2",
     "align": "center",
-    "font": "GangwonEduPower"
+    "font": "GangwonEduPower",
+    "auto_color": true
    }
   ],
   [
@@ -746,7 +758,7 @@
      1103
     ],
     "asset": "s7_0.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "deco",
@@ -835,7 +847,8 @@
     "size": 15.0,
     "color": "4195A2",
     "align": "left",
-    "font": "Pretendard Bold"
+    "font": "Pretendard Bold",
+    "auto_color": true
    },
    {
     "role": "headline",
@@ -849,8 +862,10 @@
     "size": 60.0,
     "color": "4195A2",
     "align": "center",
-    "font": "GangwonEduPower"
+    "font": "GangwonEduPower",
+    "auto_color": true
    }
   ]
- ]
+ ],
+ "auto_theme": true
 }

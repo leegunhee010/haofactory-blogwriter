@@ -325,23 +325,90 @@ def _two_lines(text):
     return " ".join(words[:best_i]) + "\n" + " ".join(words[best_i:])
 
 
+def _draw_kw_title(canvas, box, keyword, title, font_path, kw_size, title_size, color, pt2px, align="right"):
+    """키워드(큰글씨) + 제목(작은글씨)을 각자 원본 사이즈로, 정렬·세로가운데 그대로 렌더."""
+    x, y, w, h = box
+    col = (color[0], color[1], color[2], 255)
+    layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0)); d = ImageDraw.Draw(layer)
+    kf = _font(font_path, max(10, int(round(kw_size * pt2px))))
+    tf = _font(font_path, max(10, int(round(title_size * pt2px))))
+
+    def wrap(text, fnt):
+        out = []
+        for raw in str(text).split("\n"):
+            raw = raw.strip()
+            if not raw:
+                continue
+            if d.textlength(raw, font=fnt) <= w or " " not in raw:
+                out.append(raw); continue
+            cur = ""
+            for wd in raw.split(" "):
+                t = (cur + " " + wd).strip()
+                if d.textlength(t, font=fnt) <= w:
+                    cur = t
+                else:
+                    if cur:
+                        out.append(cur)
+                    cur = wd
+            if cur:
+                out.append(cur)
+        return out
+    klines = wrap(keyword, kf) if keyword else []
+    # 제목은 무조건 한 줄. 폭을 넘으면 끝 어절부터 떼어 축약, 그래도 길면 글자 단위로 컷
+    tlines = []
+    if title:
+        one = " ".join(str(title).split())
+        while d.textlength(one, font=tf) > w and " " in one:
+            one = one.rsplit(" ", 1)[0]
+        while d.textlength(one, font=tf) > w and len(one) > 1:
+            one = one[:-1]
+        one = one.strip().rstrip(",·-— ")
+        if one:
+            tlines = [one]
+    ka, kd = kf.getmetrics(); klh = ka + kd
+    ta, td = tf.getmetrics(); tlh = ta + td
+    total = klh * len(klines) + tlh * len(tlines)
+    cy = y + (h - total) / 2
+    for lines, fnt, lh in ((klines, kf, klh), (tlines, tf, tlh)):
+        for ln in lines:
+            tw = d.textlength(ln, font=fnt)
+            tx = x + w - tw if align == "right" else (x + (w - tw) / 2 if align == "center" else x)
+            d.text((tx, cy), ln, font=fnt, fill=col); cy += lh
+    return Image.alpha_composite(canvas, layer)
+
+
 def render_card(slide_idx, photo_path, headline, theme, out_path, assets_dir,
-                center=None, zoom=1.0, seed="", subtitle="", body="", title=""):
+                center=None, zoom=1.0, seed="", subtitle="", body="", title="", accent=None):
     lay = _layout(assets_dir)
     SIZE = lay["size"]
     pt2px = SIZE / float(lay.get("pt_height", 810))
     theme_recolor = lay.get("theme_recolor", True)   # 기존(하오팩토리) layout은 키 없음 → True
+    auto_theme = lay.get("auto_theme", False)         # 브랜드색 전체를 이미지색으로 치환
     pround = lay.get("photo_round", 0.045)
     items = lay["slides"][slide_idx]
+    # 대표색: accent 전달되면 통일색 사용, 없으면 이 카드 사진에서 추출
+    acc = None
+    if auto_theme or any(it.get("auto_color") for it in items):
+        if accent:
+            acc = tuple(accent)
+        elif photo_path and os.path.isfile(photo_path):
+            acc = _accent_from_image(photo_path)
+    eff_theme = acc if (auto_theme and acc) else theme   # 장식 recolor용 테마
     sb = lay.get("slide_bg")
     bg = (sb[slide_idx] if sb and slide_idx < len(sb) else lay.get("bg", "FFFFFF")) or "FFFFFF"
+    if auto_theme and acc:
+        br, bgc, bb = (int(bg[i:i+2], 16) for i in (0, 2, 4))
+        if max(br, bgc, bb) - min(br, bgc, bb) > 30:     # 채도있는(브랜드색) 배경만 치환, 흰/검 유지
+            bg = "%02X%02X%02X" % acc
     canvas = Image.new("RGBA", (SIZE, SIZE), tuple(int(bg[i:i+2], 16) for i in (0, 2, 4)) + (255,))
 
     def textcol(it):
+        if it.get("auto_color") and acc:
+            return acc
         if not theme_recolor and it.get("color"):
             c = it["color"]
             return (int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16))
-        return theme
+        return eff_theme
     for it in items:
         role = it["role"]; box = it["box"]
         if role == "photo":
@@ -359,22 +426,25 @@ def render_card(slide_idx, photo_path, headline, theme, out_path, assets_dir,
                     ph = _round(ph, int(min(box[2], box[3]) * pround))
                     canvas = _paste(canvas, ph, box[0], box[1])
         elif role in ("deco", "line", "logo"):
-            canvas = _paste(canvas, _asset(assets_dir, it["asset"], box, theme, it.get("recolor", False)), box[0], box[1])
+            canvas = _paste(canvas, _asset(assets_dir, it["asset"], box, eff_theme, it.get("recolor", False)), box[0], box[1])
         elif role == "headline":
-            if it.get("kw_title"):                       # 표지: 키워드 + 제목(길면 줄임)
-                kw = (headline or "").strip().rstrip(",")
-                ti = _shorten_title(title or "", it.get("title_max", 24))
-                txt = (kw + "\n" + ti) if (kw and ti) else (kw or ti)
-            elif it.get("source") == "title":
-                txt = title or ""
-            else:
-                txt = headline or ""
-            if it.get("lines") == 2:
-                txt = _two_lines(txt)
             col = textcol(it)
-            if it.get("auto_color") and photo_path and os.path.isfile(photo_path):
-                col = _accent_from_image(photo_path) or col
-            canvas = _draw_text(canvas, box, txt, _font_for(it.get("font"), _HEAD_FONT), it.get("size", 40), col, it.get("align", "center"), pt2px)
+            fp = _font_for(it.get("font"), _HEAD_FONT)
+            if it.get("kw_title"):                       # 표지: 키워드(큰)+제목(작게, 무조건 한 줄) 원본 사이즈·정렬 유지
+                kw = (headline or "").strip().rstrip(",")
+                ti = " ".join((title or "").split())
+                if kw and ti.startswith(kw):             # 제목이 키워드로 시작하면 중복 제거
+                    ti = ti[len(kw):].lstrip(" ,·")
+                if kw and not kw.endswith((",", ".", "!", "?")):
+                    kw += ","
+                canvas = _draw_kw_title(canvas, box, kw, ti, fp,
+                                        it.get("kw_size", it.get("size", 80)), it.get("title_size", 54),
+                                        col, pt2px, it.get("align", "right"))
+            else:
+                txt = (title or "") if it.get("source") == "title" else (headline or "")
+                if it.get("lines") == 2:
+                    txt = _two_lines(txt)
+                canvas = _draw_text(canvas, box, txt, fp, it.get("size", 40), col, it.get("align", "center"), pt2px)
         elif role == "subtitle":
             canvas = _draw_text(canvas, box, subtitle or "", _font_for(it.get("font"), _HEAD_FONT), it.get("size", 28), textcol(it), it.get("align", "center"), pt2px)
         elif role == "body":
@@ -391,9 +461,15 @@ def make_cards(photo_paths, headlines, out_dir, assets_dir, theme=None, subtitle
     bodies = bodies or []
     if theme is None:
         theme = PALETTE[random.choice([c for c in PALETTE if c != "orange"])]
-    slides = _layout(assets_dir)["slides"]
+    lay = _layout(assets_dir)
+    slides = lay["slides"]
     n = len(slides)
     salt = "%08x" % random.randrange(16 ** 8)
+    # 표지(0번) 사진 대표색으로 전 카드 색 통일
+    uses_auto = lay.get("auto_theme") or any(it.get("auto_color") for sl in slides for it in sl)
+    accent = None
+    if uses_auto and photo_paths and os.path.isfile(photo_paths[0]):
+        accent = _accent_from_image(photo_paths[0])
     pngs, cards = [], []
     hi = 0   # 카드 헤드라인은 '제목소스가 아닌 헤드라인 슬라이드'에만 순서대로
     for i in range(n):
@@ -406,7 +482,7 @@ def make_cards(photo_paths, headlines, out_dir, assets_dir, theme=None, subtitle
             hi += 1
         sub = subtitle if any(it.get("role") == "subtitle" for it in slides[i]) else ""
         out = os.path.join(out_dir, "card%02d.png" % (i + 1))
-        render_card(i, src, head, theme, out, assets_dir, seed=f"{salt}:{i}", subtitle=sub, body=bod, title=title)
+        render_card(i, src, head, theme, out, assets_dir, seed=f"{salt}:{i}", subtitle=sub, body=bod, title=title, accent=accent)
         flds = []
         for it in slides[i]:
             r = it.get("role")
@@ -417,7 +493,8 @@ def make_cards(photo_paths, headlines, out_dir, assets_dir, theme=None, subtitle
         pngs.append(out)
         cards.append({"src": src, "headline": head, "subtitle": sub, "body": bod, "title": title,
                       "fields": flds, "cx": 0.5, "cy": 0.5, "zoom": 1.0})
-    state = {"theme": list(theme), "assets_dir": assets_dir, "cards": cards}
+    state = {"theme": list(theme), "assets_dir": assets_dir, "cards": cards,
+             "accent": list(accent) if accent else None}
     json.dump(state, open(os.path.join(out_dir, "cards.json"), "w", encoding="utf-8"), ensure_ascii=False)
     return {"pngs": pngs, "theme": "%02X%02X%02X" % theme, "cards": cards}
 
@@ -452,7 +529,8 @@ def edit_card(out_dir, index, src=None, center=None, zoom=None,
     out = os.path.join(out_dir, "card%02d.png" % (index + 1))
     render_card(index, c["src"], c["headline"], tuple(st["theme"]), out, adir,
                 center=(c["cx"], c["cy"]), zoom=c["zoom"], seed=f"edit:{index}",
-                subtitle=c.get("subtitle", ""), body=c.get("body", ""), title=c.get("title", ""))
+                subtitle=c.get("subtitle", ""), body=c.get("body", ""), title=c.get("title", ""),
+                accent=st.get("accent"))
     save_state(out_dir, st)
     return out
 
@@ -542,9 +620,10 @@ def extract_template(pptx_path, out_assets_dir, theme_recolor=False, photo_round
             role = "headline" if (not head_used and fsz == maxsz and fsz >= 24) else "label"
             if role == "headline":
                 head_used = True
+            al = p0.alignment
+            align = "center" if al == 2 else ("right" if al == 3 else "left")
             items.append({"role": role, "box": box, "text": (txt if role == "label" else ""),
-                          "size": fsz, "color": color, "font": font,
-                          "align": "center" if (p0.alignment and p0.alignment == 2) else "left"})
+                          "size": fsz, "color": color, "font": font, "align": align})
         spec["slide_bg"].append(slide_bg(s))
         spec["slides"].append(items)
     json.dump(spec, open(os.path.join(out_assets_dir, "layout.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
