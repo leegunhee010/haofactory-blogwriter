@@ -212,6 +212,9 @@ def render_card(slide_idx, photo_path, headline, theme, out_path, assets_dir,
                     canvas = _paste(canvas, ph, box[0] + (box[2] - d) // 2, box[1] + (box[3] - d) // 2)
                 else:
                     ph = _fit(photo_path, box[2], box[3], seed or "0", center=center, zoom=zoom)
+                    bl = it.get("blur")
+                    if bl:
+                        ph = ph.filter(ImageFilter.GaussianBlur(bl if isinstance(bl, (int, float)) and bl > 1 else 28))
                     ph = _round(ph, int(min(box[2], box[3]) * pround))
                     canvas = _paste(canvas, ph, box[0], box[1])
         elif role in ("deco", "line", "logo"):

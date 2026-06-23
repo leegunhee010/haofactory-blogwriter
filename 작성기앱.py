@@ -731,6 +731,48 @@ def api_sync_brands():
     return jsonify(ok=True, **sync_tonggeom_brands())
 
 
+@app.route("/api/preview-cards", methods=["POST"])
+def api_preview_cards():
+    """브랜드 카드 템플릿을 샘플 사진/문구로 렌더 — 최종 체크용 미리보기."""
+    b = request.get_json(force=True) or {}
+    bid = b.get("brand") or "haofactory"
+    brand = brands.load_brand(bid)
+    if not brand["has_cards"]:
+        return jsonify(ok=False, msg="이 브랜드는 카드 템플릿이 없습니다.")
+    adir = brands.assets_dir(bid)
+    # 샘플 사진: 탭 폴더 → 데스크톱 drive-download → Pictures 순
+    files, folder = [], b.get("folder") or ""
+    if folder and os.path.isdir(folder):
+        files = list_images(folder, cap=300)
+    if not files:
+        for cand in glob.glob(os.path.join(os.path.expanduser("~"), "Desktop", "drive-download*")) + \
+                    [os.path.join(os.path.expanduser("~"), "Pictures")]:
+            if os.path.isdir(cand):
+                fl = list_images(cand, cap=300)
+                if fl:
+                    folder, files = cand, fl
+                    break
+    random.shuffle(files)
+    n = len(jload(os.path.join(adir, "layout.json"), {}).get("slides", [])) or 7
+    photo_paths = [os.path.join(folder, f) for f in files[:n]] or [""]
+    # 샘플 문구
+    heads_raw = brand.get("card_headlines") or []
+    heads = []
+    for i in range(7):
+        h = re.sub(r"\([^)]*\)", "", heads_raw[i]).strip() if i < len(heads_raw) else ""
+        heads.append(h or f"샘플 헤드라인 {i+1}")
+    bodies = ["샘플 본문 설명이 들어가는 자리입니다."] * 7
+    pdir = os.path.join(OUT_DIR, "_preview_" + bid)
+    shutil.rmtree(pdir, ignore_errors=True)
+    try:
+        res = cardnews_pil.make_cards(photo_paths, heads, pdir, adir,
+                                      subtitle="이 글 주제를 한 줄로 요약한 부제",
+                                      bodies=bodies, title=f"{brand['name']} 샘플 제목, 핵심을 한 줄로 보여주는 미리보기")
+        return jsonify(ok=True, dir=pdir, pngs=res["pngs"], name=brand["name"])
+    except Exception as e:
+        return jsonify(ok=False, msg=str(e)[:200])
+
+
 @app.route("/api/brand-template", methods=["POST"])
 def api_brand_template():
     """브랜드 카드뉴스 PPTX 템플릿 등록 → 장식/레이아웃 추출."""
@@ -1123,6 +1165,14 @@ select:focus{border-color:var(--brand)}
     <div style="padding:0 20px 18px;display:flex;gap:8px"><button class="btn pri" onclick="applyText()">적용</button>
       <span style="font-size:11.5px;color:var(--muted);align-self:center">수정 후 그 카드만 다시 그려집니다</span></div>
   </div></div>
+<div id="previewmodal" class="modal-bg" style="z-index:60" onclick="if(event.target==this)el('previewmodal').style.display='none'">
+  <div class="modal" style="max-width:920px;margin:5vh auto;max-height:88vh;display:flex;flex-direction:column">
+    <div style="padding:15px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px">
+      <b style="font-size:15px" id="pvtitle">🎴 카드 미리보기</b><span class="spacer"></span>
+      <span id="pvbrandsel"></span>
+      <button class="btn" onclick="el('previewmodal').style.display='none'">닫기</button></div>
+    <div id="pvgrid" style="padding:18px 20px;overflow:auto;display:flex;flex-wrap:wrap;gap:14px;justify-content:center"></div>
+  </div></div>
 <div id="brandmodal" class="modal-bg" onclick="if(event.target==this)closeBrandMgr()">
   <div class="modal" style="max-width:640px;margin:5vh auto;max-height:88vh;display:flex;flex-direction:column">
     <div style="padding:15px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px">
@@ -1392,6 +1442,19 @@ function applyText(){const x=t().post;const c=(x.card_state||[])[TXT_CI]||{};con
    .then(r=>r.json()).then(d=>{if(!d.ok){toast(d.msg||'수정 실패','err');return;}
      const img=el('cardimg'+TXT_CI);if(img)img.src='/img?folder='+encodeURIComponent(x.cardnews_dir)+'&name='+encodeURIComponent(d.name)+'&v='+Date.now();
      el('textmodal').style.display='none';toast('✏️ 글 수정됨','ok');}).catch(e=>toast('오류: '+e,'err'));}
+// ── 카드 미리보기 (최종 체크용) ──
+function pvBrandOptions(cur){return '<select onchange="openCardPreview(this.value)" style="border:1.5px solid var(--line);border-radius:9px;padding:6px 9px;font-size:12px;font-weight:700">'+
+  BRANDS.filter(b=>b.has_cards).map(b=>`<option value="${b.id}" ${b.id==cur?'selected':''}>${esc(b.name)}</option>`).join('')+'</select>';}
+function openCardPreview(bid){el('previewmodal').style.display='block';el('pvbrandsel').innerHTML=pvBrandOptions(bid);
+  el('pvtitle').textContent='🎴 카드 미리보기';
+  el('pvgrid').innerHTML='<div style="padding:44px;color:#889;font-size:13px"><span class="spin" style="border-color:var(--brand);border-top-color:transparent;margin-right:8px"></span>샘플 사진으로 카드 그리는 중…</div>';
+  const folder=(t()&&t().folder)||'';
+  fetch('/api/preview-cards',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({brand:bid,folder:folder})})
+   .then(r=>r.json()).then(d=>{if(!d.ok){el('pvgrid').innerHTML='<div style="padding:24px;color:#d55">'+esc(d.msg||'실패')+'</div>';return;}
+     el('pvtitle').textContent='🎴 '+d.name+' 카드 미리보기 ('+d.pngs.length+'장)';
+     el('pvgrid').innerHTML=d.pngs.map((p,i)=>{const nm=p.split(/[\\\\/]/).pop();
+       return '<div style="text-align:center"><img src="/img?folder='+encodeURIComponent(d.dir)+'&name='+encodeURIComponent(nm)+'&v='+Date.now()+'" style="width:224px;height:224px;object-fit:cover;border-radius:13px;box-shadow:var(--sh)"><div style="font-size:11px;color:#889;margin-top:5px;font-weight:700">'+(i==0?'표지':'카드 '+(i+1))+'</div></div>';}).join('');
+   }).catch(e=>{el('pvgrid').innerHTML='<div style="padding:24px;color:#d55">오류: '+e+'</div>';});}
 // ── 브랜드 관리 모달 ──
 function openBrandMgr(){el('brandmodal').style.display='block';BFORM=null;loadBrands(renderBrandMgr);}
 function closeBrandMgr(){el('brandmodal').style.display='none';loadBrands();}
@@ -1400,8 +1463,8 @@ function renderBrandMgr(){
   el('brandbody').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
     ${BRANDS.map(b=>`<button class="btn" onclick="editBrand('${b.id}')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${b.color};margin-right:7px;vertical-align:-1px"></span>${esc(b.name)} ${b.has_cards?'🎴':''}</button>`).join('')}
     <button class="btn pri" onclick="newBrand()">+ 새 브랜드</button></div>
-    <div class="row" style="margin-bottom:12px"><button class="btn" onclick="syncBrands()">🔗 통검 브랜드 동기화</button>
-      <span style="font-size:12px;color:var(--muted)">통검체크 만든 브랜드를 자동으로 불러와 연결합니다</span></div>
+    <div class="row" style="margin-bottom:12px;flex-wrap:wrap"><button class="btn" onclick="syncBrands()">🔗 통검 브랜드 동기화</button>
+      <button class="btn pri" onclick="openCardPreview((BRANDS.find(b=>b.has_cards)||{}).id||'haofactory')">🎴 카드 미리보기 (최종 체크)</button></div>
     <div style="font-size:12px;color:var(--muted)">브랜드를 클릭하면 설정을 수정합니다 · 🎴 = 카드 템플릿 등록됨</div>`;
 }
 function syncBrands(){toast('🔗 통검 브랜드 동기화 중…');
@@ -1433,7 +1496,8 @@ function renderBrandForm(){const b=BFORM;
     <details style="margin-top:10px"><summary style="font-size:12px;color:var(--muted);cursor:pointer">고급: 완전 커스텀 프롬프트 (있으면 위 설정 대신 이걸 사용)</summary>
       <textarea id="bf_prompt" style="height:120px;font-size:12px;margin-top:8px" placeholder="구조까지 완전히 직접 쓰고 싶을 때만. 비우면 공통 구조 + 위 톤/회사소개를 사용합니다.">${esc(b.prompt||'')}</textarea></details>
     <div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="btn pri" onclick="saveBrand()">💾 저장</button>
-      ${b.id?`<button class="btn" onclick="openTemplate('${b.id}')">🎴 카드 템플릿 ${b.has_cards?'교체':'등록'}</button>`:'<span style="font-size:12px;color:var(--muted)">먼저 저장하면 카드 템플릿(PPTX)을 등록할 수 있어요</span>'}</div>`;
+      ${b.id?`<button class="btn" onclick="openTemplate('${b.id}')">🎴 카드 템플릿 ${b.has_cards?'교체':'등록'}</button>`:'<span style="font-size:12px;color:var(--muted)">먼저 저장하면 카드 템플릿(PPTX)을 등록할 수 있어요</span>'}
+      ${b.id&&b.has_cards?`<button class="btn" onclick="openCardPreview('${b.id}')">👁 카드 미리보기</button>`:''}</div>`;
 }
 function bval(k){const e=el('bf_'+k);return e?e.value:'';}
 function saveBrand(){const cfg={id:BFORM.id||'',name:bval('name'),label:bval('label'),color:bval('color'),homepage:bval('homepage'),industry:bval('industry'),

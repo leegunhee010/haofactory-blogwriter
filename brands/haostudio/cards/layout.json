@@ -4,27 +4,25 @@
  "bg": "FFFFFF",
  "slide_bg": [
   "FFFFFF",
-  "73BAB4",
-  "73BAB4",
-  "73BAB4",
-  "73BAB4",
-  "73BAB4",
-  "73BAB4"
+  "63794B",
+  "63794B",
+  "63794B",
+  "63794B",
+  "63794B"
  ],
  "theme_recolor": false,
  "photo_round": 0.0,
  "slides": [
   [
    {
-    "role": "deco",
+    "role": "photo",
     "box": [
      0,
      0,
      1080,
      1080
     ],
-    "asset": "s0_0.png",
-    "recolor": false
+    "blur": 30
    },
    {
     "role": "deco",
@@ -97,7 +95,7 @@
    {
     "role": "photo",
     "box": [
-     0,
+     -4,
      159,
      1084,
      927
@@ -132,7 +130,7 @@
     "box": [
      0,
      159,
-     1080,
+     1084,
      927
     ]
    },
@@ -165,7 +163,7 @@
     "box": [
      0,
      159,
-     1084,
+     1080,
      927
     ]
    },
@@ -244,39 +242,6 @@
      113
     ],
     "asset": "s5_2.png",
-    "recolor": false
-   }
-  ],
-  [
-   {
-    "role": "deco",
-    "box": [
-     -83,
-     163,
-     1163,
-     917
-    ],
-    "asset": "s6_0.png",
-    "recolor": false
-   },
-   {
-    "role": "photo",
-    "box": [
-     0,
-     159,
-     1084,
-     927
-    ]
-   },
-   {
-    "role": "deco",
-    "box": [
-     453,
-     25,
-     175,
-     113
-    ],
-    "asset": "s6_2.png",
     "recolor": false
    }
   ]
