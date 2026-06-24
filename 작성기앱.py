@@ -350,8 +350,18 @@ def _project_key(path):
 
 
 def pick_diverse(all_files, prefer, n, rnd=None):
-    """서로 다른 사진 n장 — **매번 랜덤** + **프로젝트별 라운드로빈**(카드마다 다른 주제) + 같은 장면 회피."""
+    """카드용 사진 n장. **Claude가 본문 단락에 매칭한 사진(prefer)을 순서대로 우선** → 카드 헤드라인과 사진이 같은 섹션.
+    모자라면 다양한 사진으로 채움(프로젝트 라운드로빈 + 같은 장면 회피). 변주는 생성 시 사진 셔플로 유지됨."""
     rnd = rnd or random.Random()
+    allset = set(all_files)
+    chosen, seen = [], set()
+    # 1) Claude가 각 단락에 고른 사진을 본문 순서 그대로 — 카드뉴스와 글이 맞도록
+    for f in (prefer or []):
+        if f in allset and f not in chosen and _scene_key(f) not in seen:
+            seen.add(_scene_key(f)); chosen.append(f)
+            if len(chosen) >= n:
+                return chosen[:n]
+    # 2) 부족분만 다양한 사진으로 채움(랜덤 + 프로젝트별 라운드로빈 + 같은 장면 회피)
     pool = list(dict.fromkeys(all_files))
     rnd.shuffle(pool)
     groups = {}                               # 프로젝트(최상위 폴더)별 묶기
@@ -359,7 +369,6 @@ def pick_diverse(all_files, prefer, n, rnd=None):
         groups.setdefault(_project_key(f), []).append(f)
     order = list(groups.keys()); rnd.shuffle(order)
     gi = {k: 0 for k in groups}
-    chosen, seen = [], set()
     # 라운드로빈: 프로젝트를 돌아가며 한 장씩(서로 다른 주제), 같은 장면은 건너뜀
     while len(chosen) < n and any(gi[k] < len(groups[k]) for k in order):
         for k in order:
