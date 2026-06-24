@@ -653,15 +653,47 @@ def _brand_fit(kw, core):
     return 1.9 if hits >= 2 else 1.1 if hits == 1 else 0.4
 
 
+# 통검체크 Supabase(측정결과 공유) — 통검앱과 동일 anon 키
+SUPA_URL = "https://stvyxslqkenupegjlste.supabase.co"
+SUPA_KEY = ("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0dnl4"
+            "c2xxa2VudXBlZ2psc3RlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5MTM1NzYsImV4cCI6MjA5"
+            "NzQ4OTU3Nn0.8XXzhnRb_w26VFTfNsElsQJ9OfvYnmFdUOyu30bs3f4")
+
+
+def supa_measurements(brand_name):
+    """Supabase measurements_latest에서 이 브랜드 측정결과(노출/미노출) 가져오기 — 어느 PC든 공유."""
+    if not brand_name:
+        return {}
+    import urllib.parse
+    q = ("/rest/v1/measurements_latest?brand=eq.%s&select=keyword,summary,hits,measured_at"
+         % urllib.parse.quote(brand_name))
+    try:
+        req = urllib.request.Request(SUPA_URL + q,
+                                     headers={"apikey": SUPA_KEY, "Authorization": "Bearer " + SUPA_KEY})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            rows = json.loads(r.read().decode() or "[]")
+        return {row["keyword"]: {"summary": row.get("summary", ""), "hits": row.get("hits") or [],
+                                 "date": (row.get("measured_at") or "")[:10]} for row in rows}
+    except Exception:
+        return {}
+
+
 @app.route("/api/recommend")
 def api_recommend():
-    """통검 글감추천 — 브랜드 홈페이지 키워드 기준(통검앱과 동일 로직)."""
+    """통검 글감추천 — 키워드는 동봉 스냅샷(어느 PC든), 측정결과는 Supabase 공유."""
     brand = brands.load_brand(request.args.get("brand") or "haofactory")
+    # 키워드 데이터: 동봉(brands/<id>/tonggeom_data.json) 우선 → 어느 PC에서도 작동. 없으면 로컬 통검 폴더.
+    data = jload(os.path.join(brands.brand_dir(brand["id"]), "tonggeom_data.json"), None)
+    if not data:
+        tg = brand.get("tonggeom") or load_cfg()["tonggeom_dir"]
+        data = jload(os.path.join(tg, "통검_데이터.json"), [])
+    # 측정결과: Supabase 공유(실시간) + 로컬 병합(로컬이 더 최신이면)
+    meas = supa_measurements(brand.get("name") or "")
     tg = brand.get("tonggeom") or load_cfg()["tonggeom_dir"]
-    data = jload(os.path.join(tg, "통검_데이터.json"), [])
-    meas = jload(os.path.join(tg, "통검_측정.json"), {})
-    settings = jload(os.path.join(tg, "통검_설정.json"), {})
-    core = fetch_brand_core(brand.get("homepage") or settings.get("homepage", ""))
+    for k, v in jload(os.path.join(tg, "통검_측정.json"), {}).items():
+        if k not in meas or v.get("date", "") > meas[k].get("date", ""):
+            meas[k] = v
+    core = fetch_brand_core(brand.get("homepage") or "")
     impw = {"상": 3.0, "중": 2.0, "하": 1.0, "x": 0.0, "": 1.5}
     out = []
     for r in data:
@@ -745,6 +777,13 @@ def sync_tonggeom_brands():
         if not existed:
             cfg["color"] = color
         brands.save_brand(cfg)
+        # 키워드 목록(통검_데이터.json)을 브랜드 폴더에 동봉 → 배포 시 어느 PC에서도 추천 작동
+        try:
+            kw = os.path.join(full, "통검_데이터.json")
+            if os.path.isfile(kw):
+                shutil.copy(kw, os.path.join(brands.brand_dir(bid), "tonggeom_data.json"))
+        except Exception:
+            pass
         (linked if existed else added).append(bname)
     return {"added": added, "linked": linked}
 

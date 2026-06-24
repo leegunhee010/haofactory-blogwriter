@@ -1,0 +1,3922 @@
+[
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "조형물",
+  "volume": 2880,
+  "manual": "",
+  "row": 4,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "조형물업체",
+  "volume": 90,
+  "manual": "1위, 4위",
+  "row": 5,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "조형물설치",
+  "volume": 30,
+  "manual": "",
+  "row": 6,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "조형물만들기",
+  "volume": 20,
+  "manual": "5위",
+  "row": 7,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "조형물보수",
+  "volume": 20,
+  "manual": "1위",
+  "row": 8,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "조형물포토존",
+  "volume": 20,
+  "manual": "",
+  "row": 9,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "조형물광고",
+  "volume": 20,
+  "manual": "1위",
+  "row": 10,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "조형물벤치",
+  "volume": 20,
+  "manual": "4위, 6 위",
+  "row": 11,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "조형물시공",
+  "volume": 20,
+  "manual": "",
+  "row": 12,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "글자조형물",
+  "volume": 170,
+  "manual": "3위, 4위",
+  "row": 13,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "조형물회사",
+  "volume": 20,
+  "manual": "",
+  "row": 15,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "조형물제조",
+  "volume": 20,
+  "manual": "",
+  "row": 16,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "관광서조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 18,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "조형물가격",
+  "volume": 20,
+  "manual": "1위, 3위",
+  "row": 19,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "조형물 뜻",
+  "volume": 330,
+  "manual": "",
+  "row": 20,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "3D조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 21,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "공공조형물",
+  "volume": 190,
+  "manual": "",
+  "row": 22,
+  "ecol": 3
+ },
+ {
+  "category": "조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "Emt",
+  "volume": 2650,
+  "manual": "",
+  "row": 23,
+  "ecol": 3
+ },
+ {
+  "category": "조형물제작",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "조형물제작",
+  "volume": 1080,
+  "manual": "1위, 2위, 5위, 6 위",
+  "row": 27,
+  "ecol": 3
+ },
+ {
+  "category": "조형물제작",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "조형물제작업체",
+  "volume": 300,
+  "manual": "",
+  "row": 28,
+  "ecol": 3
+ },
+ {
+  "category": "조형물제작",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "조형제작",
+  "volume": 20,
+  "manual": "2위, 3위, 4위",
+  "row": 29,
+  "ecol": 3
+ },
+ {
+  "category": "조형물제작",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "조형물주문제작",
+  "volume": 20,
+  "manual": "",
+  "row": 32,
+  "ecol": 3
+ },
+ {
+  "category": "조형물제작",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "조형물제작가격",
+  "volume": 20,
+  "manual": "",
+  "row": 33,
+  "ecol": 3
+ },
+ {
+  "category": "조형물제작",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "조형물제작비용",
+  "volume": 20,
+  "manual": "4위, 6 위",
+  "row": 34,
+  "ecol": 3
+ },
+ {
+  "category": "EPS조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "EPS",
+  "volume": 17960,
+  "manual": "",
+  "row": 38,
+  "ecol": 3
+ },
+ {
+  "category": "EPS조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "EPS제작",
+  "volume": 20,
+  "manual": "3위, 4위, 6 위, 7 위",
+  "row": 39,
+  "ecol": 3
+ },
+ {
+  "category": "EPS조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "EPS업체",
+  "volume": 20,
+  "manual": "",
+  "row": 40,
+  "ecol": 3
+ },
+ {
+  "category": "EPS조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "EPS조형물",
+  "volume": 40,
+  "manual": "2위, 3위, 5위",
+  "row": 41,
+  "ecol": 3
+ },
+ {
+  "category": "EPS조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "EPS모형",
+  "volume": 20,
+  "manual": "5위",
+  "row": 43,
+  "ecol": 3
+ },
+ {
+  "category": "EPS조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "EPS주문제작",
+  "volume": 20,
+  "manual": "",
+  "row": 44,
+  "ecol": 3
+ },
+ {
+  "category": "스티로폼조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "스티로폼조형물",
+  "volume": 150,
+  "manual": "",
+  "row": 48,
+  "ecol": 3
+ },
+ {
+  "category": "스티로폼조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "스티로폼글자",
+  "volume": 60,
+  "manual": "1위",
+  "row": 49,
+  "ecol": 3
+ },
+ {
+  "category": "스티로폼조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "스티로폼 조각",
+  "volume": 130,
+  "manual": "1위",
+  "row": 50,
+  "ecol": 3
+ },
+ {
+  "category": "스티로폼조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "스티로폼모형",
+  "volume": 80,
+  "manual": "1위, 2위",
+  "row": 52,
+  "ecol": 3
+ },
+ {
+  "category": "스티로폼조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "행사스티로폼",
+  "volume": 20,
+  "manual": "",
+  "row": 53,
+  "ecol": 3
+ },
+ {
+  "category": "스티로폼조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "스티로폼조형물제작",
+  "volume": 40,
+  "manual": "",
+  "row": 55,
+  "ecol": 3
+ },
+ {
+  "category": "스티로폼조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "스티로폼모형제작",
+  "volume": 20,
+  "manual": "",
+  "row": 56,
+  "ecol": 3
+ },
+ {
+  "category": "스티로폼조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "스티로폼가격",
+  "volume": 180,
+  "manual": "",
+  "row": 57,
+  "ecol": 3
+ },
+ {
+  "category": "스티로폼조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "스티로폼글자조형물",
+  "volume": 30,
+  "manual": "",
+  "row": 58,
+  "ecol": 3
+ },
+ {
+  "category": "스티로폼조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "스티로폼스카시",
+  "volume": 70,
+  "manual": "",
+  "row": 59,
+  "ecol": 3
+ },
+ {
+  "category": "스카시조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "스카시",
+  "volume": 2660,
+  "manual": "2위",
+  "row": 62,
+  "ecol": 3
+ },
+ {
+  "category": "스카시조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "스카시제작",
+  "volume": 390,
+  "manual": "",
+  "row": 63,
+  "ecol": 3
+ },
+ {
+  "category": "스카시조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "글씨스카시",
+  "volume": 20,
+  "manual": "",
+  "row": 64,
+  "ecol": 3
+ },
+ {
+  "category": "스카시조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "글자스카시",
+  "volume": 70,
+  "manual": "",
+  "row": 65,
+  "ecol": 3
+ },
+ {
+  "category": "스카시조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "스카시조형물",
+  "volume": 60,
+  "manual": "",
+  "row": 66,
+  "ecol": 3
+ },
+ {
+  "category": "스카시조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "스카시업체",
+  "volume": 20,
+  "manual": "1위",
+  "row": 67,
+  "ecol": 3
+ },
+ {
+  "category": "스카시조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "스카시글자",
+  "volume": 70,
+  "manual": "3위",
+  "row": 68,
+  "ecol": 3
+ },
+ {
+  "category": "스카시조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "로고스카시",
+  "volume": 110,
+  "manual": "",
+  "row": 69,
+  "ecol": 3
+ },
+ {
+  "category": "스카시조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "무대스카시",
+  "volume": 30,
+  "manual": "",
+  "row": 71,
+  "ecol": 3
+ },
+ {
+  "category": "스카시조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "행사스카시",
+  "volume": 20,
+  "manual": "",
+  "row": 72,
+  "ecol": 3
+ },
+ {
+  "category": "스카시조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "스카시로고",
+  "volume": 70,
+  "manual": "",
+  "row": 73,
+  "ecol": 3
+ },
+ {
+  "category": "스카시조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "전시스카시",
+  "volume": 20,
+  "manual": "",
+  "row": 76,
+  "ecol": 3
+ },
+ {
+  "category": "스카시조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "스카시문자",
+  "volume": 50,
+  "manual": "",
+  "row": 77,
+  "ecol": 3
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "FRP",
+  "volume": 5100,
+  "manual": "",
+  "row": 4,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "FRP제작",
+  "volume": 320,
+  "manual": "1위, 2위, 3위, 7 위",
+  "row": 5,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "FRP조형물",
+  "volume": 2240,
+  "manual": "1위, 2위, 3위, 6 위, 7 위",
+  "row": 6,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "FRP조형물제작",
+  "volume": 3050,
+  "manual": "2위, 3위",
+  "row": 7,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "FRP모형제작",
+  "volume": 50,
+  "manual": "1위, 3위, 5위",
+  "row": 8,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "FRP제작업체",
+  "volume": 50,
+  "manual": "",
+  "row": 9,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "FRP캐릭터",
+  "volume": 50,
+  "manual": "",
+  "row": 10,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "FRP업체",
+  "volume": 40,
+  "manual": "1위, 6 위, 7 위",
+  "row": 11,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "FRP가격",
+  "volume": 50,
+  "manual": "",
+  "row": 12,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "FRP모형",
+  "volume": 40,
+  "manual": "1위",
+  "row": 13,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "FRP포토존",
+  "volume": 20,
+  "manual": "",
+  "row": 14,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "에프알피",
+  "volume": 150,
+  "manual": "",
+  "row": 16,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "FRP재료",
+  "volume": 110,
+  "manual": "",
+  "row": 17,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "FRP작업",
+  "volume": 30,
+  "manual": "",
+  "row": 19,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "FRP조형",
+  "volume": 20,
+  "manual": "",
+  "row": 20,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "FRP캐릭터조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 21,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "FRP재질",
+  "volume": 160,
+  "manual": "",
+  "row": 22,
+  "ecol": 7
+ },
+ {
+  "category": "frp조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "FRP소재",
+  "volume": 100,
+  "manual": "",
+  "row": 23,
+  "ecol": 7
+ },
+ {
+  "category": "금속조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "금속조형",
+  "volume": 20,
+  "manual": "",
+  "row": 27,
+  "ecol": 7
+ },
+ {
+  "category": "금속조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "금속조형물",
+  "volume": 460,
+  "manual": "1위, 2위",
+  "row": 28,
+  "ecol": 7
+ },
+ {
+  "category": "금속조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "금속제작업체",
+  "volume": 90,
+  "manual": "",
+  "row": 29,
+  "ecol": 7
+ },
+ {
+  "category": "금속조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "금속조형제작",
+  "volume": 20,
+  "manual": "",
+  "row": 31,
+  "ecol": 7
+ },
+ {
+  "category": "금속조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "금속주문제작",
+  "volume": 50,
+  "manual": "4위",
+  "row": 32,
+  "ecol": 7
+ },
+ {
+  "category": "금속조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "금속포토존",
+  "volume": 20,
+  "manual": "1위, 2위, 5위",
+  "row": 33,
+  "ecol": 7
+ },
+ {
+  "category": "금속조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "금속모형",
+  "volume": 20,
+  "manual": "",
+  "row": 34,
+  "ecol": 7
+ },
+ {
+  "category": "팝업",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "팝업디자인",
+  "volume": 180,
+  "manual": "",
+  "row": 37,
+  "ecol": 7
+ },
+ {
+  "category": "팝업",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "팝업인테리어",
+  "volume": 110,
+  "manual": "",
+  "row": 38,
+  "ecol": 7
+ },
+ {
+  "category": "팝업",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "팝업조형물",
+  "volume": 30,
+  "manual": "1위",
+  "row": 40,
+  "ecol": 7
+ },
+ {
+  "category": "팝업",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "팝업스토어조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 41,
+  "ecol": 7
+ },
+ {
+  "category": "팝업",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "팝업스토어대행사",
+  "volume": 150,
+  "manual": "",
+  "row": 43,
+  "ecol": 7
+ },
+ {
+  "category": "팝업",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "팝업스토어디자인",
+  "volume": 80,
+  "manual": "",
+  "row": 44,
+  "ecol": 7
+ },
+ {
+  "category": "팝업",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "팝업기획",
+  "volume": 80,
+  "manual": "",
+  "row": 45,
+  "ecol": 7
+ },
+ {
+  "category": "팝업",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "팝업스토어제작",
+  "volume": 140,
+  "manual": "",
+  "row": 46,
+  "ecol": 7
+ },
+ {
+  "category": "새해조형물(2026 ver. 용)",
+  "importance": "상",
+  "status": "",
+  "keyword": "말조형물",
+  "volume": 70,
+  "manual": "",
+  "row": 51,
+  "ecol": 7
+ },
+ {
+  "category": "새해조형물(2026 ver. 용)",
+  "importance": "상",
+  "status": "",
+  "keyword": "새해조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 52,
+  "ecol": 7
+ },
+ {
+  "category": "새해조형물(2026 ver. 용)",
+  "importance": "상",
+  "status": "",
+  "keyword": "병오년조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 53,
+  "ecol": 7
+ },
+ {
+  "category": "새해조형물(2026 ver. 용)",
+  "importance": "상",
+  "status": "",
+  "keyword": "숫자조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 54,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "아파트문주",
+  "volume": 560,
+  "manual": "6 위",
+  "row": 59,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "아파트간판",
+  "volume": 70,
+  "manual": "2위",
+  "row": 60,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "공장 간판",
+  "volume": 210,
+  "manual": "",
+  "row": 61,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "회사 간판",
+  "volume": 700,
+  "manual": "4위",
+  "row": 62,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "창고 간판",
+  "volume": 50,
+  "manual": "",
+  "row": 63,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "병원 간판",
+  "volume": 700,
+  "manual": "",
+  "row": 64,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "한의원 간판",
+  "volume": 220,
+  "manual": "",
+  "row": 65,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "약국 간판",
+  "volume": 510,
+  "manual": "",
+  "row": 66,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "치과간판",
+  "volume": 250,
+  "manual": "",
+  "row": 67,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "철제 간판",
+  "volume": 440,
+  "manual": "",
+  "row": 68,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "금속현판",
+  "volume": 240,
+  "manual": "",
+  "row": 69,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "알루미늄 간판",
+  "volume": 150,
+  "manual": "",
+  "row": 70,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "스테인리스 간판",
+  "volume": 90,
+  "manual": "",
+  "row": 71,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "문주간판",
+  "volume": 10,
+  "manual": "2위",
+  "row": 72,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "스카시간판",
+  "volume": null,
+  "manual": "",
+  "row": 73,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "조형 간판",
+  "volume": 30,
+  "manual": "",
+  "row": 74,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "조형물 간판",
+  "volume": 30,
+  "manual": "",
+  "row": 75,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "문주",
+  "volume": 4020,
+  "manual": "",
+  "row": 79,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "금속문주",
+  "volume": 20,
+  "manual": "",
+  "row": 80,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "입체 플라스틱 간판",
+  "volume": 20,
+  "manual": "",
+  "row": 88,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "금속 입체 간판",
+  "volume": 20,
+  "manual": "",
+  "row": 89,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "입체 조명 간판",
+  "volume": 20,
+  "manual": "",
+  "row": 90,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "문주기둥",
+  "volume": 20,
+  "manual": "",
+  "row": 91,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "입구 문주",
+  "volume": 20,
+  "manual": "",
+  "row": 92,
+  "ecol": 7
+ },
+ {
+  "category": "간판",
+  "importance": "상",
+  "status": "",
+  "keyword": "철제문주",
+  "volume": 20,
+  "manual": "",
+  "row": 93,
+  "ecol": 7
+ },
+ {
+  "category": "캐릭터조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "캐릭터조형물",
+  "volume": 320,
+  "manual": "1위, 2위, 4위, 7 위",
+  "row": 4,
+  "ecol": 11
+ },
+ {
+  "category": "캐릭터조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "마스코트제작",
+  "volume": 40,
+  "manual": "1위, 6 위",
+  "row": 5,
+  "ecol": 11
+ },
+ {
+  "category": "캐릭터조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "캐릭터FRP",
+  "volume": 20,
+  "manual": "1위, 2위, 7 위",
+  "row": 6,
+  "ecol": 11
+ },
+ {
+  "category": "캐릭터조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "캐릭터모형",
+  "volume": 50,
+  "manual": "",
+  "row": 7,
+  "ecol": 11
+ },
+ {
+  "category": "캐릭터조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "캐릭터동상",
+  "volume": 20,
+  "manual": "",
+  "row": 9,
+  "ecol": 11
+ },
+ {
+  "category": "캐릭터조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "캐릭터조형물제작",
+  "volume": 80,
+  "manual": "",
+  "row": 12,
+  "ecol": 11
+ },
+ {
+  "category": "캐릭터조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "캐릭터조형",
+  "volume": 20,
+  "manual": "2위, 3위, 6 위",
+  "row": 13,
+  "ecol": 11
+ },
+ {
+  "category": "캐릭터조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "기업캐릭터",
+  "volume": 70,
+  "manual": "",
+  "row": 14,
+  "ecol": 11
+ },
+ {
+  "category": "캐릭터조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "캐릭터모형제작",
+  "volume": 50,
+  "manual": "",
+  "row": 15,
+  "ecol": 11
+ },
+ {
+  "category": "캐릭터조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "마스코트조형물",
+  "volume": 30,
+  "manual": "",
+  "row": 16,
+  "ecol": 11
+ },
+ {
+  "category": "캐릭터조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "지역캐릭터",
+  "volume": 310,
+  "manual": "",
+  "row": 17,
+  "ecol": 11
+ },
+ {
+  "category": "교통기관조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "비행기모형",
+  "volume": 1920,
+  "manual": "",
+  "row": 20,
+  "ecol": 11
+ },
+ {
+  "category": "교통기관조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "자동차모형",
+  "volume": 1060,
+  "manual": "",
+  "row": 21,
+  "ecol": 11
+ },
+ {
+  "category": "교통기관조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "전투기모형",
+  "volume": 190,
+  "manual": "",
+  "row": 22,
+  "ecol": 11
+ },
+ {
+  "category": "교통기관조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "모형기차",
+  "volume": 70,
+  "manual": "",
+  "row": 23,
+  "ecol": 11
+ },
+ {
+  "category": "교통기관조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "항공기모형",
+  "volume": 170,
+  "manual": "",
+  "row": 24,
+  "ecol": 11
+ },
+ {
+  "category": "전시모형",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "전시회모형",
+  "volume": 20,
+  "manual": "2위, 7 위",
+  "row": 27,
+  "ecol": 11
+ },
+ {
+  "category": "전시모형",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "서울전시회",
+  "volume": 100000,
+  "manual": "",
+  "row": 28,
+  "ecol": 11
+ },
+ {
+  "category": "전시모형",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "전시",
+  "volume": 30350,
+  "manual": "",
+  "row": 29,
+  "ecol": 11
+ },
+ {
+  "category": "전시모형",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "서울박람회",
+  "volume": 2780,
+  "manual": "",
+  "row": 30,
+  "ecol": 11
+ },
+ {
+  "category": "전시모형",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "푸드박람회",
+  "volume": 270,
+  "manual": "",
+  "row": 31,
+  "ecol": 11
+ },
+ {
+  "category": "전시모형",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "국내전시회",
+  "volume": 200,
+  "manual": "",
+  "row": 32,
+  "ecol": 11
+ },
+ {
+  "category": "전시모형",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "야외전시",
+  "volume": 40,
+  "manual": "",
+  "row": 33,
+  "ecol": 11
+ },
+ {
+  "category": "전시모형",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "서울전시장",
+  "volume": 290,
+  "manual": "",
+  "row": 34,
+  "ecol": 11
+ },
+ {
+  "category": "전시모형",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "박물관모형",
+  "volume": 20,
+  "manual": "",
+  "row": 35,
+  "ecol": 11
+ },
+ {
+  "category": "전시모형",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "전시모형",
+  "volume": 50,
+  "manual": "",
+  "row": 36,
+  "ecol": 11
+ },
+ {
+  "category": "전시모형",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "전시조형물",
+  "volume": 20,
+  "manual": "2위",
+  "row": 38,
+  "ecol": 11
+ },
+ {
+  "category": "전시모형",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "전시모형제작",
+  "volume": 30,
+  "manual": "1위, 7 위",
+  "row": 39,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "",
+  "keyword": "전시조형물제작",
+  "volume": 20,
+  "manual": "",
+  "row": 43,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "",
+  "keyword": "전시회모형제작",
+  "volume": 20,
+  "manual": "",
+  "row": 44,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "",
+  "keyword": "전시물제작",
+  "volume": 20,
+  "manual": "4위",
+  "row": 45,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "",
+  "keyword": "전시회조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 46,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "",
+  "keyword": "관공서조형물",
+  "volume": 20,
+  "manual": "1위, 4위",
+  "row": 48,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "포토존제작",
+  "volume": 510,
+  "manual": "1위",
+  "row": 50,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "포토존설치",
+  "volume": 380,
+  "manual": "1위",
+  "row": 51,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "포토존조형물",
+  "volume": 90,
+  "manual": "1위, 2위, 3위, 5위",
+  "row": 52,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "조형물포토존",
+  "volume": 30,
+  "manual": "",
+  "row": 53,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "캐릭터포토존",
+  "volume": 60,
+  "manual": "1위, 5위",
+  "row": 54,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "공원포토존",
+  "volume": 20,
+  "manual": "",
+  "row": 55,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "이색포토존",
+  "volume": 30,
+  "manual": "3위",
+  "row": 56,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "꽃포토존",
+  "volume": 210,
+  "manual": "",
+  "row": 57,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "축제포토존",
+  "volume": 50,
+  "manual": "",
+  "row": 58,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "글자포토존",
+  "volume": 20,
+  "manual": "",
+  "row": 60,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "글씨포토존",
+  "volume": 20,
+  "manual": "6 위",
+  "row": 61,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "입체포토존",
+  "volume": 20,
+  "manual": "6 위",
+  "row": 62,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "공룡포토존",
+  "volume": 20,
+  "manual": "",
+  "row": 63,
+  "ecol": 11
+ },
+ {
+  "category": "",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "LED포토존",
+  "volume": 60,
+  "manual": "6 위",
+  "row": 64,
+  "ecol": 11
+ },
+ {
+  "category": "글자조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "글씨조형물",
+  "volume": 30,
+  "manual": "2위, 5위, 6 위, 7 위",
+  "row": 68,
+  "ecol": 11
+ },
+ {
+  "category": "글자조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "글자조형물제작",
+  "volume": 30,
+  "manual": "2위",
+  "row": 69,
+  "ecol": 11
+ },
+ {
+  "category": "글자조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "입체글자조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 70,
+  "ecol": 11
+ },
+ {
+  "category": "글자조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "알파벳조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 73,
+  "ecol": 11
+ },
+ {
+  "category": "글자조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "로고조형물제작",
+  "volume": 20,
+  "manual": "2위",
+  "row": 74,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "트리조형물",
+  "volume": 20,
+  "manual": "4위",
+  "row": 79,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "크리스마스조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 80,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "크리스마스트리조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 81,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "대형크리스마스리스",
+  "volume": 20,
+  "manual": "",
+  "row": 82,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "크리스마스트리포토존",
+  "volume": 20,
+  "manual": "",
+  "row": 83,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "크리스마스행사",
+  "volume": 30,
+  "manual": "",
+  "row": 84,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "크리스마스포토존",
+  "volume": 20,
+  "manual": "",
+  "row": 85,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "빛축제",
+  "volume": 1800,
+  "manual": "",
+  "row": 86,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "대형크리스마스트리",
+  "volume": 50,
+  "manual": "",
+  "row": 87,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "크리스마스대형트리",
+  "volume": 20,
+  "manual": "",
+  "row": 88,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "크리스마스트리대형",
+  "volume": 20,
+  "manual": "",
+  "row": 89,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "대형트리설치",
+  "volume": 20,
+  "manual": "",
+  "row": 90,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "크리스마스대형리스",
+  "volume": 20,
+  "manual": "",
+  "row": 91,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "화이트크리스마스트리",
+  "volume": 20,
+  "manual": "",
+  "row": 92,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "호텔크리스마스트리",
+  "volume": 20,
+  "manual": "",
+  "row": 93,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "크리스마스트리제작",
+  "volume": 20,
+  "manual": "",
+  "row": 94,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "초대형트리",
+  "volume": 20,
+  "manual": "",
+  "row": 95,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "야외대형트리",
+  "volume": 20,
+  "manual": "",
+  "row": 96,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "눈사람트리",
+  "volume": 20,
+  "manual": "",
+  "row": 97,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "대형트리제작",
+  "volume": 20,
+  "manual": "",
+  "row": 98,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "트리제작",
+  "volume": 20,
+  "manual": "",
+  "row": 99,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "산타조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 100,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "눈사람모형",
+  "volume": 20,
+  "manual": "",
+  "row": 101,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "사슴조형물",
+  "volume": 50,
+  "manual": "",
+  "row": 102,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "정원조형물",
+  "volume": 180,
+  "manual": "",
+  "row": 103,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "대형눈사람",
+  "volume": 20,
+  "manual": "",
+  "row": 104,
+  "ecol": 11
+ },
+ {
+  "category": "크리스마스조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "빛조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 105,
+  "ecol": 11
+ },
+ {
+  "category": "자연조형물 (사진 x)",
+  "importance": "상",
+  "status": "",
+  "keyword": "나무조형물",
+  "volume": 180,
+  "manual": "",
+  "row": 4,
+  "ecol": 15
+ },
+ {
+  "category": "자연조형물 (사진 x)",
+  "importance": "상",
+  "status": "",
+  "keyword": "달 조형물",
+  "volume": 80,
+  "manual": "",
+  "row": 5,
+  "ecol": 15
+ },
+ {
+  "category": "자연조형물 (사진 x)",
+  "importance": "상",
+  "status": "",
+  "keyword": "꽃조형물",
+  "volume": 140,
+  "manual": "",
+  "row": 6,
+  "ecol": 15
+ },
+ {
+  "category": "자연조형물 (사진 x)",
+  "importance": "상",
+  "status": "",
+  "keyword": "장미조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 7,
+  "ecol": 15
+ },
+ {
+  "category": "자연조형물 (사진 x)",
+  "importance": "상",
+  "status": "",
+  "keyword": "나무조형물제작",
+  "volume": 20,
+  "manual": "",
+  "row": 8,
+  "ecol": 15
+ },
+ {
+  "category": "자연조형물 (사진 x)",
+  "importance": "상",
+  "status": "",
+  "keyword": "국화조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 9,
+  "ecol": 15
+ },
+ {
+  "category": "자연조형물 (사진 x)",
+  "importance": "상",
+  "status": "",
+  "keyword": "버섯조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 10,
+  "ecol": 15
+ },
+ {
+  "category": "자연조형물 (사진 x)",
+  "importance": "상",
+  "status": "",
+  "keyword": "식물조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 11,
+  "ecol": 15
+ },
+ {
+  "category": "자연조형물 (사진 x)",
+  "importance": "상",
+  "status": "",
+  "keyword": "환경조형물",
+  "volume": 30,
+  "manual": "3위, 7 위",
+  "row": 13,
+  "ecol": 15
+ },
+ {
+  "category": "자연조형물 (사진 x)",
+  "importance": "상",
+  "status": "",
+  "keyword": "벚꽃조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 14,
+  "ecol": 15
+ },
+ {
+  "category": "자연조형물 (사진 x)",
+  "importance": "상",
+  "status": "",
+  "keyword": "나무조형물",
+  "volume": 70,
+  "manual": "",
+  "row": 15,
+  "ecol": 15
+ },
+ {
+  "category": "자연조형물 (사진 x)",
+  "importance": "상",
+  "status": "",
+  "keyword": "민들레조형물",
+  "volume": 20,
+  "manual": "2위",
+  "row": 16,
+  "ecol": 15
+ },
+ {
+  "category": "동물조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "말모형",
+  "volume": 140,
+  "manual": "",
+  "row": 20,
+  "ecol": 15
+ },
+ {
+  "category": "동물조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "나비모형",
+  "volume": 180,
+  "manual": "",
+  "row": 21,
+  "ecol": 15
+ },
+ {
+  "category": "동물조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "독수리모형",
+  "volume": 200,
+  "manual": "",
+  "row": 22,
+  "ecol": 15
+ },
+ {
+  "category": "동물조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "물고기모형",
+  "volume": 200,
+  "manual": "",
+  "row": 23,
+  "ecol": 15
+ },
+ {
+  "category": "동물조형물",
+  "importance": "상",
+  "status": "",
+  "keyword": "강아지조형물",
+  "volume": 70,
+  "manual": "",
+  "row": 24,
+  "ecol": 15
+ },
+ {
+  "category": "동물조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "동물조형물",
+  "volume": 60,
+  "manual": "4위",
+  "row": 25,
+  "ecol": 15
+ },
+ {
+  "category": "동물조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "조개모형",
+  "volume": 40,
+  "manual": "",
+  "row": 26,
+  "ecol": 15
+ },
+ {
+  "category": "동물조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "공룡조형물",
+  "volume": 40,
+  "manual": "5위",
+  "row": 27,
+  "ecol": 15
+ },
+ {
+  "category": "동물조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "공룡제작",
+  "volume": 20,
+  "manual": "",
+  "row": 29,
+  "ecol": 15
+ },
+ {
+  "category": "동물조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "고래조형물",
+  "volume": 40,
+  "manual": "",
+  "row": 30,
+  "ecol": 15
+ },
+ {
+  "category": "동물조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "팬더조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 31,
+  "ecol": 15
+ },
+ {
+  "category": "동물조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "반려동물모형",
+  "volume": 30,
+  "manual": "",
+  "row": 32,
+  "ecol": 15
+ },
+ {
+  "category": "동물조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "동물조형",
+  "volume": 20,
+  "manual": "",
+  "row": 33,
+  "ecol": 15
+ },
+ {
+  "category": "동물조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "다람쥐모형",
+  "volume": 30,
+  "manual": "2위",
+  "row": 35,
+  "ecol": 15
+ },
+ {
+  "category": "행사",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "행사",
+  "volume": 14300,
+  "manual": "",
+  "row": 40,
+  "ecol": 15
+ },
+ {
+  "category": "행사",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "팝업행사",
+  "volume": 250,
+  "manual": "",
+  "row": 41,
+  "ecol": 15
+ },
+ {
+  "category": "행사",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "전시행사",
+  "volume": 110,
+  "manual": "",
+  "row": 42,
+  "ecol": 15
+ },
+ {
+  "category": "행사",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "공공기관행사",
+  "volume": 60,
+  "manual": "",
+  "row": 43,
+  "ecol": 15
+ },
+ {
+  "category": "행사",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "행사조형물",
+  "volume": 30,
+  "manual": "2위, 7 위",
+  "row": 45,
+  "ecol": 15
+ },
+ {
+  "category": "축제",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "서울축제",
+  "volume": 12190,
+  "manual": "",
+  "row": 49,
+  "ecol": 15
+ },
+ {
+  "category": "축제",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "지역축제",
+  "volume": 11150,
+  "manual": "",
+  "row": 50,
+  "ecol": 15
+ },
+ {
+  "category": "축제",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "축제조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 51,
+  "ecol": 15
+ },
+ {
+  "category": "축제",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "전통축제",
+  "volume": 60,
+  "manual": "",
+  "row": 52,
+  "ecol": 15
+ },
+ {
+  "category": "축제",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "축제개최",
+  "volume": 30,
+  "manual": "",
+  "row": 54,
+  "ecol": 15
+ },
+ {
+  "category": "LED조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "LED눈사람",
+  "volume": 20,
+  "manual": "",
+  "row": 57,
+  "ecol": 15
+ },
+ {
+  "category": "LED조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "야간포토존",
+  "volume": 20,
+  "manual": "",
+  "row": 58,
+  "ecol": 15
+ },
+ {
+  "category": "LED조형물",
+  "importance": "상",
+  "status": "최적",
+  "keyword": "LED포토존",
+  "volume": 60,
+  "manual": "6 위",
+  "row": 59,
+  "ecol": 15
+ },
+ {
+  "category": "LED조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "LED조형물",
+  "volume": 50,
+  "manual": "",
+  "row": 61,
+  "ecol": 15
+ },
+ {
+  "category": "LED조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "LED조형물제작",
+  "volume": 20,
+  "manual": "",
+  "row": 62,
+  "ecol": 15
+ },
+ {
+  "category": "LED조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "조형물조명",
+  "volume": 30,
+  "manual": "",
+  "row": 63,
+  "ecol": 15
+ },
+ {
+  "category": "LED조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "LED글자",
+  "volume": 90,
+  "manual": "",
+  "row": 64,
+  "ecol": 15
+ },
+ {
+  "category": "LED조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "조명조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 65,
+  "ecol": 15
+ },
+ {
+  "category": "LED조형물",
+  "importance": "상",
+  "status": "[준]",
+  "keyword": "야간조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 66,
+  "ecol": 15
+ },
+ {
+  "category": "모형",
+  "importance": "중",
+  "status": "",
+  "keyword": "모형제작",
+  "volume": 630,
+  "manual": "",
+  "row": 4,
+  "ecol": 21
+ },
+ {
+  "category": "모형",
+  "importance": "중",
+  "status": "",
+  "keyword": "모형제작업체",
+  "volume": 90,
+  "manual": "2위, 4위",
+  "row": 5,
+  "ecol": 21
+ },
+ {
+  "category": "모형",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "모형주문제작",
+  "volume": 20,
+  "manual": "2위",
+  "row": 7,
+  "ecol": 21
+ },
+ {
+  "category": "음식모형",
+  "importance": "중",
+  "status": "",
+  "keyword": "음식모형",
+  "volume": 1410,
+  "manual": "",
+  "row": 12,
+  "ecol": 21
+ },
+ {
+  "category": "음식모형",
+  "importance": "중",
+  "status": "",
+  "keyword": "음식모형제작",
+  "volume": 670,
+  "manual": "",
+  "row": 13,
+  "ecol": 21
+ },
+ {
+  "category": "음식모형",
+  "importance": "중",
+  "status": "",
+  "keyword": "디저트 모형 제작",
+  "volume": 30,
+  "manual": "",
+  "row": 14,
+  "ecol": 21
+ },
+ {
+  "category": "음식모형",
+  "importance": "중",
+  "status": "",
+  "keyword": "아이스크림모형",
+  "volume": 310,
+  "manual": "",
+  "row": 15,
+  "ecol": 21
+ },
+ {
+  "category": "음식모형",
+  "importance": "중",
+  "status": "",
+  "keyword": "과일모형",
+  "volume": 580,
+  "manual": "",
+  "row": 16,
+  "ecol": 21
+ },
+ {
+  "category": "모양조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "모양조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 21,
+  "ecol": 21
+ },
+ {
+  "category": "모양조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "벤치조형물",
+  "volume": 20,
+  "manual": "3위",
+  "row": 22,
+  "ecol": 21
+ },
+ {
+  "category": "모양조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "입체조형물",
+  "volume": 30,
+  "manual": "",
+  "row": 23,
+  "ecol": 21
+ },
+ {
+  "category": "모양조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "의자조형물",
+  "volume": 20,
+  "manual": "4위",
+  "row": 24,
+  "ecol": 21
+ },
+ {
+  "category": "모양조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "사각형모형",
+  "volume": 20,
+  "manual": "2위",
+  "row": 25,
+  "ecol": 21
+ },
+ {
+  "category": "모양조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "하트조형물",
+  "volume": 60,
+  "manual": "",
+  "row": 26,
+  "ecol": 21
+ },
+ {
+  "category": "모양조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "신발조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 27,
+  "ecol": 21
+ },
+ {
+  "category": "모양조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "원형조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 28,
+  "ecol": 21
+ },
+ {
+  "category": "모양조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "벽면조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 29,
+  "ecol": 21
+ },
+ {
+  "category": "모양조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "열기구조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 31,
+  "ecol": 21
+ },
+ {
+  "category": "모양조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "입체조형물제작",
+  "volume": 20,
+  "manual": "",
+  "row": 32,
+  "ecol": 21
+ },
+ {
+  "category": "모양조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "아이스크림 조형물",
+  "volume": 50,
+  "manual": "",
+  "row": 33,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "대형FRP",
+  "volume": 20,
+  "manual": "",
+  "row": 36,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "대형글씨",
+  "volume": 20,
+  "manual": "",
+  "row": 37,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "대형글자",
+  "volume": 20,
+  "manual": "1위",
+  "row": 38,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "대형글자조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 39,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "대형모형제작",
+  "volume": 20,
+  "manual": "1위",
+  "row": 40,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "대형조형물",
+  "volume": 130,
+  "manual": "2위",
+  "row": 41,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "대형포토존",
+  "volume": 60,
+  "manual": "",
+  "row": 42,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "대형조형물제작",
+  "volume": 70,
+  "manual": "",
+  "row": 43,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "대형모형",
+  "volume": 30,
+  "manual": "1위",
+  "row": 44,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "대형조형물제작",
+  "volume": 50,
+  "manual": "",
+  "row": 45,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "대형캐릭터제작",
+  "volume": 20,
+  "manual": "",
+  "row": 47,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "브랜드조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 49,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "브랜드모형",
+  "volume": 20,
+  "manual": "",
+  "row": 50,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "대형캐릭터",
+  "volume": 20,
+  "manual": "",
+  "row": 51,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "대형스카시",
+  "volume": 20,
+  "manual": "",
+  "row": 52,
+  "ecol": 21
+ },
+ {
+  "category": "대형조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "대형스티로폼",
+  "volume": 260,
+  "manual": "",
+  "row": 53,
+  "ecol": 21
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "에어벌룬",
+  "volume": 500,
+  "manual": "",
+  "row": 4,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "공기조형물",
+  "volume": 360,
+  "manual": "",
+  "row": 5,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "에어조형물",
+  "volume": 230,
+  "manual": "",
+  "row": 6,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "에어풍선",
+  "volume": 380,
+  "manual": "",
+  "row": 7,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "풍선조형물",
+  "volume": 90,
+  "manual": "",
+  "row": 8,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "에어조형물제작",
+  "volume": 30,
+  "manual": "",
+  "row": 9,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "공기조형물제작",
+  "volume": 30,
+  "manual": "",
+  "row": 10,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "공기막조형물",
+  "volume": 30,
+  "manual": "",
+  "row": 11,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "에어조형가격",
+  "volume": 20,
+  "manual": "",
+  "row": 12,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "에어캐릭터",
+  "volume": 20,
+  "manual": "",
+  "row": 13,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "공기조형",
+  "volume": 20,
+  "manual": "",
+  "row": 14,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "공기조형물업체",
+  "volume": 20,
+  "manual": "",
+  "row": 15,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "에어조형물업체",
+  "volume": 20,
+  "manual": "",
+  "row": 16,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "벌룬조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 17,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "벌룬조형물업체",
+  "volume": 20,
+  "manual": "",
+  "row": 18,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "에어조형제작",
+  "volume": 20,
+  "manual": "",
+  "row": 19,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "에어조형설치",
+  "volume": 20,
+  "manual": "",
+  "row": 20,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "에어조형견적",
+  "volume": 20,
+  "manual": "",
+  "row": 21,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "공기조형제작",
+  "volume": 20,
+  "manual": "",
+  "row": 22,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "공기조형설치",
+  "volume": 20,
+  "manual": "",
+  "row": 23,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "공기조형견적",
+  "volume": 20,
+  "manual": "",
+  "row": 24,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "공기조형가격",
+  "volume": 20,
+  "manual": "",
+  "row": 25,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "풍선조형",
+  "volume": 20,
+  "manual": "",
+  "row": 26,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "풍선조형물제작",
+  "volume": 20,
+  "manual": "",
+  "row": 27,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "풍선조형물업체",
+  "volume": 20,
+  "manual": "",
+  "row": 28,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "풍선조형물가격",
+  "volume": 20,
+  "manual": "",
+  "row": 29,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "풍선조형물설치",
+  "volume": 20,
+  "manual": "",
+  "row": 30,
+  "ecol": 25
+ },
+ {
+  "category": "공기조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "에어조형",
+  "volume": 20,
+  "manual": "",
+  "row": 31,
+  "ecol": 25
+ },
+ {
+  "category": "실내,외조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "정원 조형물",
+  "volume": 180,
+  "manual": "",
+  "row": 64,
+  "ecol": 25
+ },
+ {
+  "category": "실내,외조형물",
+  "importance": "중",
+  "status": "최적",
+  "keyword": "야외LED조명",
+  "volume": 380,
+  "manual": "",
+  "row": 65,
+  "ecol": 25
+ },
+ {
+  "category": "실내,외조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "야외조형물",
+  "volume": 80,
+  "manual": "1위",
+  "row": 67,
+  "ecol": 25
+ },
+ {
+  "category": "실내,외조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "야외조형물제작",
+  "volume": 20,
+  "manual": "",
+  "row": 68,
+  "ecol": 25
+ },
+ {
+  "category": "실내,외조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "옥외조형물",
+  "volume": 20,
+  "manual": "2위",
+  "row": 69,
+  "ecol": 25
+ },
+ {
+  "category": "실내,외조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "옥외조형물제작",
+  "volume": 20,
+  "manual": "",
+  "row": 70,
+  "ecol": 25
+ },
+ {
+  "category": "실내,외조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "실내조형물",
+  "volume": 40,
+  "manual": "",
+  "row": 71,
+  "ecol": 25
+ },
+ {
+  "category": "실내,외조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "야외포토존설치",
+  "volume": 30,
+  "manual": "",
+  "row": 74,
+  "ecol": 25
+ },
+ {
+  "category": "실내,외조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "외부조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 75,
+  "ecol": 25
+ },
+ {
+  "category": "실내,외조형물",
+  "importance": "중",
+  "status": "[준]",
+  "keyword": "실내포토존",
+  "volume": 50,
+  "manual": "",
+  "row": 76,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "거리조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 79,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "건축물미술작품",
+  "volume": 90,
+  "manual": "",
+  "row": 80,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "건축물미술장식품",
+  "volume": 20,
+  "manual": "",
+  "row": 81,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "건축조형물",
+  "volume": 30,
+  "manual": "",
+  "row": 82,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "공공미술",
+  "volume": 470,
+  "manual": "",
+  "row": 83,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "공공미술",
+  "volume": 20,
+  "manual": "",
+  "row": 84,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "공공미술프로젝트",
+  "volume": 120,
+  "manual": "",
+  "row": 85,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "공공조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 86,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "공원포토존",
+  "volume": 20,
+  "manual": "",
+  "row": 87,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "학교조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 88,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "학조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 89,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "아파트모형",
+  "volume": 120,
+  "manual": "",
+  "row": 91,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "미술조형물",
+  "volume": 40,
+  "manual": "",
+  "row": 92,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "카페조형물",
+  "volume": 60,
+  "manual": "",
+  "row": 93,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "아파트조형물",
+  "volume": 420,
+  "manual": "",
+  "row": 94,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "건축모형",
+  "volume": 190,
+  "manual": "",
+  "row": 95,
+  "ecol": 25
+ },
+ {
+  "category": "건축조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "건축모형제작",
+  "volume": 160,
+  "manual": "",
+  "row": 96,
+  "ecol": 25
+ },
+ {
+  "category": "UHPC조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "UHPC",
+  "volume": 580,
+  "manual": "",
+  "row": 4,
+  "ecol": 30
+ },
+ {
+  "category": "UHPC조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "UHPC조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 5,
+  "ecol": 30
+ },
+ {
+  "category": "UHPC조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "UHPC가격",
+  "volume": 20,
+  "manual": "",
+  "row": 6,
+  "ecol": 30
+ },
+ {
+  "category": "UHPC조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "UHPC제작",
+  "volume": 20,
+  "manual": "",
+  "row": 7,
+  "ecol": 30
+ },
+ {
+  "category": "UHPC조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "UHPC업체",
+  "volume": 20,
+  "manual": "",
+  "row": 8,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "상징조형물",
+  "volume": 30,
+  "manual": "",
+  "row": 13,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "상징조형물",
+  "volume": 30,
+  "manual": "",
+  "row": 14,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "실물모형제작",
+  "volume": 20,
+  "manual": "7 위",
+  "row": 15,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "설치조형물",
+  "volume": 20,
+  "manual": "1위, 4위, 7 위",
+  "row": 16,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "청동조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 18,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "플라스틱조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 19,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "플라스틱조형물제작",
+  "volume": 20,
+  "manual": "",
+  "row": 20,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "철재조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 21,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "경관조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 22,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "패브릭조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 23,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "인천공항 조형물",
+  "volume": 70,
+  "manual": "",
+  "row": 24,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "간판조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 25,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "소형조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 26,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "도자기모형",
+  "volume": 20,
+  "manual": "",
+  "row": 27,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "도자기조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 28,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "음식조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 29,
+  "ecol": 30
+ },
+ {
+  "category": "기타조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "인공조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 30,
+  "ecol": 30
+ },
+ {
+  "category": "피규어제작",
+  "importance": "중",
+  "status": "",
+  "keyword": "대형피규어",
+  "volume": 1130,
+  "manual": "",
+  "row": 40,
+  "ecol": 30
+ },
+ {
+  "category": "피규어제작",
+  "importance": "중",
+  "status": "",
+  "keyword": "인테리어대형피규어",
+  "volume": 20,
+  "manual": "",
+  "row": 41,
+  "ecol": 30
+ },
+ {
+  "category": "피규어제작",
+  "importance": "중",
+  "status": "",
+  "keyword": "카우스대형피규어",
+  "volume": 20,
+  "manual": "",
+  "row": 42,
+  "ecol": 30
+ },
+ {
+  "category": "피규어제작",
+  "importance": "중",
+  "status": "",
+  "keyword": "포켓몬 대형 피규어",
+  "volume": 330,
+  "manual": "",
+  "row": 43,
+  "ecol": 30
+ },
+ {
+  "category": "피규어제작",
+  "importance": "중",
+  "status": "",
+  "keyword": "스누피대형피규어",
+  "volume": 20,
+  "manual": "",
+  "row": 44,
+  "ecol": 30
+ },
+ {
+  "category": "피규어제작",
+  "importance": "중",
+  "status": "",
+  "keyword": "짱구 대형 피규어",
+  "volume": 1460,
+  "manual": "",
+  "row": 45,
+  "ecol": 30
+ },
+ {
+  "category": "피규어제작",
+  "importance": "중",
+  "status": "",
+  "keyword": "아톰대형피규어",
+  "volume": 30,
+  "manual": "",
+  "row": 46,
+  "ecol": 30
+ },
+ {
+  "category": "피규어제작",
+  "importance": "중",
+  "status": "",
+  "keyword": "아이언맨대형피규어",
+  "volume": 70,
+  "manual": "",
+  "row": 49,
+  "ecol": 30
+ },
+ {
+  "category": "LED조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "LED조형물",
+  "volume": 50,
+  "manual": "",
+  "row": 4,
+  "ecol": 34
+ },
+ {
+  "category": "LED조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "LED조형물제작",
+  "volume": 20,
+  "manual": "2위",
+  "row": 5,
+  "ecol": 34
+ },
+ {
+  "category": "LED조형물",
+  "importance": "중",
+  "status": "",
+  "keyword": "LED포토존",
+  "volume": 60,
+  "manual": "6 위",
+  "row": 6,
+  "ecol": 34
+ },
+ {
+  "category": "흉상",
+  "importance": "중",
+  "status": "",
+  "keyword": "흉상",
+  "volume": 2250,
+  "manual": "",
+  "row": 13,
+  "ecol": 34
+ },
+ {
+  "category": "흉상",
+  "importance": "중",
+  "status": "",
+  "keyword": "흉상제작",
+  "volume": 510,
+  "manual": "",
+  "row": 14,
+  "ecol": 34
+ },
+ {
+  "category": "흉상",
+  "importance": "중",
+  "status": "",
+  "keyword": "흉상제작절차",
+  "volume": 20,
+  "manual": "",
+  "row": 15,
+  "ecol": 34
+ },
+ {
+  "category": "흉상",
+  "importance": "중",
+  "status": "",
+  "keyword": "흉상주문제작",
+  "volume": 20,
+  "manual": "",
+  "row": 16,
+  "ecol": 34
+ },
+ {
+  "category": "흉상",
+  "importance": "중",
+  "status": "",
+  "keyword": "흉상제작업체",
+  "volume": 20,
+  "manual": "",
+  "row": 17,
+  "ecol": 34
+ },
+ {
+  "category": "흉상",
+  "importance": "중",
+  "status": "",
+  "keyword": "흉상가격",
+  "volume": 20,
+  "manual": "",
+  "row": 18,
+  "ecol": 34
+ },
+ {
+  "category": "동상",
+  "importance": "중",
+  "status": "",
+  "keyword": "동상",
+  "volume": 4290,
+  "manual": "",
+  "row": 24,
+  "ecol": 34
+ },
+ {
+  "category": "동상",
+  "importance": "중",
+  "status": "",
+  "keyword": "동상제작",
+  "volume": 290,
+  "manual": "",
+  "row": 25,
+  "ecol": 34
+ },
+ {
+  "category": "동상",
+  "importance": "중",
+  "status": "",
+  "keyword": "동상제작업체",
+  "volume": 20,
+  "manual": "",
+  "row": 26,
+  "ecol": 34
+ },
+ {
+  "category": "동상",
+  "importance": "중",
+  "status": "",
+  "keyword": "동상가격",
+  "volume": 30,
+  "manual": "",
+  "row": 27,
+  "ecol": 34
+ },
+ {
+  "category": "조각제작",
+  "importance": "중",
+  "status": "",
+  "keyword": "조각상제작",
+  "volume": 30,
+  "manual": "",
+  "row": 31,
+  "ecol": 34
+ },
+ {
+  "category": "조각제작",
+  "importance": "중",
+  "status": "",
+  "keyword": "조각업체",
+  "volume": 20,
+  "manual": "2위",
+  "row": 32,
+  "ecol": 34
+ },
+ {
+  "category": "조각제작",
+  "importance": "중",
+  "status": "",
+  "keyword": "조각작품",
+  "volume": 130,
+  "manual": "",
+  "row": 33,
+  "ecol": 34
+ },
+ {
+  "category": "조각제작",
+  "importance": "중",
+  "status": "",
+  "keyword": "조각제작",
+  "volume": 20,
+  "manual": "5위",
+  "row": 34,
+  "ecol": 34
+ },
+ {
+  "category": "조각제작",
+  "importance": "중",
+  "status": "",
+  "keyword": "조각품",
+  "volume": 210,
+  "manual": "",
+  "row": 35,
+  "ecol": 34
+ },
+ {
+  "category": "지역",
+  "importance": "중",
+  "status": "",
+  "keyword": "서울조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 40,
+  "ecol": 34
+ },
+ {
+  "category": "지역",
+  "importance": "중",
+  "status": "",
+  "keyword": "서울조형물업체",
+  "volume": 20,
+  "manual": "3위",
+  "row": 41,
+  "ecol": 34
+ },
+ {
+  "category": "지역",
+  "importance": "중",
+  "status": "",
+  "keyword": "서울조형물제작",
+  "volume": 20,
+  "manual": "2위",
+  "row": 42,
+  "ecol": 34
+ },
+ {
+  "category": "GRC조형물",
+  "importance": "x",
+  "status": "",
+  "keyword": "GRC",
+  "volume": 1730,
+  "manual": "",
+  "row": 4,
+  "ecol": 39
+ },
+ {
+  "category": "GRC조형물",
+  "importance": "x",
+  "status": "",
+  "keyword": "GRC공법",
+  "volume": 60,
+  "manual": "",
+  "row": 5,
+  "ecol": 39
+ },
+ {
+  "category": "GRC조형물",
+  "importance": "x",
+  "status": "",
+  "keyword": "GRC조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 6,
+  "ecol": 39
+ },
+ {
+  "category": "GRC조형물",
+  "importance": "x",
+  "status": "",
+  "keyword": "GRC시공",
+  "volume": 20,
+  "manual": "",
+  "row": 7,
+  "ecol": 39
+ },
+ {
+  "category": "GRC조형물",
+  "importance": "x",
+  "status": "",
+  "keyword": "GRC제작",
+  "volume": 20,
+  "manual": "",
+  "row": 8,
+  "ecol": 39
+ },
+ {
+  "category": "GRC조형물",
+  "importance": "x",
+  "status": "",
+  "keyword": "GRC업체",
+  "volume": 20,
+  "manual": "",
+  "row": 9,
+  "ecol": 39
+ },
+ {
+  "category": "GFRC조형물",
+  "importance": "x",
+  "status": "",
+  "keyword": "GFRC",
+  "volume": 310,
+  "manual": "",
+  "row": 14,
+  "ecol": 39
+ },
+ {
+  "category": "GFRC조형물",
+  "importance": "x",
+  "status": "",
+  "keyword": "GFRC업체",
+  "volume": 20,
+  "manual": "",
+  "row": 15,
+  "ecol": 39
+ },
+ {
+  "category": "GFRC조형물",
+  "importance": "x",
+  "status": "",
+  "keyword": "GFRC제작",
+  "volume": 20,
+  "manual": "",
+  "row": 16,
+  "ecol": 39
+ },
+ {
+  "category": "GFRC조형물",
+  "importance": "x",
+  "status": "",
+  "keyword": "GFRC가격",
+  "volume": 20,
+  "manual": "",
+  "row": 17,
+  "ecol": 39
+ },
+ {
+  "category": "GFRC조형물",
+  "importance": "x",
+  "status": "",
+  "keyword": "GFRC조형물",
+  "volume": 20,
+  "manual": "",
+  "row": 18,
+  "ecol": 39
+ }
+]

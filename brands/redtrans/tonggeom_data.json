@@ -1,0 +1,6902 @@
+[
+ {
+  "category": "베트남통번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남번역",
+  "volume": 4800,
+  "manual": "",
+  "row": 4,
+  "ecol": 3
+ },
+ {
+  "category": "베트남통번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남어번역",
+  "volume": 4340,
+  "manual": "4위",
+  "row": 5,
+  "ecol": 3
+ },
+ {
+  "category": "베트남통번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남통역",
+  "volume": 560,
+  "manual": "2위",
+  "row": 6,
+  "ecol": 3
+ },
+ {
+  "category": "베트남통번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남어통역",
+  "volume": 220,
+  "manual": "4위",
+  "row": 7,
+  "ecol": 3
+ },
+ {
+  "category": "베트남통번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "호치민통역",
+  "volume": 30,
+  "manual": "",
+  "row": 8,
+  "ecol": 3
+ },
+ {
+  "category": "베트남통번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남통역사",
+  "volume": 70,
+  "manual": "3위",
+  "row": 11,
+  "ecol": 3
+ },
+ {
+  "category": "베트남통번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남현지통역",
+  "volume": 20,
+  "manual": "3위",
+  "row": 12,
+  "ecol": 3
+ },
+ {
+  "category": "베트남통번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남통번역",
+  "volume": 20,
+  "manual": "",
+  "row": 13,
+  "ecol": 3
+ },
+ {
+  "category": "베트남통번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "하노이통역",
+  "volume": 20,
+  "manual": "",
+  "row": 14,
+  "ecol": 3
+ },
+ {
+  "category": "베트남통번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "다낭통역",
+  "volume": 20,
+  "manual": "",
+  "row": 15,
+  "ecol": 3
+ },
+ {
+  "category": "베트남공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남대사관인증",
+  "volume": 130,
+  "manual": "",
+  "row": 20,
+  "ecol": 3
+ },
+ {
+  "category": "베트남공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남공증",
+  "volume": 120,
+  "manual": "4위",
+  "row": 21,
+  "ecol": 3
+ },
+ {
+  "category": "베트남공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남어번역공증",
+  "volume": 100,
+  "manual": "3위",
+  "row": 22,
+  "ecol": 3
+ },
+ {
+  "category": "베트남공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남번역공증",
+  "volume": 90,
+  "manual": "2위",
+  "row": 23,
+  "ecol": 3
+ },
+ {
+  "category": "베트남공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남대사관공증",
+  "volume": 80,
+  "manual": "",
+  "row": 24,
+  "ecol": 3
+ },
+ {
+  "category": "베트남공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남영사확인",
+  "volume": 70,
+  "manual": "3위",
+  "row": 25,
+  "ecol": 3
+ },
+ {
+  "category": "베트남공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남서류",
+  "volume": 40,
+  "manual": "2위",
+  "row": 27,
+  "ecol": 3
+ },
+ {
+  "category": "베트남공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남인증",
+  "volume": 30,
+  "manual": "3위",
+  "row": 28,
+  "ecol": 3
+ },
+ {
+  "category": "베트남공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남영사인증",
+  "volume": 30,
+  "manual": "",
+  "row": 29,
+  "ecol": 3
+ },
+ {
+  "category": "베트남공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남어공증",
+  "volume": 20,
+  "manual": "3위",
+  "row": 30,
+  "ecol": 3
+ },
+ {
+  "category": "베트남공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남영사관공증",
+  "volume": 20,
+  "manual": "",
+  "row": 31,
+  "ecol": 3
+ },
+ {
+  "category": "베트남공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남서류대행",
+  "volume": 20,
+  "manual": "2위",
+  "row": 32,
+  "ecol": 3
+ },
+ {
+  "category": "베트남상표등록",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남화장품",
+  "volume": 790,
+  "manual": "4위",
+  "row": 36,
+  "ecol": 3
+ },
+ {
+  "category": "베트남상표등록",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남수출",
+  "volume": 270,
+  "manual": "",
+  "row": 37,
+  "ecol": 3
+ },
+ {
+  "category": "베트남상표등록",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남화장품수출",
+  "volume": 60,
+  "manual": "5위",
+  "row": 38,
+  "ecol": 3
+ },
+ {
+  "category": "베트남상표등록",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남자유판매증명서",
+  "volume": 40,
+  "manual": "6위",
+  "row": 39,
+  "ecol": 3
+ },
+ {
+  "category": "베트남상표등록",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남상표등록",
+  "volume": 30,
+  "manual": "",
+  "row": 40,
+  "ecol": 3
+ },
+ {
+  "category": "베트남상표등록",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남상표출원",
+  "volume": 30,
+  "manual": "",
+  "row": 41,
+  "ecol": 3
+ },
+ {
+  "category": "베트남상표등록",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남 화장품 법",
+  "volume": 20,
+  "manual": "1위",
+  "row": 43,
+  "ecol": 3
+ },
+ {
+  "category": "베트남상표등록",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남 CFS 발급 기간",
+  "volume": 20,
+  "manual": "4위",
+  "row": 44,
+  "ecol": 3
+ },
+ {
+  "category": "베트남비자신청",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남비자신청",
+  "volume": 540,
+  "manual": "3위",
+  "row": 50,
+  "ecol": 3
+ },
+ {
+  "category": "베트남비자신청",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남이비자신청",
+  "volume": 340,
+  "manual": "4위",
+  "row": 51,
+  "ecol": 3
+ },
+ {
+  "category": "베트남비자신청",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남 e비자신청",
+  "volume": 360,
+  "manual": "3위",
+  "row": 52,
+  "ecol": 3
+ },
+ {
+  "category": "베트남비자신청",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남전자비자신청",
+  "volume": 20,
+  "manual": "1위",
+  "row": 53,
+  "ecol": 3
+ },
+ {
+  "category": "베트남비자신청",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남여행비자신청",
+  "volume": 10,
+  "manual": "",
+  "row": 54,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "VNEID",
+  "volume": 860,
+  "manual": "",
+  "row": 57,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남 전자신분증",
+  "volume": 360,
+  "manual": "5위",
+  "row": 58,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남출장",
+  "volume": 280,
+  "manual": "2위",
+  "row": 59,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남VNEID",
+  "volume": 120,
+  "manual": "",
+  "row": 60,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남신분증",
+  "volume": 110,
+  "manual": "2위",
+  "row": 61,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남초청장",
+  "volume": 70,
+  "manual": "1위",
+  "row": 62,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남장기체류",
+  "volume": 60,
+  "manual": "2위",
+  "row": 63,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남서류",
+  "volume": 50,
+  "manual": "2위",
+  "row": 64,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남국제결혼서류대행",
+  "volume": 20,
+  "manual": "",
+  "row": 65,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남화장품위생허가",
+  "volume": 30,
+  "manual": "2위, 4위",
+  "row": 66,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남대사관영사인증",
+  "volume": 20,
+  "manual": "",
+  "row": 69,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남법무법인",
+  "volume": 20,
+  "manual": "",
+  "row": 70,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남경력증명서",
+  "volume": 20,
+  "manual": "",
+  "row": 71,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남혼인관계증명서",
+  "volume": 20,
+  "manual": "",
+  "row": 72,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남대사관영사확인",
+  "volume": 20,
+  "manual": "",
+  "row": 73,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남장기비자",
+  "volume": 70,
+  "manual": "3위",
+  "row": 74,
+  "ecol": 3
+ },
+ {
+  "category": "베트남서류",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남거주증",
+  "volume": 330,
+  "manual": "",
+  "row": 75,
+  "ecol": 3
+ },
+ {
+  "category": "산업단지",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남산업공단",
+  "volume": 20,
+  "manual": "2위",
+  "row": 83,
+  "ecol": 3
+ },
+ {
+  "category": "산업단지",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남창고부지",
+  "volume": 20,
+  "manual": "",
+  "row": 84,
+  "ecol": 3
+ },
+ {
+  "category": "산업단지",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남공단개발",
+  "volume": 20,
+  "manual": "",
+  "row": 85,
+  "ecol": 3
+ },
+ {
+  "category": "산업단지",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남공단투어",
+  "volume": 20,
+  "manual": "",
+  "row": 86,
+  "ecol": 3
+ },
+ {
+  "category": "산업단지",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남공단투어",
+  "volume": 20,
+  "manual": "",
+  "row": 87,
+  "ecol": 3
+ },
+ {
+  "category": "산업단지",
+  "importance": "상",
+  "status": "",
+  "keyword": "호치민인근공단",
+  "volume": 20,
+  "manual": "2위",
+  "row": 88,
+  "ecol": 3
+ },
+ {
+  "category": "지역별 산업단지",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남북부산업단지",
+  "volume": null,
+  "manual": "",
+  "row": 93,
+  "ecol": 3
+ },
+ {
+  "category": "지역별 산업단지",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남중부산업단지",
+  "volume": null,
+  "manual": "",
+  "row": 94,
+  "ecol": 3
+ },
+ {
+  "category": "지역별 산업단지",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남남부산업단지",
+  "volume": null,
+  "manual": "",
+  "row": 95,
+  "ecol": 3
+ },
+ {
+  "category": "부동산",
+  "importance": "상",
+  "status": "",
+  "keyword": "하노이부동산",
+  "volume": 1220,
+  "manual": "",
+  "row": 100,
+  "ecol": 3
+ },
+ {
+  "category": "부동산",
+  "importance": "상",
+  "status": "",
+  "keyword": "호치민부동산",
+  "volume": 850,
+  "manual": "",
+  "row": 101,
+  "ecol": 3
+ },
+ {
+  "category": "부동산",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남부동산",
+  "volume": 550,
+  "manual": "",
+  "row": 102,
+  "ecol": 3
+ },
+ {
+  "category": "부동산",
+  "importance": "상",
+  "status": "",
+  "keyword": "산업용부동산",
+  "volume": 20,
+  "manual": "",
+  "row": 103,
+  "ecol": 3
+ },
+ {
+  "category": "공장",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남공장설립",
+  "volume": 40,
+  "manual": "",
+  "row": 110,
+  "ecol": 3
+ },
+ {
+  "category": "공장",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남의류공장",
+  "volume": 40,
+  "manual": "",
+  "row": 111,
+  "ecol": 3
+ },
+ {
+  "category": "공장",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남제조업",
+  "volume": 30,
+  "manual": "",
+  "row": 112,
+  "ecol": 3
+ },
+ {
+  "category": "공장",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남공장임대",
+  "volume": 20,
+  "manual": "",
+  "row": 114,
+  "ecol": 3
+ },
+ {
+  "category": "공장",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남공장부지",
+  "volume": 10,
+  "manual": "",
+  "row": 115,
+  "ecol": 3
+ },
+ {
+  "category": "공장",
+  "importance": "상",
+  "status": "",
+  "keyword": "호치민공장",
+  "volume": 10,
+  "manual": "",
+  "row": 116,
+  "ecol": 3
+ },
+ {
+  "category": "공장",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남공장부지",
+  "volume": 10,
+  "manual": "",
+  "row": 117,
+  "ecol": 3
+ },
+ {
+  "category": "공장",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남공장단지",
+  "volume": 10,
+  "manual": "",
+  "row": 118,
+  "ecol": 3
+ },
+ {
+  "category": "공장",
+  "importance": "상",
+  "status": "",
+  "keyword": "호치민인근공장",
+  "volume": 10,
+  "manual": "",
+  "row": 119,
+  "ecol": 3
+ },
+ {
+  "category": "공장",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남임대공장",
+  "volume": 10,
+  "manual": "",
+  "row": 120,
+  "ecol": 3
+ },
+ {
+  "category": "공장",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남공장",
+  "volume": 330,
+  "manual": "",
+  "row": 121,
+  "ecol": 3
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남사업",
+  "volume": 920,
+  "manual": "",
+  "row": 4,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남법인설립",
+  "volume": 460,
+  "manual": "4위",
+  "row": 5,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남창업",
+  "volume": 370,
+  "manual": "4위",
+  "row": 6,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남워크퍼밋",
+  "volume": 110,
+  "manual": "4위",
+  "row": 7,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남진출",
+  "volume": 70,
+  "manual": "",
+  "row": 8,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "호치민사업",
+  "volume": 20,
+  "manual": "5위",
+  "row": 9,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남노동허가서",
+  "volume": 50,
+  "manual": "2위",
+  "row": 10,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "호치민창업",
+  "volume": 40,
+  "manual": "5위",
+  "row": 11,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남사업자등록증",
+  "volume": 40,
+  "manual": "5위",
+  "row": 12,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남위생허가",
+  "volume": 30,
+  "manual": "2위",
+  "row": 13,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남에어비앤비사업",
+  "volume": 110,
+  "manual": "1위",
+  "row": 15,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남에서사업",
+  "volume": 70,
+  "manual": "",
+  "row": 16,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "호치민진출",
+  "volume": 20,
+  "manual": "",
+  "row": 17,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남회사설립",
+  "volume": 20,
+  "manual": "",
+  "row": 18,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남현지법인설립",
+  "volume": 20,
+  "manual": "",
+  "row": 19,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남임대사업",
+  "volume": 20,
+  "manual": "",
+  "row": 20,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남식품허가등록",
+  "volume": 20,
+  "manual": "",
+  "row": 22,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남법인자본금",
+  "volume": 20,
+  "manual": "4위",
+  "row": 23,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남로컬법인",
+  "volume": 20,
+  "manual": "",
+  "row": 24,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남 프랜차이즈 사업",
+  "volume": 20,
+  "manual": "4위",
+  "row": 25,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남 프랜차이즈 법인설립",
+  "volume": 20,
+  "manual": "4위",
+  "row": 26,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남 외식업",
+  "volume": 20,
+  "manual": "",
+  "row": 27,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남 소자본 창업",
+  "volume": 20,
+  "manual": "",
+  "row": 28,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남 비즈니스 라이선스",
+  "volume": 20,
+  "manual": "1위, 2위",
+  "row": 29,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남 대표사무소 설립",
+  "volume": 20,
+  "manual": "",
+  "row": 30,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남지사설립",
+  "volume": 30,
+  "manual": "3위, 4위",
+  "row": 31,
+  "ecol": 7
+ },
+ {
+  "category": "베트남사업",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남사업비자",
+  "volume": 250,
+  "manual": "1위, 3위, 5위",
+  "row": 32,
+  "ecol": 7
+ },
+ {
+  "category": "영사확인",
+  "importance": "상",
+  "status": "",
+  "keyword": "외교부영사확인",
+  "volume": 270,
+  "manual": "5위",
+  "row": 36,
+  "ecol": 7
+ },
+ {
+  "category": "영사확인",
+  "importance": "상",
+  "status": "",
+  "keyword": "영사확인",
+  "volume": 260,
+  "manual": "",
+  "row": 37,
+  "ecol": 7
+ },
+ {
+  "category": "영사확인",
+  "importance": "상",
+  "status": "",
+  "keyword": "대사관공증",
+  "volume": 160,
+  "manual": "",
+  "row": 38,
+  "ecol": 7
+ },
+ {
+  "category": "영사확인",
+  "importance": "상",
+  "status": "",
+  "keyword": "외교부공증",
+  "volume": 100,
+  "manual": "",
+  "row": 39,
+  "ecol": 7
+ },
+ {
+  "category": "영사확인",
+  "importance": "상",
+  "status": "",
+  "keyword": "외교부인증",
+  "volume": 90,
+  "manual": "",
+  "row": 40,
+  "ecol": 7
+ },
+ {
+  "category": "영사확인",
+  "importance": "상",
+  "status": "",
+  "keyword": "영사공증",
+  "volume": 70,
+  "manual": "",
+  "row": 41,
+  "ecol": 7
+ },
+ {
+  "category": "영사확인",
+  "importance": "상",
+  "status": "",
+  "keyword": "대사관인증",
+  "volume": 60,
+  "manual": "3위",
+  "row": 42,
+  "ecol": 7
+ },
+ {
+  "category": "영사확인",
+  "importance": "상",
+  "status": "",
+  "keyword": "대사관번역공증",
+  "volume": 20,
+  "manual": "2위",
+  "row": 43,
+  "ecol": 7
+ },
+ {
+  "category": "영사확인",
+  "importance": "상",
+  "status": "",
+  "keyword": "영사확인위임장",
+  "volume": 80,
+  "manual": "",
+  "row": 45,
+  "ecol": 7
+ },
+ {
+  "category": "아포스티유발급",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유발급",
+  "volume": 5100,
+  "manual": "",
+  "row": 48,
+  "ecol": 7
+ },
+ {
+  "category": "아포스티유발급",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유발급방법",
+  "volume": 210,
+  "manual": "3위",
+  "row": 49,
+  "ecol": 7
+ },
+ {
+  "category": "아포스티유발급",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유발급기간",
+  "volume": 40,
+  "manual": "",
+  "row": 50,
+  "ecol": 7
+ },
+ {
+  "category": "아포스티유발급",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유발급대행",
+  "volume": 30,
+  "manual": "2위",
+  "row": 51,
+  "ecol": 7
+ },
+ {
+  "category": "아포스티유발급",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유발급비용",
+  "volume": 30,
+  "manual": "3위",
+  "row": 52,
+  "ecol": 7
+ },
+ {
+  "category": "아포스티유발급",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유발급온라인",
+  "volume": 80,
+  "manual": "",
+  "row": 54,
+  "ecol": 7
+ },
+ {
+  "category": "아포스티유발급",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유온라인발급",
+  "volume": 60,
+  "manual": "",
+  "row": 55,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "가족관계증명서아포스티유",
+  "volume": 150,
+  "manual": "",
+  "row": 59,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "혼인관계증명서아포스티유",
+  "volume": 90,
+  "manual": "4위",
+  "row": 60,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "기본증명서아포스티유",
+  "volume": 60,
+  "manual": "5위",
+  "row": 61,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "졸업증명서아포스티유",
+  "volume": 50,
+  "manual": "4위",
+  "row": 62,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "위임장아포스티유 (LOA/POA 포함)",
+  "volume": 40,
+  "manual": "4위",
+  "row": 63,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "출생증명서 아포스티유",
+  "volume": 30,
+  "manual": "",
+  "row": 64,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "잔고증명서 아포스티유",
+  "volume": 20,
+  "manual": "1위",
+  "row": 65,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "경력증명서 아포스티유",
+  "volume": 20,
+  "manual": "1위",
+  "row": 66,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "성적증명서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 67,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "재학증명서 아포스티유",
+  "volume": 20,
+  "manual": "4위",
+  "row": 68,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "재직증명서 아포스티유",
+  "volume": 20,
+  "manual": "1위",
+  "row": 69,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "퇴직증명서아포스티유",
+  "volume": 20,
+  "manual": "1위",
+  "row": 70,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "범죄수사경력회보서 아포스티유",
+  "volume": 20,
+  "manual": "7위",
+  "row": 71,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "주민등록등본아포스티유",
+  "volume": 20,
+  "manual": "4위, 6위",
+  "row": 72,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "제적등본 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 73,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "병적증명서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 74,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "여권아포스티유",
+  "volume": 20,
+  "manual": "6위",
+  "row": 75,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "여권사본 아포스티유",
+  "volume": 20,
+  "manual": "2위",
+  "row": 76,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "여권발급기록증명서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 77,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "거래내역서 아포스티유",
+  "volume": 20,
+  "manual": "3위",
+  "row": 78,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "사업자등록증명 아포스티유",
+  "volume": 20,
+  "manual": "3위",
+  "row": 79,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "등기부등본 아포스티유",
+  "volume": 20,
+  "manual": "3위",
+  "row": 80,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "주주명부 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 81,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "임명장 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 82,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "자유판매증명서(CFS) 아포스티유",
+  "volume": 20,
+  "manual": "2위",
+  "row": 83,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "ISO 인증서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 84,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "GMP 인증서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 85,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "CGMP인증서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 86,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "품질증명서 아포스티유",
+  "volume": 20,
+  "manual": "1위",
+  "row": 87,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "적합성선언서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 88,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "제조계약서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 89,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "유통계약서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 90,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "일반계약서 아포스티유",
+  "volume": 20,
+  "manual": "1위",
+  "row": 91,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "이사회결의서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 92,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "이사회확인서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 93,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "의사록 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 94,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "자본금증자확인서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 95,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "결정서 아포스티유",
+  "volume": 20,
+  "manual": "1위",
+  "row": 96,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "선언문 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 97,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "서약서 아포스티유",
+  "volume": 20,
+  "manual": "1위",
+  "row": 98,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "수권서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 99,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "수원위탁서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 100,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "국가자격증 아포스티유",
+  "volume": 20,
+  "manual": "2위",
+  "row": 101,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "전문의자격증 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 102,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "의사면허증 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 103,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "교원자격증 아포스티유",
+  "volume": 20,
+  "manual": "6위",
+  "row": 104,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "진단서 아포스티유",
+  "volume": 20,
+  "manual": "5위",
+  "row": 105,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "건강진단서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 106,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "세금서류 아포스티유",
+  "volume": 20,
+  "manual": "1위",
+  "row": 107,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "원천징수영수증 아포스티유",
+  "volume": 20,
+  "manual": "2위",
+  "row": 108,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "재무제표 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 109,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "손인계산서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 110,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "재무상태표 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 111,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "인감증명서 아포스티유",
+  "volume": 20,
+  "manual": "4위",
+  "row": 112,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "특허증 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 113,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "상표등록증 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 114,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "출원통지서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 115,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "공장등록증명서 아포스티유",
+  "volume": 20,
+  "manual": "6위",
+  "row": 116,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "유기농업자재인증서 아포스티유",
+  "volume": 20,
+  "manual": "5위",
+  "row": 117,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "선하증권 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 118,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "인보이스 아포스티유",
+  "volume": 20,
+  "manual": "1위",
+  "row": 119,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "상업송장 아포스티유",
+  "volume": 20,
+  "manual": "1위",
+  "row": 120,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "보증서 아포스티유",
+  "volume": 20,
+  "manual": "2위",
+  "row": 121,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "보증확인서 아포스티유",
+  "volume": 20,
+  "manual": "1위",
+  "row": 122,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "사유서 아포스티유",
+  "volume": 20,
+  "manual": "1위",
+  "row": 123,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "신청서 아포스티유",
+  "volume": 20,
+  "manual": "2위",
+  "row": 124,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "법정대표자신분증명 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 125,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "민사소장 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 126,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "불기소이유통지문 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 127,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "사건처분결과증명서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 128,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "벌과금납부증명서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 129,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "자동차등록증 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 130,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "자동차말소증명서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 131,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "국내거소신고사실증명 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 132,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "국적취득사실증명서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 133,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "건강보험자격확인서 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 134,
+  "ecol": 7
+ },
+ {
+  "category": "서류명 + 아포스티유 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "학위증명서아포스티유",
+  "volume": 10,
+  "manual": "3위",
+  "row": 135,
+  "ecol": 7
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유",
+  "volume": 11760,
+  "manual": "",
+  "row": 4,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유기간",
+  "volume": 1550,
+  "manual": "5위",
+  "row": 5,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유대행",
+  "volume": 1550,
+  "manual": "2위",
+  "row": 6,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유비용",
+  "volume": 120,
+  "manual": "2위",
+  "row": 8,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유유효기간",
+  "volume": 120,
+  "manual": "3위",
+  "row": 9,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유번역",
+  "volume": 110,
+  "manual": "3위",
+  "row": 10,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유위임장",
+  "volume": 90,
+  "manual": "",
+  "row": 11,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유대행업체",
+  "volume": 60,
+  "manual": "1위, 4위",
+  "row": 12,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유신청",
+  "volume": 60,
+  "manual": "4위",
+  "row": 13,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유가격",
+  "volume": 50,
+  "manual": "2위",
+  "row": 14,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유업체",
+  "volume": 40,
+  "manual": "",
+  "row": 15,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "법무부아포스티유",
+  "volume": 60,
+  "manual": "5위",
+  "row": 16,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "APOSTILLE",
+  "volume": 1310,
+  "manual": "5위",
+  "row": 17,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유뜻",
+  "volume": 660,
+  "manual": "6위",
+  "row": 18,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유협약국",
+  "volume": 450,
+  "manual": "6위",
+  "row": 19,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "외교부아포스티유",
+  "volume": 410,
+  "manual": "",
+  "row": 20,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유협약",
+  "volume": 130,
+  "manual": "",
+  "row": 21,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유가입국",
+  "volume": 120,
+  "manual": "",
+  "row": 22,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유국가",
+  "volume": 100,
+  "manual": "",
+  "row": 23,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유란",
+  "volume": 1560,
+  "manual": "",
+  "row": 24,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유협약국가",
+  "volume": 30,
+  "manual": "",
+  "row": 26,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "학위아포스티유",
+  "volume": 30,
+  "manual": "5위",
+  "row": 27,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "온라인아포스티유",
+  "volume": 80,
+  "manual": "5위",
+  "row": 28,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "E아포스티유",
+  "volume": 140,
+  "manual": "6위",
+  "row": 29,
+  "ecol": 11
+ },
+ {
+  "category": "해외아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국아포스티유",
+  "volume": 2650,
+  "manual": "2위",
+  "row": 36,
+  "ecol": 11
+ },
+ {
+  "category": "해외아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "미국아포스티유",
+  "volume": 1600,
+  "manual": "",
+  "row": 37,
+  "ecol": 11
+ },
+ {
+  "category": "해외아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "캐나다아포스티유",
+  "volume": 770,
+  "manual": "5위",
+  "row": 38,
+  "ecol": 11
+ },
+ {
+  "category": "해외아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국아포스티유공증",
+  "volume": 190,
+  "manual": "2위, 4위",
+  "row": 39,
+  "ecol": 11
+ },
+ {
+  "category": "해외아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "미국아포스티유공증",
+  "volume": 60,
+  "manual": "6위",
+  "row": 40,
+  "ecol": 11
+ },
+ {
+  "category": "해외아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "미국아포스티유비용",
+  "volume": 30,
+  "manual": "",
+  "row": 41,
+  "ecol": 11
+ },
+ {
+  "category": "해외아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국아포스티유비용",
+  "volume": 20,
+  "manual": "",
+  "row": 42,
+  "ecol": 11
+ },
+ {
+  "category": "해외아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "캐나다아포스티유비용",
+  "volume": 20,
+  "manual": "3위",
+  "row": 43,
+  "ecol": 11
+ },
+ {
+  "category": "해외아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "미국아포스티유대행업체",
+  "volume": 20,
+  "manual": "",
+  "row": 44,
+  "ecol": 11
+ },
+ {
+  "category": "해외아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "미국아포스티유대행",
+  "volume": 20,
+  "manual": "",
+  "row": 45,
+  "ecol": 11
+ },
+ {
+  "category": "해외아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국아포스티유졸업장",
+  "volume": 10,
+  "manual": "6위",
+  "row": 46,
+  "ecol": 11
+ },
+ {
+  "category": "해외아포스티유",
+  "importance": "상",
+  "status": "",
+  "keyword": "캐나다아포스티유가격",
+  "volume": 10,
+  "manual": "2위",
+  "row": 47,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "필리핀아포스티유",
+  "volume": 210,
+  "manual": "3위",
+  "row": 51,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본아포스티유",
+  "volume": 180,
+  "manual": "",
+  "row": 52,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "영국아포스티유",
+  "volume": 140,
+  "manual": "4위",
+  "row": 53,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남아포스티유",
+  "volume": 130,
+  "manual": "",
+  "row": 54,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "독일아포스티유",
+  "volume": 120,
+  "manual": "5위",
+  "row": 55,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "러시아아포스티유",
+  "volume": 60,
+  "manual": "4위",
+  "row": 56,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "싱가포르아포스티유",
+  "volume": 60,
+  "manual": "",
+  "row": 57,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "인도아포스티유",
+  "volume": 60,
+  "manual": "3위",
+  "row": 58,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "스페인아포스티유",
+  "volume": 60,
+  "manual": "5위",
+  "row": 59,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "홍콩아포스티유",
+  "volume": 50,
+  "manual": "4위",
+  "row": 60,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "이탈리아아포스티유",
+  "volume": 40,
+  "manual": "2위",
+  "row": 61,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "이탈리아아포스티유",
+  "volume": 40,
+  "manual": "2위",
+  "row": 62,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "몽골아포스티유",
+  "volume": 40,
+  "manual": "",
+  "row": 63,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "헝가리아포스티유",
+  "volume": 30,
+  "manual": "4위, 5위",
+  "row": 64,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "우즈베키스탄아포스티유",
+  "volume": 30,
+  "manual": "4위",
+  "row": 65,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "사우디아라비아아포스티유",
+  "volume": null,
+  "manual": "",
+  "row": 66,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "체코아포스티유",
+  "volume": null,
+  "manual": "2위",
+  "row": 67,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "칠레아포스티유",
+  "volume": 20,
+  "manual": "2위, 3위",
+  "row": 68,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "미국현지아포스티유",
+  "volume": 20,
+  "manual": "3위",
+  "row": 69,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "스위스아포스티유",
+  "volume": 20,
+  "manual": "5위",
+  "row": 70,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "브라질아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 71,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "카자흐스탄아포스티유",
+  "volume": 20,
+  "manual": "3위",
+  "row": 72,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "벨기에아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 73,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "핀란드아포스티유",
+  "volume": 10,
+  "manual": "",
+  "row": 74,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "마카오아포스티유",
+  "volume": 10,
+  "manual": "3위",
+  "row": 75,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "노르웨이아포스티유",
+  "volume": 10,
+  "manual": "1위",
+  "row": 76,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "오스트리아아포스티유",
+  "volume": 10,
+  "manual": "1위",
+  "row": 77,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "멕시코아포스티유",
+  "volume": 10,
+  "manual": "",
+  "row": 78,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "아르헨티나아포스티유",
+  "volume": 10,
+  "manual": "1위",
+  "row": 79,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "터키아포스티유",
+  "volume": 10,
+  "manual": "",
+  "row": 80,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "프랑스아포스티유",
+  "volume": 170,
+  "manual": "",
+  "row": 82,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "말레이시아아포스티유",
+  "volume": 30,
+  "manual": "",
+  "row": 83,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "아포스티유 미가입국",
+  "keyword": "태국아포스티유",
+  "volume": 60,
+  "manual": "2위",
+  "row": 84,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "아포스티유 미가입국",
+  "keyword": "한국태국아포스티유",
+  "volume": 20,
+  "manual": "1위",
+  "row": 85,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "아포스티유 미가입국",
+  "keyword": "한국 미얀마 아포스티유",
+  "volume": 20,
+  "manual": "1위",
+  "row": 86,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "아포스티유 미가입국",
+  "keyword": "한국 UAE 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 87,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "아포스티유 미가입국",
+  "keyword": "한국 카타르 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 88,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "아포스티유 미가입국",
+  "keyword": "한국 이라크 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 89,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "아포스티유 미가입국",
+  "keyword": "한국 이집트 아포스티유",
+  "volume": 20,
+  "manual": "4위",
+  "row": 90,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "아포스티유 미가입국",
+  "keyword": "한국 이란 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 91,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "아포스티유 미가입국",
+  "keyword": "한국 쿠웨이트 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 92,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "아포스티유 미가입국",
+  "keyword": "인도네시아아포스티유",
+  "volume": 20,
+  "manual": "3위",
+  "row": 93,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "아포스티유 미가입국",
+  "keyword": "남미아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 94,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유인증",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유인증",
+  "volume": 190,
+  "manual": "",
+  "row": 97,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유인증",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유번역공증",
+  "volume": 130,
+  "manual": "6위",
+  "row": 98,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유인증",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역공증아포스티유",
+  "volume": 70,
+  "manual": "1위, 3위",
+  "row": 99,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유인증",
+  "importance": "상",
+  "status": "",
+  "keyword": "필리핀아포스티유인증",
+  "volume": 20,
+  "manual": "2위",
+  "row": 100,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유인증",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국아포스티유인증",
+  "volume": 20,
+  "manual": "3위, 4위",
+  "row": 101,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유인증",
+  "importance": "상",
+  "status": "",
+  "keyword": "한국태국아포스티유인증",
+  "volume": 20,
+  "manual": "4위",
+  "row": 102,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유인증",
+  "importance": "상",
+  "status": "",
+  "keyword": "한국 쿠웨이트 아포스티유 인증",
+  "volume": 20,
+  "manual": "",
+  "row": 103,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유인증",
+  "importance": "상",
+  "status": "",
+  "keyword": "한국 카타르 아포스티유 인증",
+  "volume": 20,
+  "manual": "",
+  "row": 104,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유인증",
+  "importance": "상",
+  "status": "",
+  "keyword": "한국 이집트 아포스티유 인증",
+  "volume": 20,
+  "manual": "",
+  "row": 105,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유인증",
+  "importance": "상",
+  "status": "",
+  "keyword": "한국 이란 아포스티유 인증",
+  "volume": 20,
+  "manual": "",
+  "row": 106,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유인증",
+  "importance": "상",
+  "status": "",
+  "keyword": "한국 이라크 아포스티유 인증",
+  "volume": 20,
+  "manual": "",
+  "row": 107,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유인증",
+  "importance": "상",
+  "status": "",
+  "keyword": "한국 미얀마 아포스티유 인증",
+  "volume": 20,
+  "manual": "3위",
+  "row": 108,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유인증",
+  "importance": "상",
+  "status": "",
+  "keyword": "한국 UAE 아포스티유 인증",
+  "volume": 20,
+  "manual": "",
+  "row": 109,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유인증",
+  "importance": "상",
+  "status": "",
+  "keyword": "한국 방글라데시 아포스티유",
+  "volume": 20,
+  "manual": "",
+  "row": 111,
+  "ecol": 11
+ },
+ {
+  "category": "아포스티유인증",
+  "importance": "상",
+  "status": "",
+  "keyword": "한국 방글라데시 아포스티유 인증",
+  "volume": 20,
+  "manual": "",
+  "row": 112,
+  "ecol": 11
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역공증",
+  "volume": 3860,
+  "manual": "",
+  "row": 4,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역공증대행",
+  "volume": 1500,
+  "manual": "3위, 4위",
+  "row": 5,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "공증번역",
+  "volume": 1440,
+  "manual": "",
+  "row": 6,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역공증비용",
+  "volume": 460,
+  "manual": "2위",
+  "row": 7,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "영문 번역공증",
+  "volume": 430,
+  "manual": "5위",
+  "row": 8,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역 공증사무소",
+  "volume": 490,
+  "manual": "2위, 5위",
+  "row": 9,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "영문공증",
+  "volume": 270,
+  "manual": "5위",
+  "row": 10,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "가족관계증명서번역공증",
+  "volume": 150,
+  "manual": "5위",
+  "row": 11,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "가족관계증명서영문번역공증",
+  "volume": 120,
+  "manual": "4위",
+  "row": 12,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "졸업증명서번역공증",
+  "volume": 40,
+  "manual": "1위",
+  "row": 13,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "기본증명서번역공증",
+  "volume": 50,
+  "manual": "4위",
+  "row": 14,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "생활기록부번역공증",
+  "volume": 50,
+  "manual": "1위",
+  "row": 15,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "영문서류공증",
+  "volume": 50,
+  "manual": "6위",
+  "row": 16,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역공증가격",
+  "volume": 50,
+  "manual": "1위",
+  "row": 17,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역공증업체",
+  "volume": 30,
+  "manual": "4위, 5위",
+  "row": 18,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "성적증명서번역공증",
+  "volume": 30,
+  "manual": "",
+  "row": 19,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "혼인관계증명서번역공증",
+  "volume": 90,
+  "manual": "",
+  "row": 20,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "계약서번역공증",
+  "volume": 30,
+  "manual": "2위",
+  "row": 21,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "정관번역공증",
+  "volume": 20,
+  "manual": "",
+  "row": 22,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역인증",
+  "volume": 30,
+  "manual": "5위",
+  "row": 25,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "사업자등록증번역공증",
+  "volume": 20,
+  "manual": "3위",
+  "row": 26,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "여권번역공증",
+  "volume": 20,
+  "manual": "5위",
+  "row": 27,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "MSDS번역공증",
+  "volume": 20,
+  "manual": "",
+  "row": 28,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "미국대학졸업증명서번역공증",
+  "volume": 20,
+  "manual": "",
+  "row": 29,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "필리핀공증",
+  "volume": 50,
+  "manual": "3위",
+  "row": 30,
+  "ecol": 15
+ },
+ {
+  "category": "번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "미국공증",
+  "volume": 40,
+  "manual": "",
+  "row": 31,
+  "ecol": 15
+ },
+ {
+  "category": "언어번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어번역공증",
+  "volume": 1420,
+  "manual": "1위, 2위, 5위",
+  "row": 36,
+  "ecol": 15
+ },
+ {
+  "category": "언어번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "영문번역공증",
+  "volume": 420,
+  "manual": "",
+  "row": 37,
+  "ecol": 15
+ },
+ {
+  "category": "언어번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어번역공증",
+  "volume": 240,
+  "manual": "1위",
+  "row": 38,
+  "ecol": 15
+ },
+ {
+  "category": "언어번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어번역공증",
+  "volume": 220,
+  "manual": "4위, 5위",
+  "row": 39,
+  "ecol": 15
+ },
+ {
+  "category": "언어번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어공증",
+  "volume": 60,
+  "manual": "2위, 4위",
+  "row": 40,
+  "ecol": 15
+ },
+ {
+  "category": "언어번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "러시아어번역공증",
+  "volume": 70,
+  "manual": "2위",
+  "row": 41,
+  "ecol": 15
+ },
+ {
+  "category": "언어번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "캐나다번역공증",
+  "volume": 60,
+  "manual": "2위",
+  "row": 42,
+  "ecol": 15
+ },
+ {
+  "category": "언어번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "한글번역공증",
+  "volume": 50,
+  "manual": "4위",
+  "row": 43,
+  "ecol": 15
+ },
+ {
+  "category": "언어번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "말레이시아번역공증",
+  "volume": 20,
+  "manual": "2위",
+  "row": 44,
+  "ecol": 15
+ },
+ {
+  "category": "언어번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어공증",
+  "volume": 20,
+  "manual": "1위, 3위, 5위",
+  "row": 45,
+  "ecol": 15
+ },
+ {
+  "category": "언어번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어공증",
+  "volume": 20,
+  "manual": "",
+  "row": 46,
+  "ecol": 15
+ },
+ {
+  "category": "언어번역공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "한국어공증",
+  "volume": 20,
+  "manual": "4위",
+  "row": 47,
+  "ecol": 15
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유공증",
+  "volume": 5460,
+  "manual": "",
+  "row": 51,
+  "ecol": 15
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유공증대행",
+  "volume": 30,
+  "manual": "3위",
+  "row": 52,
+  "ecol": 15
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유공증비용",
+  "volume": 40,
+  "manual": "1위",
+  "row": 53,
+  "ecol": 15
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유공증베트남",
+  "volume": 40,
+  "manual": "2위",
+  "row": 54,
+  "ecol": 15
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유공증캐나다",
+  "volume": 50,
+  "manual": "3위, 4위",
+  "row": 55,
+  "ecol": 15
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "아포스티유공증방법",
+  "volume": 80,
+  "manual": "",
+  "row": 56,
+  "ecol": 15
+ },
+ {
+  "category": "아포스티유공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "공증아포스티유",
+  "volume": 170,
+  "manual": "",
+  "row": 57,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "이집트대사관인증",
+  "volume": 40,
+  "manual": "",
+  "row": 61,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "이라크대사관인증",
+  "volume": 40,
+  "manual": "",
+  "row": 62,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "UAE대사관공증",
+  "volume": 40,
+  "manual": "5위",
+  "row": 63,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "인증공증",
+  "volume": 30,
+  "manual": "",
+  "row": 64,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "태국 대사관인증",
+  "volume": 30,
+  "manual": "6위",
+  "row": 65,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "UAE 대사관인증",
+  "volume": 30,
+  "manual": "",
+  "row": 66,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "이란대사관인증",
+  "volume": 30,
+  "manual": "",
+  "row": 67,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "대만대표부인증",
+  "volume": 20,
+  "manual": "",
+  "row": 68,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "방글라데시 대사관인증",
+  "volume": 20,
+  "manual": "1위, 2위",
+  "row": 69,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "쿠웨이트 대사관인증",
+  "volume": 20,
+  "manual": "",
+  "row": 70,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "말레이시아 대사관인증",
+  "volume": 20,
+  "manual": "6위",
+  "row": 71,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "카타르 대사관인증",
+  "volume": 20,
+  "manual": "1위",
+  "row": 72,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "미얀마대사관인증",
+  "volume": 20,
+  "manual": "1위",
+  "row": 73,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "아랍에미리트대사관인증",
+  "volume": 10,
+  "manual": "",
+  "row": 74,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "사우디대사관인증",
+  "volume": 20,
+  "manual": "",
+  "row": 76,
+  "ecol": 15
+ },
+ {
+  "category": "인증공증",
+  "importance": "상",
+  "status": "",
+  "keyword": "미얀마 대사관인증",
+  "volume": 20,
+  "manual": "2위",
+  "row": 77,
+  "ecol": 15
+ },
+ {
+  "category": "CFS / LOA",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남CFS",
+  "volume": 20,
+  "manual": "",
+  "row": 97,
+  "ecol": 15
+ },
+ {
+  "category": "CFS / LOA",
+  "importance": "상",
+  "status": "",
+  "keyword": "베트남LOA",
+  "volume": 20,
+  "manual": "1위, 3위",
+  "row": 98,
+  "ecol": 15
+ },
+ {
+  "category": "CFS / LOA",
+  "importance": "상",
+  "status": "",
+  "keyword": "인도네시아 CFS",
+  "volume": 20,
+  "manual": "3위",
+  "row": 99,
+  "ecol": 15
+ },
+ {
+  "category": "CFS / LOA",
+  "importance": "상",
+  "status": "",
+  "keyword": "인도네시아LOA",
+  "volume": 20,
+  "manual": "1위",
+  "row": 100,
+  "ecol": 15
+ },
+ {
+  "category": "CFS / LOA",
+  "importance": "상",
+  "status": "",
+  "keyword": "인도CFS",
+  "volume": 20,
+  "manual": "",
+  "row": 101,
+  "ecol": 15
+ },
+ {
+  "category": "CFS / LOA",
+  "importance": "상",
+  "status": "",
+  "keyword": "인도LOA",
+  "volume": 20,
+  "manual": "1위",
+  "row": 102,
+  "ecol": 15
+ },
+ {
+  "category": "CFS / LOA",
+  "importance": "상",
+  "status": "",
+  "keyword": "사우디CFS",
+  "volume": 20,
+  "manual": "",
+  "row": 103,
+  "ecol": 15
+ },
+ {
+  "category": "CFS / LOA",
+  "importance": "상",
+  "status": "",
+  "keyword": "사우디LOA",
+  "volume": 20,
+  "manual": "",
+  "row": 104,
+  "ecol": 15
+ },
+ {
+  "category": "CFS / LOA",
+  "importance": "상",
+  "status": "",
+  "keyword": "칠레CFS",
+  "volume": 20,
+  "manual": "",
+  "row": 105,
+  "ecol": 15
+ },
+ {
+  "category": "CFS / LOA",
+  "importance": "상",
+  "status": "",
+  "keyword": "칠레LOA",
+  "volume": 20,
+  "manual": "",
+  "row": 106,
+  "ecol": 15
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "전문번역회사",
+  "volume": 3860,
+  "manual": "3위",
+  "row": 4,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "전문번역업체",
+  "volume": 2790,
+  "manual": "2위, 5위",
+  "row": 5,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역회사",
+  "volume": 1890,
+  "manual": "",
+  "row": 6,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역업체",
+  "volume": 1200,
+  "manual": "6위",
+  "row": 7,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역비용",
+  "volume": 180,
+  "manual": "6위",
+  "row": 8,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역사무소",
+  "volume": 100,
+  "manual": "1위, 5위, 6위",
+  "row": 9,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역의뢰",
+  "volume": 100,
+  "manual": "",
+  "row": 10,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역대행",
+  "volume": 30,
+  "manual": "2위",
+  "row": 11,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "외국어번역",
+  "volume": 410,
+  "manual": "",
+  "row": 13,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "동시번역",
+  "volume": 330,
+  "manual": "",
+  "row": 14,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "통번역",
+  "volume": 900,
+  "manual": "",
+  "row": 15,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "언어번역",
+  "volume": 600,
+  "manual": "",
+  "row": 16,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "전문번역",
+  "volume": 650,
+  "manual": "4위",
+  "row": 17,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역",
+  "volume": 979000,
+  "manual": "",
+  "row": 18,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역비",
+  "volume": 8150,
+  "manual": "",
+  "row": 19,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역원",
+  "volume": 320,
+  "manual": "",
+  "row": 20,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "로컬라이제이션",
+  "volume": 490,
+  "manual": "",
+  "row": 21,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역검수",
+  "volume": 150,
+  "manual": "4위",
+  "row": 22,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역에이전시",
+  "volume": 120,
+  "manual": "",
+  "row": 23,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역문",
+  "volume": 120,
+  "manual": "",
+  "row": 24,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역서비스",
+  "volume": 110,
+  "manual": "",
+  "row": 25,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역료",
+  "volume": 110,
+  "manual": "",
+  "row": 26,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "긴급번역",
+  "volume": 90,
+  "manual": "",
+  "row": 27,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역단가",
+  "volume": 80,
+  "manual": "",
+  "row": 28,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "전문번역",
+  "volume": 70,
+  "manual": "4위",
+  "row": 29,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "다국어번역",
+  "volume": 60,
+  "manual": "",
+  "row": 30,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역사무실",
+  "volume": 60,
+  "manual": "",
+  "row": 31,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역견적",
+  "volume": 40,
+  "manual": "",
+  "row": 32,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "대량번역",
+  "volume": 40,
+  "manual": "",
+  "row": 33,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "온라인번역",
+  "volume": 30,
+  "manual": "",
+  "row": 35,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역플랫폼",
+  "volume": 30,
+  "manual": "",
+  "row": 36,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역전문업체",
+  "volume": 30,
+  "manual": "3위, 5위, 6위",
+  "row": 37,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역회사추천",
+  "volume": 20,
+  "manual": "",
+  "row": 38,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "IT번역",
+  "volume": 20,
+  "manual": "",
+  "row": 39,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "빠른번역",
+  "volume": 20,
+  "manual": "",
+  "row": 40,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역전문",
+  "volume": 20,
+  "manual": "5위",
+  "row": 41,
+  "ecol": 19
+ },
+ {
+  "category": "번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역전문회사",
+  "volume": 20,
+  "manual": "4위",
+  "row": 42,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어통역",
+  "volume": 1970,
+  "manual": "",
+  "row": 47,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "동시통역",
+  "volume": 1450,
+  "manual": "",
+  "row": 48,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어통역",
+  "volume": 1270,
+  "manual": "",
+  "row": 49,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "통역업체",
+  "volume": 640,
+  "manual": "",
+  "row": 50,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "스페인어통역",
+  "volume": 170,
+  "manual": "",
+  "row": 51,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "러시아어통역",
+  "volume": 140,
+  "manual": "",
+  "row": 52,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "수행통역",
+  "volume": 60,
+  "manual": "",
+  "row": 53,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "프랑스어통역",
+  "volume": 40,
+  "manual": "",
+  "row": 54,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "비즈니스통역",
+  "volume": 30,
+  "manual": "",
+  "row": 55,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "해외통역",
+  "volume": 20,
+  "manual": "",
+  "row": 56,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "통역서비스",
+  "volume": null,
+  "manual": "",
+  "row": 57,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "통역 에이전시",
+  "volume": 70,
+  "manual": "2위",
+  "row": 58,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "통역전문업체",
+  "volume": 20,
+  "manual": "3위, 4위",
+  "row": 59,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "출장통역",
+  "volume": 20,
+  "manual": "",
+  "row": 62,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "전문통역번역",
+  "volume": 20,
+  "manual": "",
+  "row": 63,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "통역서비스비용",
+  "volume": 20,
+  "manual": "1위",
+  "row": 64,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어통역",
+  "volume": null,
+  "manual": "",
+  "row": 65,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "상담회통역",
+  "volume": 30,
+  "manual": "",
+  "row": 66,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "상담회통역",
+  "volume": 20,
+  "manual": "",
+  "row": 67,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "아랍어통역",
+  "volume": 60,
+  "manual": "",
+  "row": 68,
+  "ecol": 19
+ },
+ {
+  "category": "통역 (NEW)",
+  "importance": "상",
+  "status": "",
+  "keyword": "독일어통역",
+  "volume": 40,
+  "manual": "",
+  "row": 69,
+  "ecol": 19
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어번역기",
+  "volume": 281300,
+  "manual": "",
+  "row": 4,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어번역",
+  "volume": 63700,
+  "manual": "4위",
+  "row": 5,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어사전네이버",
+  "volume": 22450,
+  "manual": "",
+  "row": 6,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "네이버일본어번역기",
+  "volume": 6870,
+  "manual": "",
+  "row": 7,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일어번역",
+  "volume": 2940,
+  "manual": "",
+  "row": 8,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본번역",
+  "volume": 2220,
+  "manual": "4위",
+  "row": 9,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "한일번역",
+  "volume": 1160,
+  "manual": "",
+  "row": 10,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어사진번역",
+  "volume": 740,
+  "manual": "",
+  "row": 11,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어번역사이트",
+  "volume": 500,
+  "manual": "",
+  "row": 14,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어번역알바",
+  "volume": 480,
+  "manual": "",
+  "row": 15,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어번역기사진",
+  "volume": 470,
+  "manual": "",
+  "row": 16,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "라인일본어번역",
+  "volume": 410,
+  "manual": "",
+  "row": 17,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일한번역",
+  "volume": 380,
+  "manual": "",
+  "row": 18,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "파파고일본어번역",
+  "volume": 150,
+  "manual": "",
+  "row": 19,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어음성번역",
+  "volume": 120,
+  "manual": "5위",
+  "row": 20,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어번역행정사",
+  "volume": 100,
+  "manual": "",
+  "row": 21,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어번역자격증",
+  "volume": 60,
+  "manual": "",
+  "row": 22,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어영상번역",
+  "volume": 60,
+  "manual": "",
+  "row": 23,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어자동번역",
+  "volume": 40,
+  "manual": "",
+  "row": 24,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어번역비용",
+  "volume": 40,
+  "manual": "",
+  "row": 25,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어문서번역",
+  "volume": 40,
+  "manual": "4위",
+  "row": 26,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어발음번역",
+  "volume": 1080,
+  "manual": "1위, 2위, 3위",
+  "row": 27,
+  "ecol": 23
+ },
+ {
+  "category": "일본어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "일본어번역아르바이트",
+  "volume": 510,
+  "manual": "",
+  "row": 29,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어번역",
+  "volume": 115800,
+  "manual": "",
+  "row": 31,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영문번역",
+  "volume": 6900,
+  "manual": "",
+  "row": 32,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어사진번역",
+  "volume": 5330,
+  "manual": "",
+  "row": 33,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영한번역",
+  "volume": 3890,
+  "manual": "",
+  "row": 34,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어번역사이트",
+  "volume": 2660,
+  "manual": "",
+  "row": 35,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "주소영어번역",
+  "volume": 1620,
+  "manual": "",
+  "row": 36,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어논문번역",
+  "volume": 1030,
+  "manual": "",
+  "row": 37,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "카톡영어번역",
+  "volume": 950,
+  "manual": "",
+  "row": 38,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어한국어번역",
+  "volume": 870,
+  "manual": "",
+  "row": 39,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어번역알바",
+  "volume": 670,
+  "manual": "",
+  "row": 40,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어한글번역",
+  "volume": 630,
+  "manual": "",
+  "row": 41,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "한국어영어번역",
+  "volume": 540,
+  "manual": "",
+  "row": 42,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "PDF영어번역",
+  "volume": 490,
+  "manual": "5위",
+  "row": 43,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "한글영어번역",
+  "volume": 470,
+  "manual": "",
+  "row": 44,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어번역어플",
+  "volume": 460,
+  "manual": "",
+  "row": 45,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어음성번역",
+  "volume": 450,
+  "manual": "",
+  "row": 46,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어번역앱",
+  "volume": 380,
+  "manual": "",
+  "row": 47,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "갤럭시영어번역",
+  "volume": 330,
+  "manual": "",
+  "row": 48,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어논문번역사이트",
+  "volume": 190,
+  "manual": "",
+  "row": 49,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어문서번역",
+  "volume": 150,
+  "manual": "",
+  "row": 50,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어책번역",
+  "volume": 140,
+  "manual": "",
+  "row": 51,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영문계약서번역",
+  "volume": 110,
+  "manual": "",
+  "row": 52,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어번역AI",
+  "volume": 100,
+  "manual": "",
+  "row": 53,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어번역업체",
+  "volume": 90,
+  "manual": "4위, 5위, 6위",
+  "row": 54,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "PDF 영문번역",
+  "volume": 90,
+  "manual": "3위",
+  "row": 55,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어번역자격증",
+  "volume": 80,
+  "manual": "4위",
+  "row": 56,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어파일번역",
+  "volume": 70,
+  "manual": "",
+  "row": 57,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "미국대학졸업증명서",
+  "volume": 60,
+  "manual": "",
+  "row": 58,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영문번역업체",
+  "volume": 60,
+  "manual": "1위, 3위",
+  "row": 59,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어번역봉사",
+  "volume": 50,
+  "manual": "",
+  "row": 60,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어번역행정사",
+  "volume": 30,
+  "manual": "",
+  "row": 61,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어번역공부",
+  "volume": 30,
+  "manual": "",
+  "row": 62,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어번역비용",
+  "volume": 30,
+  "manual": "5위",
+  "row": 63,
+  "ecol": 23
+ },
+ {
+  "category": "서비스진행X",
+  "importance": "상",
+  "status": "",
+  "keyword": "영어서류번역",
+  "volume": 30,
+  "manual": "6위",
+  "row": 64,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어번역기",
+  "volume": 90800,
+  "manual": "",
+  "row": 68,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어번역",
+  "volume": 44300,
+  "manual": "",
+  "row": 69,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어번역사이트",
+  "volume": 2480,
+  "manual": "",
+  "row": 70,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국번역",
+  "volume": 1310,
+  "manual": "",
+  "row": 71,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "한중번역",
+  "volume": 640,
+  "manual": "",
+  "row": 72,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어사진번역",
+  "volume": 270,
+  "manual": "",
+  "row": 73,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어통번역",
+  "volume": 260,
+  "manual": "",
+  "row": 75,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중문번역",
+  "volume": 120,
+  "manual": "",
+  "row": 76,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어번역사이트",
+  "volume": 90,
+  "manual": "",
+  "row": 77,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역중국어",
+  "volume": 90,
+  "manual": "",
+  "row": 78,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어번역앱",
+  "volume": 60,
+  "manual": "",
+  "row": 79,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어문서번역",
+  "volume": 60,
+  "manual": "5위",
+  "row": 80,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어번역업체",
+  "volume": 60,
+  "manual": "",
+  "row": 81,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어번역비용",
+  "volume": 40,
+  "manual": "5위",
+  "row": 83,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어번역단가",
+  "volume": 20,
+  "manual": "",
+  "row": 84,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어번역행정사",
+  "volume": 80,
+  "manual": "",
+  "row": 85,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어번역알바",
+  "volume": 260,
+  "manual": "5위",
+  "row": 86,
+  "ecol": 23
+ },
+ {
+  "category": "중국어번역",
+  "importance": "상",
+  "status": "",
+  "keyword": "중국어영상번역",
+  "volume": 40,
+  "manual": "1위",
+  "row": 87,
+  "ecol": 23
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "사진번역",
+  "volume": 15250,
+  "manual": "",
+  "row": 4,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "글자번역",
+  "volume": 10490,
+  "manual": "",
+  "row": 5,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "이미지번역",
+  "volume": 10390,
+  "manual": "",
+  "row": 6,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "pdf파일번역",
+  "volume": 2980,
+  "manual": "",
+  "row": 7,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "문서번역",
+  "volume": 2250,
+  "manual": "",
+  "row": 8,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "웹사이트번역",
+  "volume": 1660,
+  "manual": "",
+  "row": 9,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "사이트번역",
+  "volume": 1580,
+  "manual": "",
+  "row": 10,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "주소번역",
+  "volume": 1520,
+  "manual": "",
+  "row": 11,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "논문번역사이트",
+  "volume": 1300,
+  "manual": "",
+  "row": 12,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "pdf문서번역",
+  "volume": 990,
+  "manual": "",
+  "row": 13,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "파일번역",
+  "volume": 950,
+  "manual": "",
+  "row": 14,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "PPT번역",
+  "volume": 720,
+  "manual": "",
+  "row": 15,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "홈페이지번역",
+  "volume": 440,
+  "manual": "",
+  "row": 16,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "메뉴판번역",
+  "volume": 380,
+  "manual": "",
+  "row": 17,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "상세페이지번역",
+  "volume": 360,
+  "manual": "",
+  "row": 18,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "게임번역",
+  "volume": 230,
+  "manual": "",
+  "row": 19,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "기계번역",
+  "volume": 220,
+  "manual": "",
+  "row": 20,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "원서번역",
+  "volume": 220,
+  "manual": "",
+  "row": 21,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "웹툰번역",
+  "volume": 180,
+  "manual": "",
+  "row": 24,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "초벌번역",
+  "volume": 180,
+  "manual": "",
+  "row": 25,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "해외논문번역",
+  "volume": 160,
+  "manual": "",
+  "row": 26,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "의학용어번역",
+  "volume": 160,
+  "manual": "",
+  "row": 27,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "가사번역",
+  "volume": 160,
+  "manual": "",
+  "row": 28,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "서류번역",
+  "volume": 150,
+  "manual": "2위, 5위",
+  "row": 29,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "영상자막번역",
+  "volume": 150,
+  "manual": "",
+  "row": 30,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "기술번역",
+  "volume": 150,
+  "manual": "",
+  "row": 31,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "가족관계증명서번역",
+  "volume": 150,
+  "manual": "6위",
+  "row": 32,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "문장번역",
+  "volume": 140,
+  "manual": "",
+  "row": 33,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "특허번역",
+  "volume": 140,
+  "manual": "",
+  "row": 34,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "계약서번역",
+  "volume": 130,
+  "manual": "",
+  "row": 35,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "어플번역",
+  "volume": 130,
+  "manual": "",
+  "row": 36,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "메뉴번역",
+  "volume": 130,
+  "manual": "",
+  "row": 37,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "웹번역",
+  "volume": 120,
+  "manual": "",
+  "row": 38,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "생활기록부번역",
+  "volume": 120,
+  "manual": "4위",
+  "row": 39,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "고전번역",
+  "volume": 120,
+  "manual": "",
+  "row": 40,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "글번역",
+  "volume": 120,
+  "manual": "",
+  "row": 41,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "의료번역",
+  "volume": 120,
+  "manual": "",
+  "row": 42,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "대화번역",
+  "volume": 120,
+  "manual": "",
+  "row": 43,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "법률번역",
+  "volume": 110,
+  "manual": "3위",
+  "row": 44,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "앱번역",
+  "volume": 100,
+  "manual": "",
+  "row": 45,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "기본증명서번역",
+  "volume": 90,
+  "manual": "4위",
+  "row": 46,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "출판번역",
+  "volume": 90,
+  "manual": "",
+  "row": 47,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "문학번역",
+  "volume": 90,
+  "manual": "",
+  "row": 48,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "노래번역",
+  "volume": 90,
+  "manual": "",
+  "row": 49,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "산업번역",
+  "volume": 80,
+  "manual": "",
+  "row": 50,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "소설번역",
+  "volume": 80,
+  "manual": "",
+  "row": 51,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "의학번역",
+  "volume": 70,
+  "manual": "",
+  "row": 52,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "논문초록번역",
+  "volume": 70,
+  "manual": "",
+  "row": 53,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "매뉴얼번역",
+  "volume": 60,
+  "manual": "",
+  "row": 54,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "이메일번역",
+  "volume": 60,
+  "manual": "",
+  "row": 55,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "설명서번역",
+  "volume": 60,
+  "manual": "",
+  "row": 56,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "MSDS번역",
+  "volume": 60,
+  "manual": "",
+  "row": 57,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "메뉴얼번역",
+  "volume": 50,
+  "manual": "",
+  "row": 58,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "그림파일번역",
+  "volume": 50,
+  "manual": "",
+  "row": 59,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "메일번역",
+  "volume": 50,
+  "manual": "",
+  "row": 60,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "도서번역",
+  "volume": 50,
+  "manual": "",
+  "row": 61,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "동화번역",
+  "volume": 50,
+  "manual": "",
+  "row": 62,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "정관번역",
+  "volume": 50,
+  "manual": "",
+  "row": 63,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "제적등본번역",
+  "volume": 40,
+  "manual": "",
+  "row": 64,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "회사소개서번역",
+  "volume": 40,
+  "manual": "",
+  "row": 65,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "번역계약서",
+  "volume": 40,
+  "manual": "",
+  "row": 66,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "웹소설번역",
+  "volume": 40,
+  "manual": "",
+  "row": 67,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "등기부등본번역",
+  "volume": 40,
+  "manual": "",
+  "row": 68,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "기사번역",
+  "volume": 40,
+  "manual": "",
+  "row": 69,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "학술번역",
+  "volume": 40,
+  "manual": "",
+  "row": 70,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "번체번역",
+  "volume": 40,
+  "manual": "",
+  "row": 71,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "의학논문번역",
+  "volume": 40,
+  "manual": "",
+  "row": 72,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "강의번역",
+  "volume": 40,
+  "manual": "",
+  "row": 73,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "기업번역",
+  "volume": 40,
+  "manual": "",
+  "row": 74,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "이력서번역",
+  "volume": 30,
+  "manual": "",
+  "row": 75,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "공인번역",
+  "volume": 30,
+  "manual": "",
+  "row": 76,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "보고서번역",
+  "volume": 30,
+  "manual": "",
+  "row": 77,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "공문서번역",
+  "volume": 30,
+  "manual": "",
+  "row": 78,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "무역번역",
+  "volume": 30,
+  "manual": "",
+  "row": 79,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "회계번역",
+  "volume": 30,
+  "manual": "",
+  "row": 80,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "금융번역",
+  "volume": 30,
+  "manual": "",
+  "row": 81,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "초록번역",
+  "volume": 30,
+  "manual": "",
+  "row": 82,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "생기부번역",
+  "volume": 30,
+  "manual": "",
+  "row": 83,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "그림책번역",
+  "volume": 30,
+  "manual": "",
+  "row": 84,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "더빙번역",
+  "volume": 30,
+  "manual": "",
+  "row": 85,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "카달로그번역",
+  "volume": 20,
+  "manual": "",
+  "row": 87,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "기술문서번역",
+  "volume": 20,
+  "manual": "",
+  "row": 88,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "재무제표번역",
+  "volume": 20,
+  "manual": "",
+  "row": 89,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "카탈로그번역",
+  "volume": 20,
+  "manual": "",
+  "row": 90,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "콘텐츠번역",
+  "volume": 20,
+  "manual": "",
+  "row": 91,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "졸업증명서번역",
+  "volume": 20,
+  "manual": "",
+  "row": 92,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "대본번역",
+  "volume": 20,
+  "manual": "",
+  "row": 93,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "미술번역",
+  "volume": 20,
+  "manual": "",
+  "row": 94,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "추천서번역",
+  "volume": 20,
+  "manual": "",
+  "row": 95,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "전공서적번역",
+  "volume": 20,
+  "manual": "",
+  "row": 96,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "미국대학졸업증명서번역",
+  "volume": 20,
+  "manual": "4위",
+  "row": 97,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "자기소개서번역",
+  "volume": 20,
+  "manual": "",
+  "row": 98,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "공공기관번역",
+  "volume": 20,
+  "manual": "",
+  "row": 99,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "iso번역",
+  "volume": 20,
+  "manual": "",
+  "row": 100,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "화장품번역",
+  "volume": 20,
+  "manual": "",
+  "row": 101,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "국문번역",
+  "volume": 10,
+  "manual": "",
+  "row": 102,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "소장번역",
+  "volume": 10,
+  "manual": "",
+  "row": 103,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "법률문서번역",
+  "volume": 10,
+  "manual": "3위",
+  "row": 104,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "제안서번역",
+  "volume": 10,
+  "manual": "",
+  "row": 105,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "미디어번역",
+  "volume": 10,
+  "manual": "",
+  "row": 106,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "자격증번역",
+  "volume": 10,
+  "manual": "",
+  "row": 107,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "행정번역",
+  "volume": 10,
+  "manual": "",
+  "row": 108,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "자소서번역",
+  "volume": 10,
+  "manual": "",
+  "row": 109,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "홈페이지번역업체",
+  "volume": 10,
+  "manual": "",
+  "row": 110,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "뉴스번역",
+  "volume": 10,
+  "manual": "",
+  "row": 111,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "동영상번역",
+  "volume": 1340,
+  "manual": "",
+  "row": 112,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "영상번역",
+  "volume": 1120,
+  "manual": "",
+  "row": 113,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "녹음번역",
+  "volume": 450,
+  "manual": "",
+  "row": 114,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "성경번역",
+  "volume": 350,
+  "manual": "",
+  "row": 115,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "영화번역",
+  "volume": 200,
+  "manual": "",
+  "row": 116,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "만화번역",
+  "volume": 200,
+  "manual": "",
+  "row": 117,
+  "ecol": 27
+ },
+ {
+  "category": "번역 종류",
+  "importance": "상",
+  "status": "",
+  "keyword": "행정사번역",
+  "volume": 20,
+  "manual": "",
+  "row": 118,
+  "ecol": 27
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남비자",
+  "volume": 12120,
+  "manual": "4위",
+  "row": 4,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남나트랑비자",
+  "volume": 70,
+  "manual": "",
+  "row": 5,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남다낭비자",
+  "volume": 100,
+  "manual": "",
+  "row": 6,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남전자비자",
+  "volume": 360,
+  "manual": "3위",
+  "row": 7,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남전자비자신청방법",
+  "volume": 60,
+  "manual": "4위",
+  "row": 8,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남비자대행",
+  "volume": 160,
+  "manual": "",
+  "row": 9,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남비자서류",
+  "volume": 30,
+  "manual": "3위",
+  "row": 10,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남학생비자",
+  "volume": 160,
+  "manual": "",
+  "row": 11,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남노동비자",
+  "volume": 80,
+  "manual": "5위",
+  "row": 12,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남비자종류",
+  "volume": 350,
+  "manual": "",
+  "row": 13,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남한국비자",
+  "volume": 450,
+  "manual": "",
+  "row": 14,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남체류비자",
+  "volume": 30,
+  "manual": "5위",
+  "row": 15,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남비자정책",
+  "volume": 20,
+  "manual": "",
+  "row": 16,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남결혼비자",
+  "volume": 450,
+  "manual": "",
+  "row": 17,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남관광비자",
+  "volume": 770,
+  "manual": "",
+  "row": 18,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남투자비자",
+  "volume": 100,
+  "manual": "",
+  "row": 19,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남재입국비자",
+  "volume": 50,
+  "manual": "",
+  "row": 20,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남초청비자",
+  "volume": 320,
+  "manual": "3위",
+  "row": 21,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "중국인베트남비자",
+  "volume": 580,
+  "manual": "",
+  "row": 22,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남한달비자",
+  "volume": 30,
+  "manual": "",
+  "row": 23,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남 비자 필요",
+  "volume": 570,
+  "manual": "",
+  "row": 24,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남가족비자",
+  "volume": 50,
+  "manual": "",
+  "row": 25,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남푸꾸옥비자",
+  "volume": 40,
+  "manual": "",
+  "row": 26,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남상용비자",
+  "volume": 230,
+  "manual": "",
+  "row": 27,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남취업비자",
+  "volume": 500,
+  "manual": "",
+  "row": 28,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남취업비자서류",
+  "volume": 20,
+  "manual": "3위",
+  "row": 29,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남취업비자비용",
+  "volume": 40,
+  "manual": "",
+  "row": 30,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남취업비자연장",
+  "volume": 10,
+  "manual": "",
+  "row": 31,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남긴급비자",
+  "volume": 750,
+  "manual": "",
+  "row": 32,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남비자발급대행",
+  "volume": 20,
+  "manual": "",
+  "row": 33,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자발급",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남비자발급",
+  "volume": 2750,
+  "manual": "4위",
+  "row": 37,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자발급",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남비자발급비용",
+  "volume": 70,
+  "manual": "",
+  "row": 38,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자발급",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남비자발급기간",
+  "volume": 110,
+  "manual": "5위",
+  "row": 39,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자발급",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남긴급비자발급",
+  "volume": 40,
+  "manual": "",
+  "row": 40,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자발급",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남상용비자발급",
+  "volume": 20,
+  "manual": "",
+  "row": 41,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자발급",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남여행비자발급",
+  "volume": 40,
+  "manual": "",
+  "row": 42,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자발급",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남비자발급 방법",
+  "volume": 30,
+  "manual": "",
+  "row": 43,
+  "ecol": 35
+ },
+ {
+  "category": "베트남비자발급",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남비자발급소요시간",
+  "volume": 40,
+  "manual": "",
+  "row": 44,
+  "ecol": 35
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "영어번역기",
+  "volume": 549800,
+  "manual": "",
+  "row": 4,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "챗GPT영어번역",
+  "volume": 110,
+  "manual": "",
+  "row": 5,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "영어번역자격증",
+  "volume": 80,
+  "manual": "4위",
+  "row": 6,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "NAVER영어번역기",
+  "volume": 14640,
+  "manual": "",
+  "row": 7,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "네이버영어",
+  "volume": 12880,
+  "manual": "",
+  "row": 8,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "네이버영어번역",
+  "volume": 2990,
+  "manual": "",
+  "row": 9,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "유튜브영어번역",
+  "volume": 430,
+  "manual": "",
+  "row": 10,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "네이버영어사전한국",
+  "volume": 330,
+  "manual": "",
+  "row": 11,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "네이버영어변환기",
+  "volume": 230,
+  "manual": "",
+  "row": 12,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "파파고영어번역기",
+  "volume": 1710,
+  "manual": "",
+  "row": 13,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "네이버영어로",
+  "volume": 440,
+  "manual": "",
+  "row": 14,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "네이버영어신문",
+  "volume": 50,
+  "manual": "",
+  "row": 15,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "영어번역기추천",
+  "volume": 790,
+  "manual": "",
+  "row": 16,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "구글영어번역기",
+  "volume": 1400,
+  "manual": "",
+  "row": 17,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "영어한글번역기",
+  "volume": 1250,
+  "manual": "",
+  "row": 18,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "영어번역기어플",
+  "volume": 70,
+  "manual": "",
+  "row": 19,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "영어번역기앱",
+  "volume": 40,
+  "manual": "",
+  "row": 20,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "영어회화번역기",
+  "volume": 40,
+  "manual": "",
+  "row": 21,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "영어문장번역기",
+  "volume": 3080,
+  "manual": "",
+  "row": 22,
+  "ecol": 39
+ },
+ {
+  "category": "영어번역기",
+  "importance": "중",
+  "status": "",
+  "keyword": "영어발음번역기",
+  "volume": 880,
+  "manual": "",
+  "row": 23,
+  "ecol": 39
+ },
+ {
+  "category": "한자번역",
+  "importance": "중",
+  "status": "",
+  "keyword": "한자번역",
+  "volume": 9190,
+  "manual": "",
+  "row": 27,
+  "ecol": 39
+ },
+ {
+  "category": "한자번역",
+  "importance": "중",
+  "status": "",
+  "keyword": "한자사진번역",
+  "volume": 2160,
+  "manual": "",
+  "row": 28,
+  "ecol": 39
+ },
+ {
+  "category": "한자번역",
+  "importance": "중",
+  "status": "",
+  "keyword": "한자번역기",
+  "volume": 38550,
+  "manual": "",
+  "row": 29,
+  "ecol": 39
+ },
+ {
+  "category": "한자번역",
+  "importance": "중",
+  "status": "",
+  "keyword": "한자이미지번역",
+  "volume": 80,
+  "manual": "",
+  "row": 30,
+  "ecol": 39
+ },
+ {
+  "category": "한자번역",
+  "importance": "중",
+  "status": "",
+  "keyword": "한문번역",
+  "volume": 1880,
+  "manual": "",
+  "row": 31,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남E비자",
+  "volume": 450,
+  "manual": "4위",
+  "row": 37,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남E비자90일",
+  "volume": 20,
+  "manual": "5위",
+  "row": 38,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남E비자입국",
+  "volume": 20,
+  "manual": "3위",
+  "row": 39,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남E비자신청",
+  "volume": 120,
+  "manual": "1위",
+  "row": 40,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남E비자연장",
+  "volume": 20,
+  "manual": "",
+  "row": 41,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남여행비자",
+  "volume": 2910,
+  "manual": "",
+  "row": 42,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남E비자발급",
+  "volume": 20,
+  "manual": "4위",
+  "row": 43,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남영사인증",
+  "volume": 40,
+  "manual": "",
+  "row": 44,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남E비자기간",
+  "volume": 20,
+  "manual": "",
+  "row": 45,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남 E비자 비용",
+  "volume": 20,
+  "manual": "",
+  "row": 46,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남E비자3개월",
+  "volume": 20,
+  "manual": "",
+  "row": 47,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남E비자가격",
+  "volume": 40,
+  "manual": "",
+  "row": 48,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남E비자신청방법",
+  "volume": 170,
+  "manual": "",
+  "row": 49,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남E비자신청비용",
+  "volume": 10,
+  "manual": "",
+  "row": 50,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남E비자모바일",
+  "volume": 10,
+  "manual": "4위",
+  "row": 51,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남E비자발급방법",
+  "volume": 10,
+  "manual": "",
+  "row": 52,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남이비자",
+  "volume": 560,
+  "manual": "1위",
+  "row": 53,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남이비자가격",
+  "volume": 20,
+  "manual": "",
+  "row": 54,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남이비자신청방법",
+  "volume": 160,
+  "manual": "",
+  "row": 55,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남이비자비용",
+  "volume": 10,
+  "manual": "",
+  "row": 56,
+  "ecol": 39
+ },
+ {
+  "category": "베트남E비자",
+  "importance": "중",
+  "status": "",
+  "keyword": "베트남이비자유효기간",
+  "volume": 10,
+  "manual": "3위",
+  "row": 57,
+  "ecol": 39
+ }
+]
