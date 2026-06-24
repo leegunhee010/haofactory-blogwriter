@@ -354,14 +354,15 @@ def pick_diverse(all_files, prefer, n, rnd=None):
     모자라면 다양한 사진으로 채움(프로젝트 라운드로빈 + 같은 장면 회피). 변주는 생성 시 사진 셔플로 유지됨."""
     rnd = rnd or random.Random()
     allset = set(all_files)
-    chosen, seen = [], set()
-    # 1) Claude가 각 단락에 고른 사진을 본문 순서 그대로 — 카드뉴스와 글이 맞도록
+    chosen = []
+    # 1) Claude가 각 단락에 고른 사진을 본문 순서 그대로(★장면 중복이어도 빼지 않음 — 그래야 카드-단락 1:1)
     for f in (prefer or []):
-        if f in allset and f not in chosen and _scene_key(f) not in seen:
-            seen.add(_scene_key(f)); chosen.append(f)
+        if f in allset and f not in chosen:
+            chosen.append(f)
             if len(chosen) >= n:
                 return chosen[:n]
     # 2) 부족분만 다양한 사진으로 채움(랜덤 + 프로젝트별 라운드로빈 + 같은 장면 회피)
+    seen = set(_scene_key(f) for f in chosen)   # dedup은 채움분에만 적용
     pool = list(dict.fromkeys(all_files))
     rnd.shuffle(pool)
     groups = {}                               # 프로젝트(최상위 폴더)별 묶기
@@ -376,7 +377,7 @@ def pick_diverse(all_files, prefer, n, rnd=None):
                 break
             while gi[k] < len(groups[k]):
                 f = groups[k][gi[k]]; gi[k] += 1
-                if _scene_key(f) in seen:
+                if f in chosen or _scene_key(f) in seen:
                     continue
                 seen.add(_scene_key(f)); chosen.append(f); break
     if len(chosen) < n:                       # 부족하면 남은 것으로 채움(장면 중복 허용)
