@@ -687,6 +687,8 @@ def api_recommend():
     if not data:
         tg = brand.get("tonggeom") or load_cfg()["tonggeom_dir"]
         data = jload(os.path.join(tg, "통검_데이터.json"), [])
+    if not data:
+        return jsonify(items=[], msg="이 브랜드의 통검 키워드 데이터가 없습니다. 프로그램을 껐다 켜서 최신 버전으로 업데이트하거나, 통검체크에서 측정을 한 번 돌려주세요.")
     # 측정결과: Supabase 공유(실시간) + 로컬 병합(로컬이 더 최신이면)
     meas = supa_measurements(brand.get("name") or "")
     tg = brand.get("tonggeom") or load_cfg()["tonggeom_dir"]
@@ -716,6 +718,11 @@ def api_recommend():
 
 
 # ── 브랜드 관리 ──────────────────────────────────────────
+@app.route("/api/version")
+def api_version():
+    return jsonify(version=jload(os.path.join(HERE, "version.json"), {}).get("version", "?"))
+
+
 @app.route("/api/brands")
 def api_brands():
     return jsonify(brands=brands.list_brands())
@@ -1240,7 +1247,8 @@ select:focus{border-color:var(--brand)}
 <div class="top"><div class="logo">🖊</div><h1>블로그 작성기</h1>
   <select id="brandsel" onchange="switchBrand(this.value)" title="브랜드 선택"></select>
   <button class="btn" style="padding:7px 12px" onclick="openBrandMgr()">⚙ 브랜드</button>
-  <span class="pill" id="engine">확인 중…</span></div>
+  <span class="pill" id="engine">확인 중…</span>
+  <span id="ver" style="font-size:11px;color:var(--muted);font-weight:700"></span></div>
 <div id="loginwarn" class="warn" style="display:none"></div>
 <div id="toasts"></div>
 <div class="tabs" id="tabs"></div>
@@ -1311,6 +1319,7 @@ function switchBrand(id){BRAND=id;applyBrandColor();renderBrandSel();
   if(el('recbox')&&el('recbox').style.display=='block'){el('recbox').style.display='none';}
   toast('브랜드: '+(curBrand().name||id));}
 function init(){TABS=[newTab()];CUR=0;loadBrands();render();
+  fetch('/api/version').then(r=>r.json()).then(d=>{if(el('ver'))el('ver').textContent='v'+d.version;}).catch(()=>{});
   fetch('/api/status').then(r=>r.json()).then(s=>{
     if(!s.claude){el('engine').textContent='● 엔진 없음';el('engine').className='pill off';el('loginwarn').style.display='block';el('loginwarn').textContent='⚠ claude 실행파일을 찾지 못했습니다. Claude 데스크톱 앱 또는 CLI 설치 필요.';return;}
     checkAuth();
@@ -1383,8 +1392,10 @@ function loadingState(){return `<div style="text-align:center;padding:42px 20px;
   <div style="font-size:12.5px;color:var(--muted);margin-top:4px">Opus 기준 1~2분 정도 걸려요</div></div>`;}
 function toggleRec(){const b=el('recbox');if(b.style.display=='block'){b.style.display='none';return;}
   b.style.display='block';b.innerHTML='<div style="padding:14px;color:#889;font-size:12px">불러오는 중…</div>';
-  fetch('/api/recommend?brand='+encodeURIComponent(BRAND)).then(r=>r.json()).then(d=>{REC=d.items;
-    b.innerHTML='<table>'+d.items.map(it=>`<tr onclick="pickKw('${esc(it.keyword).replace(/'/g,"\\'")}')"><td><b>${esc(it.keyword)}</b></td><td style="color:#889">${esc(it.category)}</td><td style="text-align:right;color:#889">${Number(it.volume).toLocaleString()}</td><td><span class="recst ${it.state}">${it.state}</span></td></tr>`).join('')+'</table>';});
+  fetch('/api/recommend?brand='+encodeURIComponent(BRAND)).then(r=>r.json()).then(d=>{REC=d.items||[];
+    if(!REC.length){b.innerHTML='<div style="padding:16px;color:#c0392b;font-size:12.5px;line-height:1.6">'+esc(d.msg||'추천할 키워드가 없습니다.')+'</div>';return;}
+    b.innerHTML='<table>'+REC.map(it=>`<tr onclick="pickKw('${esc(it.keyword).replace(/'/g,"\\'")}')"><td><b>${esc(it.keyword)}</b></td><td style="color:#889">${esc(it.category)}</td><td style="text-align:right;color:#889">${Number(it.volume).toLocaleString()}</td><td><span class="recst ${it.state}">${it.state}</span></td></tr>`).join('')+'</table>';
+  }).catch(e=>{b.innerHTML='<div style="padding:16px;color:#c0392b;font-size:12.5px">추천 불러오기 오류: '+esc(''+e)+'</div>';});
 }
 function pickKw(k){t().keyword=k;el('recbox').style.display='none';render();}
 let BR={path:'',drive:true}, BRF=[], PLACES=[];
