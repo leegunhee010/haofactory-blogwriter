@@ -186,7 +186,8 @@
      1079
     ],
     "asset": "s1_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.36
    },
    {
     "role": "deco",
@@ -244,7 +245,8 @@
      1079
     ],
     "asset": "s2_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.36
    },
    {
     "role": "deco",
@@ -302,7 +304,8 @@
      1079
     ],
     "asset": "s3_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.36
    },
    {
     "role": "deco",
@@ -360,7 +363,8 @@
      1079
     ],
     "asset": "s4_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.36
    },
    {
     "role": "deco",
@@ -418,7 +422,8 @@
      1079
     ],
     "asset": "s5_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.36
    },
    {
     "role": "deco",
@@ -476,7 +481,8 @@
      1079
     ],
     "asset": "s6_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.36
    },
    {
     "role": "deco",
@@ -534,7 +540,8 @@
      1079
     ],
     "asset": "s7_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.36
    },
    {
     "role": "deco",

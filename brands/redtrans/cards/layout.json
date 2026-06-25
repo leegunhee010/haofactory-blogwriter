@@ -97,7 +97,8 @@
      1101
     ],
     "asset": "s1_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.94
    },
    {
     "role": "deco",
@@ -130,7 +131,8 @@
      1028
     ],
     "asset": "s1_3.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.95
    },
    {
     "role": "photo",
@@ -167,7 +169,8 @@
      1101
     ],
     "asset": "s2_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.94
    },
    {
     "role": "deco",
@@ -200,7 +203,8 @@
      1028
     ],
     "asset": "s2_3.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.95
    },
    {
     "role": "photo",
@@ -236,7 +240,8 @@
      1101
     ],
     "asset": "s3_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.94
    },
    {
     "role": "deco",
@@ -269,7 +274,8 @@
      1028
     ],
     "asset": "s3_3.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.95
    },
    {
     "role": "photo",
@@ -305,7 +311,8 @@
      1101
     ],
     "asset": "s4_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.94
    },
    {
     "role": "deco",
@@ -338,7 +345,8 @@
      1028
     ],
     "asset": "s4_3.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.95
    },
    {
     "role": "photo",
@@ -374,7 +382,8 @@
      1101
     ],
     "asset": "s5_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.94
    },
    {
     "role": "deco",
@@ -407,7 +416,8 @@
      1028
     ],
     "asset": "s5_3.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.95
    },
    {
     "role": "photo",
@@ -444,7 +454,8 @@
      1101
     ],
     "asset": "s6_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.94
    },
    {
     "role": "deco",
@@ -477,7 +488,8 @@
      1028
     ],
     "asset": "s6_3.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.95
    },
    {
     "role": "photo",

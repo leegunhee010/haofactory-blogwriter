@@ -615,8 +615,20 @@ def extract_template(pptx_path, out_assets_dir, theme_recolor=False, photo_round
             else:
                 ext = os.path.splitext(part.partname)[1] or ".png"
                 asset = "s%d_%d%s" % (i, j, ext)
-                with open(os.path.join(out_assets_dir, asset), "wb") as f:
+                ap = os.path.join(out_assets_dir, asset)
+                with open(ap, "wb") as f:
                     f.write(part.blob)
+                # 원본 그림의 투명도(alphaModFix) 반영 → 반투명 레이어 보존(불투명 통짜 방지)
+                amf = sh._element.findall(".//" + qn("a:alphaModFix"))
+                if asset.lower().endswith(".png") and amf and amf[0].get("amt"):
+                    op = int(amf[0].get("amt")) / 100000.0
+                    if op < 0.97:
+                        try:
+                            im = Image.open(ap).convert("RGBA")
+                            r, g, b, al = im.split(); al = al.point(lambda v: int(v * op))
+                            Image.merge("RGBA", (r, g, b, al)).save(ap)
+                        except Exception:
+                            pass
                 recolor = theme_recolor and (box[3] <= 3 or not (i == 0 and box[2] < 220 and box[1] < 160))
                 items.append({"role": "deco", "box": box, "asset": asset, "recolor": bool(recolor)})
         def _fsz(sh):

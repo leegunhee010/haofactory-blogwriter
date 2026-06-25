@@ -35,7 +35,8 @@
      309
     ],
     "asset": "s0_1.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.5
    },
    {
     "role": "deco",
@@ -46,7 +47,8 @@
      199
     ],
     "asset": "s0_2.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -57,7 +59,8 @@
      199
     ],
     "asset": "s0_3.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -68,7 +71,8 @@
      13
     ],
     "asset": "s0_4.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.6
    },
    {
     "role": "deco",
@@ -79,7 +83,8 @@
      13
     ],
     "asset": "s0_5.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.6
    },
    {
     "role": "deco",
@@ -101,7 +106,8 @@
      3
     ],
     "asset": "s0_7.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.15
    },
    {
     "role": "deco",
@@ -134,7 +140,8 @@
      3
     ],
     "asset": "s0_10.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.15
    },
    {
     "role": "deco",
@@ -227,7 +234,8 @@
      877
     ],
     "asset": "s1_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -238,7 +246,8 @@
      877
     ],
     "asset": "s1_1.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -249,7 +258,8 @@
      877
     ],
     "asset": "s1_2.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -260,7 +270,8 @@
      877
     ],
     "asset": "s1_3.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -271,7 +282,8 @@
      877
     ],
     "asset": "s1_4.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -302,7 +314,8 @@
      3
     ],
     "asset": "s1_7.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -313,7 +326,8 @@
      309
     ],
     "asset": "s1_8.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.5
    },
    {
     "role": "deco",
@@ -324,7 +338,8 @@
      199
     ],
     "asset": "s1_9.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -346,7 +361,8 @@
      199
     ],
     "asset": "s1_11.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -357,7 +373,8 @@
      869
     ],
     "asset": "s1_12.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    }
   ],
   [
@@ -370,7 +387,8 @@
      867
     ],
     "asset": "s2_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.45
    },
    {
     "role": "deco",
@@ -381,7 +399,8 @@
      877
     ],
     "asset": "s2_1.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -392,7 +411,8 @@
      877
     ],
     "asset": "s2_2.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -403,7 +423,8 @@
      877
     ],
     "asset": "s2_3.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -414,7 +435,8 @@
      877
     ],
     "asset": "s2_4.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -425,7 +447,8 @@
      877
     ],
     "asset": "s2_5.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -456,7 +479,8 @@
      3
     ],
     "asset": "s2_8.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -467,7 +491,8 @@
      309
     ],
     "asset": "s2_9.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.5
    },
    {
     "role": "deco",
@@ -478,7 +503,8 @@
      199
     ],
     "asset": "s2_10.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -500,7 +526,8 @@
      199
     ],
     "asset": "s2_12.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -511,7 +538,8 @@
      869
     ],
     "asset": "s2_13.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    }
   ],
   [
@@ -524,7 +552,8 @@
      877
     ],
     "asset": "s3_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -535,7 +564,8 @@
      877
     ],
     "asset": "s3_1.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -546,7 +576,8 @@
      877
     ],
     "asset": "s3_2.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -557,7 +588,8 @@
      877
     ],
     "asset": "s3_3.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -568,7 +600,8 @@
      877
     ],
     "asset": "s3_4.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -599,7 +632,8 @@
      3
     ],
     "asset": "s3_7.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -610,7 +644,8 @@
      309
     ],
     "asset": "s3_8.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.5
    },
    {
     "role": "deco",
@@ -621,7 +656,8 @@
      199
     ],
     "asset": "s3_9.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -643,7 +679,8 @@
      199
     ],
     "asset": "s3_11.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -654,7 +691,8 @@
      869
     ],
     "asset": "s3_12.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    }
   ],
   [
@@ -667,7 +705,8 @@
      877
     ],
     "asset": "s4_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -678,7 +717,8 @@
      877
     ],
     "asset": "s4_1.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -689,7 +729,8 @@
      877
     ],
     "asset": "s4_2.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -700,7 +741,8 @@
      877
     ],
     "asset": "s4_3.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -711,7 +753,8 @@
      877
     ],
     "asset": "s4_4.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -742,7 +785,8 @@
      3
     ],
     "asset": "s4_7.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -753,7 +797,8 @@
      309
     ],
     "asset": "s4_8.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.5
    },
    {
     "role": "deco",
@@ -764,7 +809,8 @@
      199
     ],
     "asset": "s4_9.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -786,7 +832,8 @@
      199
     ],
     "asset": "s4_11.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -797,7 +844,8 @@
      877
     ],
     "asset": "s4_12.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    }
   ],
   [
@@ -810,7 +858,8 @@
      877
     ],
     "asset": "s5_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -821,7 +870,8 @@
      877
     ],
     "asset": "s5_1.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -832,7 +882,8 @@
      877
     ],
     "asset": "s5_2.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -843,7 +894,8 @@
      877
     ],
     "asset": "s5_3.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -854,7 +906,8 @@
      877
     ],
     "asset": "s5_4.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -885,7 +938,8 @@
      3
     ],
     "asset": "s5_7.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -896,7 +950,8 @@
      309
     ],
     "asset": "s5_8.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.5
    },
    {
     "role": "deco",
@@ -907,7 +962,8 @@
      199
     ],
     "asset": "s5_9.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -929,7 +985,8 @@
      199
     ],
     "asset": "s5_11.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -940,7 +997,8 @@
      877
     ],
     "asset": "s5_12.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    }
   ],
   [
@@ -953,7 +1011,8 @@
      877
     ],
     "asset": "s6_0.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -964,7 +1023,8 @@
      877
     ],
     "asset": "s6_1.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -975,7 +1035,8 @@
      877
     ],
     "asset": "s6_2.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -986,7 +1047,8 @@
      877
     ],
     "asset": "s6_3.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -997,7 +1059,8 @@
      877
     ],
     "asset": "s6_4.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -1028,7 +1091,8 @@
      3
     ],
     "asset": "s6_7.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -1039,7 +1103,8 @@
      309
     ],
     "asset": "s6_8.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.5
    },
    {
     "role": "deco",
@@ -1050,7 +1115,8 @@
      199
     ],
     "asset": "s6_9.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -1072,7 +1138,8 @@
      199
     ],
     "asset": "s6_11.png",
-    "recolor": true
+    "recolor": true,
+    "_op": 0.35
    },
    {
     "role": "deco",
@@ -1083,7 +1150,8 @@
      877
     ],
     "asset": "s6_12.png",
-    "recolor": false
+    "recolor": false,
+    "_op": 0.35
    }
   ]
  ],
