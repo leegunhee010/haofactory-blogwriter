@@ -198,7 +198,7 @@
      899
     ],
     "asset": "s1_1.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "photo",
@@ -232,7 +232,8 @@
     "size": 49.0,
     "color": "7DB249",
     "font": "esamanru OTF Medium",
-    "align": "center"
+    "align": "center",
+    "auto_color": true
    }
   ],
   [
@@ -257,7 +258,7 @@
      899
     ],
     "asset": "s2_1.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "photo",
@@ -291,7 +292,8 @@
     "size": 49.0,
     "color": "7DB249",
     "font": "esamanru OTF Medium",
-    "align": "center"
+    "align": "center",
+    "auto_color": true
    }
   ],
   [
@@ -316,7 +318,7 @@
      899
     ],
     "asset": "s3_1.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "photo",
@@ -350,7 +352,8 @@
     "size": 49.0,
     "color": "7DB249",
     "font": "esamanru OTF Medium",
-    "align": "center"
+    "align": "center",
+    "auto_color": true
    }
   ],
   [
@@ -375,7 +378,7 @@
      899
     ],
     "asset": "s4_1.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "photo",
@@ -409,7 +412,8 @@
     "size": 49.0,
     "color": "7DB249",
     "font": "esamanru OTF Medium",
-    "align": "center"
+    "align": "center",
+    "auto_color": true
    }
   ],
   [
@@ -434,7 +438,7 @@
      899
     ],
     "asset": "s5_1.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "photo",
@@ -468,7 +472,8 @@
     "size": 49.0,
     "color": "7DB249",
     "font": "esamanru OTF Medium",
-    "align": "center"
+    "align": "center",
+    "auto_color": true
    }
   ],
   [
@@ -493,7 +498,7 @@
      899
     ],
     "asset": "s6_1.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "photo",
@@ -527,7 +532,8 @@
     "size": 49.0,
     "color": "7DB249",
     "font": "esamanru OTF Medium",
-    "align": "center"
+    "align": "center",
+    "auto_color": true
    }
   ],
   [
@@ -552,7 +558,7 @@
      899
     ],
     "asset": "s7_1.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "photo",
@@ -586,8 +592,11 @@
     "size": 49.0,
     "color": "7DB249",
     "font": "esamanru OTF Medium",
-    "align": "center"
+    "align": "center",
+    "auto_color": true
    }
   ]
- ]
+ ],
+ "random_theme": true,
+ "auto_theme": true
 }
