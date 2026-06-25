@@ -314,7 +314,7 @@ def _draw_text(canvas, box, text, font_path, size_pt, theme, align, pt2px):
     cy = y + (h - lh * len(lines)) / 2
     for ln in lines:
         tw = d.textlength(ln, font=fnt) if ln else 0
-        tx = x + (w - tw) / 2 if align == "center" else x
+        tx = x + w - tw if align == "right" else (x + (w - tw) / 2 if align == "center" else x)
         d.text((tx, cy), ln, font=fnt, fill=col)
         cy += lh
     return Image.alpha_composite(canvas, layer)

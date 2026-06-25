@@ -104,31 +104,17 @@
    {
     "role": "headline",
     "box": [
-     57,
-     159,
-     965,
-     149
+     -45,
+     150,
+     1171,
+     238
     ],
     "text": "",
-    "size": 80.0,
+    "size": 88.0,
     "color": "4195A2",
-    "align": "center",
     "font": "GangwonEduPower",
-    "auto_color": true
-   },
-   {
-    "role": "subtitle",
-    "box": [
-     64,
-     297,
-     952,
-     56
-    ],
-    "text": "",
-    "size": 30.0,
-    "color": "1A1A1A",
     "align": "center",
-    "font": "Pretendard Medium"
+    "auto_color": true
    },
    {
     "role": "label",
@@ -141,8 +127,8 @@
     "text": "FIRST DESIGN | 퍼스트디자인",
     "size": 15.0,
     "color": "4195A2",
-    "align": "left",
     "font": "Pretendard Bold",
+    "align": "right",
     "auto_color": true
    }
   ],
@@ -227,10 +213,10 @@
    {
     "role": "photo",
     "box": [
-     87,
-     429,
-     904,
-     619
+     85,
+     235,
+     911,
+     767
     ]
    },
    {
@@ -244,23 +230,8 @@
     "text": "FIRST DESIGN | 퍼스트디자인",
     "size": 15.0,
     "color": "4195A2",
-    "align": "left",
     "font": "Pretendard Bold",
-    "auto_color": true
-   },
-   {
-    "role": "headline",
-    "box": [
-     81,
-     245,
-     916,
-     112
-    ],
-    "text": "",
-    "size": 60.0,
-    "color": "4195A2",
-    "align": "center",
-    "font": "GangwonEduPower",
+    "align": "right",
     "auto_color": true
    }
   ],
@@ -293,7 +264,7 @@
      51,
      51,
      980,
-     1103
+     1031
     ],
     "asset": "s2_2.png",
     "recolor": false
@@ -345,10 +316,10 @@
    {
     "role": "photo",
     "box": [
-     87,
-     429,
-     904,
-     619
+     85,
+     235,
+     911,
+     767
     ]
    },
    {
@@ -362,23 +333,8 @@
     "text": "FIRST DESIGN | 퍼스트디자인",
     "size": 15.0,
     "color": "4195A2",
-    "align": "left",
     "font": "Pretendard Bold",
-    "auto_color": true
-   },
-   {
-    "role": "headline",
-    "box": [
-     105,
-     245,
-     869,
-     112
-    ],
-    "text": "",
-    "size": 60.0,
-    "color": "4195A2",
-    "align": "center",
-    "font": "GangwonEduPower",
+    "align": "right",
     "auto_color": true
    }
   ],
@@ -411,7 +367,7 @@
      51,
      51,
      980,
-     1103
+     1031
     ],
     "asset": "s3_2.png",
     "recolor": false
@@ -463,10 +419,10 @@
    {
     "role": "photo",
     "box": [
-     87,
-     429,
-     904,
-     619
+     85,
+     235,
+     911,
+     767
     ]
    },
    {
@@ -480,23 +436,8 @@
     "text": "FIRST DESIGN | 퍼스트디자인",
     "size": 15.0,
     "color": "4195A2",
-    "align": "left",
     "font": "Pretendard Bold",
-    "auto_color": true
-   },
-   {
-    "role": "headline",
-    "box": [
-     105,
-     197,
-     869,
-     208
-    ],
-    "text": "",
-    "size": 60.0,
-    "color": "4195A2",
-    "align": "center",
-    "font": "GangwonEduPower",
+    "align": "right",
     "auto_color": true
    }
   ],
@@ -529,7 +470,7 @@
      51,
      51,
      980,
-     1103
+     1031
     ],
     "asset": "s4_2.png",
     "recolor": false
@@ -581,10 +522,10 @@
    {
     "role": "photo",
     "box": [
-     87,
-     429,
-     904,
-     619
+     85,
+     235,
+     911,
+     767
     ]
    },
    {
@@ -598,23 +539,111 @@
     "text": "FIRST DESIGN | 퍼스트디자인",
     "size": 15.0,
     "color": "4195A2",
-    "align": "left",
     "font": "Pretendard Bold",
+    "align": "right",
     "auto_color": true
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     67,
+     51,
+     980,
+     1103
+    ],
+    "asset": "s5_0.png",
+    "recolor": true
    },
    {
-    "role": "headline",
+    "role": "deco",
     "box": [
-     105,
-     197,
-     869,
-     208
+     59,
+     51,
+     980,
+     1103
     ],
-    "text": "",
-    "size": 60.0,
+    "asset": "s5_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     51,
+     51,
+     980,
+     1031
+    ],
+    "asset": "s5_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     984,
+     133,
+     129,
+     29
+    ],
+    "asset": "s5_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     973,
+     140,
+     129,
+     16
+    ],
+    "asset": "s5_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     163,
+     911,
+     3
+    ],
+    "asset": "s5_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     85,
+     76,
+     124,
+     65
+    ],
+    "asset": "s5_6.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     85,
+     235,
+     911,
+     767
+    ]
+   },
+   {
+    "role": "label",
+    "box": [
+     636,
+     93,
+     333,
+     28
+    ],
+    "text": "FIRST DESIGN | 퍼스트디자인",
+    "size": 15.0,
     "color": "4195A2",
-    "align": "center",
-    "font": "GangwonEduPower",
+    "font": "Pretendard Bold",
+    "align": "right",
     "auto_color": true
    }
   ],
@@ -647,7 +676,7 @@
      51,
      51,
      980,
-     1103
+     1031
     ],
     "asset": "s6_2.png",
     "recolor": false
@@ -699,128 +728,10 @@
    {
     "role": "photo",
     "box": [
-     87,
-     429,
-     904,
-     619
-    ]
-   },
-   {
-    "role": "label",
-    "box": [
-     636,
-     93,
-     333,
-     28
-    ],
-    "text": "FIRST DESIGN | 퍼스트디자인",
-    "size": 15.0,
-    "color": "4195A2",
-    "align": "left",
-    "font": "Pretendard Bold",
-    "auto_color": true
-   },
-   {
-    "role": "headline",
-    "box": [
-     105,
-     197,
-     869,
-     208
-    ],
-    "text": "",
-    "size": 60.0,
-    "color": "4195A2",
-    "align": "center",
-    "font": "GangwonEduPower",
-    "auto_color": true
-   }
-  ],
-  [
-   {
-    "role": "deco",
-    "box": [
-     67,
-     51,
-     980,
-     1103
-    ],
-    "asset": "s7_0.png",
-    "recolor": true
-   },
-   {
-    "role": "deco",
-    "box": [
-     59,
-     51,
-     980,
-     1103
-    ],
-    "asset": "s7_1.png",
-    "recolor": false
-   },
-   {
-    "role": "deco",
-    "box": [
-     51,
-     51,
-     980,
-     1103
-    ],
-    "asset": "s7_2.png",
-    "recolor": false
-   },
-   {
-    "role": "deco",
-    "box": [
-     984,
-     133,
-     129,
-     29
-    ],
-    "asset": "s7_3.png",
-    "recolor": false
-   },
-   {
-    "role": "deco",
-    "box": [
-     973,
-     140,
-     129,
-     16
-    ],
-    "asset": "s7_4.png",
-    "recolor": false
-   },
-   {
-    "role": "deco",
-    "box": [
      85,
-     163,
+     235,
      911,
-     3
-    ],
-    "asset": "s7_5.png",
-    "recolor": false
-   },
-   {
-    "role": "deco",
-    "box": [
-     85,
-     76,
-     124,
-     65
-    ],
-    "asset": "s7_6.png",
-    "recolor": false
-   },
-   {
-    "role": "photo",
-    "box": [
-     87,
-     429,
-     904,
-     619
+     767
     ]
    },
    {
@@ -834,26 +745,12 @@
     "text": "FIRST DESIGN | 퍼스트디자인",
     "size": 15.0,
     "color": "4195A2",
-    "align": "left",
     "font": "Pretendard Bold",
-    "auto_color": true
-   },
-   {
-    "role": "headline",
-    "box": [
-     105,
-     245,
-     869,
-     112
-    ],
-    "text": "",
-    "size": 60.0,
-    "color": "4195A2",
-    "align": "center",
-    "font": "GangwonEduPower",
+    "align": "right",
     "auto_color": true
    }
   ]
  ],
+ "random_theme": true,
  "auto_theme": true
 }
