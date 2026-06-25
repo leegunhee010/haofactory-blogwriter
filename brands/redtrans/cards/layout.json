@@ -97,7 +97,7 @@
      1101
     ],
     "asset": "s1_0.png",
-    "recolor": true
+    "recolor": false
    },
    {
     "role": "deco",
@@ -167,7 +167,7 @@
      1101
     ],
     "asset": "s2_0.png",
-    "recolor": true
+    "recolor": false
    },
    {
     "role": "deco",
@@ -236,7 +236,7 @@
      1101
     ],
     "asset": "s3_0.png",
-    "recolor": true
+    "recolor": false
    },
    {
     "role": "deco",
@@ -305,7 +305,7 @@
      1101
     ],
     "asset": "s4_0.png",
-    "recolor": true
+    "recolor": false
    },
    {
     "role": "deco",
@@ -374,7 +374,7 @@
      1101
     ],
     "asset": "s5_0.png",
-    "recolor": true
+    "recolor": false
    },
    {
     "role": "deco",
@@ -444,7 +444,7 @@
      1101
     ],
     "asset": "s6_0.png",
-    "recolor": true
+    "recolor": false
    },
    {
     "role": "deco",
