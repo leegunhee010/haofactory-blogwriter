@@ -153,9 +153,37 @@ def _shared_structure(b):
 {cta}"""
 
 
+def guide_text(bid):
+    """브랜드 폴더의 guide.md(사실 기준서) 텍스트. 없으면 빈 문자열."""
+    try:
+        p = os.path.join(brand_dir(bid), "guide.md")
+        if os.path.isfile(p):
+            return open(p, encoding="utf-8").read().strip()
+    except Exception:
+        pass
+    return ""
+
+
+def _guide_block(b):
+    """브랜드 사실 기준서를 '반드시 준수' 블록으로 부착(가격·절차·규칙 오정보 방지)."""
+    g = guide_text(b.get("id", ""))
+    if not g:
+        return ""
+    return ("\n\n[★브랜드 사실 기준서 — 반드시 준수(오정보 금지)]\n"
+            "아래는 이 브랜드의 실제 서비스·가격·절차·규칙 기준이다. 블로그에 사실관계를 쓸 때 "
+            "반드시 아래 기준만 따른다. 특히:\n"
+            "- 협약국=아포스티유 / 비협약국=영사인증 구분을 절대 혼동하지 말 것.\n"
+            "- 번역 지원 8개 언어 외 국가는 '영어로 번역공증 후 진행' 안내를 넣을 것.\n"
+            "- 가격·소요기간은 아래 표(블로그 표기가)에 있는 값만 쓰고, 표에 없으면 지어내지 말고 "
+            "'서류 확인 후 안내'로 열어 둘 것. '무조건 가능' 같은 단정 표현 금지.\n"
+            "- 공증 타입(공문서=번역공증 / 사문서·위임=사실공증 / 무번역 원본=원본대조공증)을 정확히 구분할 것.\n"
+            "----- 기준서 시작 -----\n" + g + "\n----- 기준서 끝 -----")
+
+
 def build_style(b):
     """브랜드 설정 → 글 생성 시스템 프롬프트.
-    prompt(완전 커스텀)가 있으면 그걸 쓰고, 없으면 전 브랜드 공통 구조 + 회사 소개. 출력 형식은 항상 부착."""
+    prompt(완전 커스텀)가 있으면 그걸 쓰고, 없으면 전 브랜드 공통 구조 + 회사 소개. 출력 형식은 항상 부착.
+    브랜드 폴더에 guide.md(사실 기준서)가 있으면 '반드시 준수' 블록으로 함께 부착."""
     custom = (b.get("prompt") or "").strip()
     head = custom.replace("{name}", b.get("name", "")) if custom else _shared_structure(b)
-    return head + "\n\n" + _output_format(b)
+    return head + _guide_block(b) + "\n\n" + _output_format(b)
