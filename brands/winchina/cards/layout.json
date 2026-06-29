@@ -140,20 +140,6 @@
     "font": "Pretendard Light",
     "align": "center",
     "oneline": true
-   },
-   {
-    "role": "label",
-    "box": [
-     650,
-     630,
-     174,
-     56
-    ],
-    "text": "Continue",
-    "size": 40.0,
-    "color": "FFFFFF",
-    "font": "Pretendard Regular",
-    "align": "left"
    }
   ],
   [
