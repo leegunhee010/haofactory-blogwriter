@@ -1287,6 +1287,15 @@ def api_docx():
     return jsonify(ok=True, path=out)
 
 
+@app.after_request
+def _no_cache(resp):
+    # 브라우저가 옛 화면(HTML/JS)을 캐시해 새 기능이 안 보이는 문제 방지
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
+
+
 @app.route("/")
 def index():
     return PAGE
