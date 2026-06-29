@@ -277,7 +277,7 @@ def _shorten_title(t, maxlen=24):
     return cut.strip().rstrip(",·-— ")
 
 
-def _draw_text(canvas, box, text, font_path, size_pt, theme, align, pt2px):
+def _draw_text(canvas, box, text, font_path, size_pt, theme, align, pt2px, oneline=False):
     if not text:
         return canvas
     x, y, w, h = box
@@ -286,7 +286,9 @@ def _draw_text(canvas, box, text, font_path, size_pt, theme, align, pt2px):
     layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
 
-    def build(fnt):   # 명시적 줄바꿈(\n) 먼저 분리 후, 박스 폭에 맞춰 단어 줄바꿈
+    def build(fnt):   # oneline=줄바꿈 금지(폭 맞게 축소만). 아니면 \n 분리 후 폭 맞춰 단어 줄바꿈
+        if oneline:
+            return [" ".join(str(text).split())]
         out = []
         for raw in str(text).split("\n"):
             raw = raw.strip()
@@ -462,9 +464,15 @@ def render_card(slide_idx, photo_path, headline, theme, out_path, assets_dir,
                     txt = _two_lines(txt)
                 canvas = _draw_text(canvas, box, txt, fp, it.get("size", 40), col, it.get("align", "center"), pt2px)
         elif role == "subtitle":
-            canvas = _draw_text(canvas, box, subtitle or "", _font_for(it.get("font"), _HEAD_FONT), it.get("size", 28), textcol(it), it.get("align", "center"), pt2px)
+            sub = subtitle or ""
+            if it.get("lines") == 2 and sub and "\n" not in sub:
+                sub = _two_lines(sub)          # 서브카피 2줄 고정(길이 균형 분할)
+            canvas = _draw_text(canvas, box, sub, _font_for(it.get("font"), _HEAD_FONT), it.get("size", 28), textcol(it), it.get("align", "center"), pt2px, oneline=bool(it.get("oneline")))
         elif role == "body":
-            canvas = _draw_text(canvas, box, body or "", _font_for(it.get("font"), _BODY_FONT), it.get("size", 19), textcol(it), it.get("align", "center"), pt2px)
+            bod = body or ""
+            if it.get("lines") == 2 and bod and "\n" not in bod:
+                bod = _two_lines(bod)          # 내지 본문 2줄 고정(길이 균형 분할)
+            canvas = _draw_text(canvas, box, bod, _font_for(it.get("font"), _BODY_FONT), it.get("size", 19), textcol(it), it.get("align", "center"), pt2px)
         elif role == "label":
             canvas = _draw_text(canvas, box, it.get("text", ""), _font_for(it.get("font"), _LABEL_FONT), it.get("size", 14), textcol(it), it.get("align", "left"), pt2px)
     canvas.convert("RGB").save(out_path, "PNG")

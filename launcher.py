@@ -24,7 +24,7 @@ MEI = getattr(sys, "_MEIPASS", HERE)
 REPO = "leegunhee010/haofactory-blogwriter"   # ← 배포용 GitHub 저장소 (owner가 생성)
 RAW = "https://raw.githubusercontent.com/%s/main/" % REPO
 APP = "작성기앱.py"
-PRESERVE = ("출력", "작성기_설정.json")   # 업데이트 시 덮어쓰지 않을 사용자 데이터(생성물·로컬설정)
+PRESERVE = ("출력", "작성기_설정.json", "accounts", "accounts.json")   # 업데이트 시 덮어쓰지 않을 사용자 데이터(생성물·로컬설정·Claude 계정 자격증명)
 # brands/(브랜드 설정·카드 템플릿)·assets/·코드는 owner가 배포·갱신하는 공유 콘텐츠라 업데이트 대상
 
 

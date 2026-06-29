@@ -10,6 +10,9 @@ __pycache__/
 # 사용자/생성 데이터
 출력/
 작성기_설정.json
+# Claude 계정 자격증명(절대 커밋 금지)
+accounts/
+accounts.json
 *.docx
 _test_*/
 _t_*/

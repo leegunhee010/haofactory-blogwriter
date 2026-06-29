@@ -81,6 +81,62 @@ def find_claude():
 CLAUDE = find_claude()
 
 
+# ── 멀티 Claude 계정 (CLAUDE_CONFIG_DIR로 계정별 분리) ───
+# 각 계정은 accounts/<id>/ 폴더 = 그 계정의 CLAUDE_CONFIG_DIR(자격증명 격리).
+# "default" 계정은 dir 비움 → 기존 ~/.claude 그대로 사용(앱 최초 동작 보존).
+ACCOUNTS_DIR = os.path.join(HERE, "accounts")
+ACCOUNTS_FILE = os.path.join(HERE, "accounts.json")
+# 사용 한도/요금 한도 도달 메시지 패턴(자동 다른 계정 전환 트리거)
+_LIMIT_PAT = re.compile(
+    r"(spend limit|usage limit|rate limit|monthly .{0,20}limit|hit your .{0,20}limit|"
+    r"limit.{0,40}claude\.ai|reached your|out of .{0,15}usage|사용 한도|한도에 도달|한도를 초과)", re.I)
+
+
+def load_accounts():
+    d = jload(ACCOUNTS_FILE, {})
+    accts = d.get("accounts") or []
+    if not any(a.get("id") == "default" for a in accts):
+        accts.insert(0, {"id": "default", "label": "기본 계정", "dir": ""})
+    active = d.get("active") or "default"
+    if not any(a.get("id") == active for a in accts):
+        active = "default"
+    return {"accounts": accts, "active": active}
+
+
+def save_accounts(d):
+    try:
+        json.dump(d, open(ACCOUNTS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    except Exception:
+        pass
+
+
+def account_env(acc_id=None):
+    """해당 계정의 CLAUDE_CONFIG_DIR 적용된 env. dir 비면 기본(~/.claude)."""
+    d = load_accounts()
+    if acc_id is None:
+        acc_id = d["active"]
+    acc = next((a for a in d["accounts"] if a.get("id") == acc_id), None)
+    env = os.environ.copy()
+    if acc and acc.get("dir"):
+        os.makedirs(acc["dir"], exist_ok=True)
+        env["CLAUDE_CONFIG_DIR"] = acc["dir"]
+    else:
+        env.pop("CLAUDE_CONFIG_DIR", None)
+    return env
+
+
+def auth_status_of(acc_id):
+    """계정별 로그인 상태(dict: loggedIn/email/subscriptionType ...)."""
+    if not CLAUDE:
+        return {}
+    try:
+        r = subprocess.run([CLAUDE, "auth", "status"], capture_output=True, text=True,
+                           encoding="utf-8", errors="ignore", timeout=25, env=account_env(acc_id))
+        return json.loads(r.stdout or "{}")
+    except Exception:
+        return {}
+
+
 # ── 하오팩토리 문체 프롬프트 ─────────────────────────────
 STYLE = """너는 조형물 제작 회사 '하오팩토리(HAOFACTORY)'의 네이버 블로그 글을 쓰는 전문 카피라이터다.
 [문체 규칙]
@@ -147,18 +203,38 @@ def build_prompt(keyword, photo_files, project_hint="", brand=None):
             f"\n\n[메인키워드] {keyword}{hint}\n\n[사용 사진] (순서대로 적절한 슬롯에 배치)\n{photos}\n\n위 규칙대로 지금 작성하라.")
 
 
-def run_claude(prompt, model=""):
+def run_claude(prompt, model="", acc_id=None, _tried=None):
+    """활성 계정으로 claude -p 실행. 사용 한도에 걸리면 로그인된 다른 계정으로 자동 전환."""
     if not CLAUDE:
         return None, "claude 실행파일을 찾지 못했습니다. Claude 데스크톱 앱 또는 CLI를 설치하세요."
+    d = load_accounts()
+    if acc_id is None:
+        acc_id = d["active"]
+    _tried = _tried if _tried is not None else []
+    _tried.append(acc_id)
     cmd = [CLAUDE, "-p"]
     if model:
         cmd += ["--model", model]
     try:
         r = subprocess.run(cmd, input=prompt, capture_output=True, text=True,
-                           encoding="utf-8", errors="ignore", timeout=240)
+                           encoding="utf-8", errors="ignore", timeout=240, env=account_env(acc_id))
         out = (r.stdout or "").strip()
-        if "Not logged in" in out or "Please run /login" in out:
-            return None, "Claude 로그인 필요: 터미널에서 한 번  claude login  (또는 claude /login) 실행 후 다시 시도하세요."
+        combined = out + "\n" + (r.stderr or "")
+        if "Not logged in" in combined or "Please run /login" in combined:
+            return None, "이 계정은 Claude 로그인이 필요합니다. 상단 👤계정에서 로그인하세요."
+        if _LIMIT_PAT.search(combined):
+            # 한도 도달 → 로그인된 다른 계정으로 자동 전환
+            for a in d["accounts"]:
+                if a["id"] in _tried:
+                    continue
+                if auth_status_of(a["id"]).get("loggedIn"):
+                    o2, e2 = run_claude(prompt, model, a["id"], _tried)
+                    if o2 is not None and a["id"] != d["active"]:  # 작동한 계정으로 활성 고정
+                        d["active"] = a["id"]; save_accounts(d)
+                        _AUTH_CACHE["t"] = 0
+                    return o2, e2
+            return None, ("모든 계정이 사용 한도에 도달했습니다. "
+                          "상단 👤계정에서 다른 Claude 계정을 추가하거나, claude.ai에서 한도를 올려주세요.")
         if not out:
             return None, "빈 응답입니다. " + (r.stderr or "")[:200]
         return out, None
@@ -214,22 +290,19 @@ def parse_manuscript(text, photo_files):
 
 
 # ── 라우트 ───────────────────────────────────────────────
-_AUTH_CACHE = {"t": 0, "v": False}
+_AUTH_CACHE = {"t": 0, "v": False, "id": None}
 
 
 def claude_logged_in():
     if not CLAUDE:
         return False
-    if _AUTH_CACHE["v"] and time.time() - _AUTH_CACHE["t"] < 180:  # 로그인됨이면 3분 캐시
+    active = load_accounts()["active"]
+    if (_AUTH_CACHE["v"] and _AUTH_CACHE["id"] == active
+            and time.time() - _AUTH_CACHE["t"] < 180):  # 같은 계정 로그인됨이면 3분 캐시
         return True
-    try:
-        r = subprocess.run([CLAUDE, "auth", "status"], capture_output=True, text=True,
-                           encoding="utf-8", errors="ignore", timeout=25)
-        v = bool(json.loads(r.stdout or "{}").get("loggedIn"))
-        _AUTH_CACHE["t"] = time.time(); _AUTH_CACHE["v"] = v
-        return v
-    except Exception:
-        return False
+    v = bool(auth_status_of(active).get("loggedIn"))
+    _AUTH_CACHE.update(t=time.time(), v=v, id=active)
+    return v
 
 
 @app.route("/api/status")
@@ -244,14 +317,92 @@ def api_auth_status():
 
 @app.route("/api/login", methods=["POST"])
 def api_login():
+    """활성(또는 지정) 계정으로 로그인 콘솔 띄우기."""
     if not CLAUDE:
         return jsonify(ok=False, msg="claude 실행파일을 찾지 못했습니다.")
+    aid = (request.get_json(silent=True) or {}).get("id")
     try:
         flags = 0x10 if os.name == "nt" else 0   # CREATE_NEW_CONSOLE
-        subprocess.Popen([CLAUDE, "auth", "login"], creationflags=flags)
+        subprocess.Popen([CLAUDE, "auth", "login"], creationflags=flags, env=account_env(aid))
+        _AUTH_CACHE["t"] = 0
         return jsonify(ok=True)
     except Exception as e:
         return jsonify(ok=False, msg=str(e))
+
+
+# ── 멀티 계정 라우트 ─────────────────────────────────────
+@app.route("/api/accounts")
+def api_accounts():
+    d = load_accounts()
+    out = []
+    for a in d["accounts"]:
+        st = auth_status_of(a["id"]) if CLAUDE else {}
+        out.append({"id": a["id"], "label": a.get("label", a["id"]),
+                    "logged_in": bool(st.get("loggedIn")),
+                    "email": st.get("email", ""),
+                    "plan": st.get("subscriptionType", "")})
+    return jsonify(accounts=out, active=d["active"])
+
+
+@app.route("/api/account-add", methods=["POST"])
+def api_account_add():
+    """새 계정 슬롯 생성 + 그 계정 전용 로그인 콘솔 띄우기."""
+    if not CLAUDE:
+        return jsonify(ok=False, msg="claude 실행파일을 찾지 못했습니다.")
+    b = request.get_json(force=True) or {}
+    label = (b.get("label") or "").strip() or "추가 계정"
+    d = load_accounts()
+    existing = {a["id"] for a in d["accounts"]}
+    n = 2
+    while f"acc{n}" in existing:
+        n += 1
+    aid = f"acc{n}"
+    adir = os.path.join(ACCOUNTS_DIR, aid)
+    os.makedirs(adir, exist_ok=True)
+    d["accounts"].append({"id": aid, "label": label, "dir": adir})
+    # active는 바꾸지 않음 — 로그인 완료가 확인되면 프런트가 자동 전환(중도 취소 시 앱 안 멈춤)
+    save_accounts(d)
+    _AUTH_CACHE["t"] = 0
+    try:
+        flags = 0x10 if os.name == "nt" else 0
+        subprocess.Popen([CLAUDE, "auth", "login"], creationflags=flags, env=account_env(aid))
+    except Exception as e:
+        return jsonify(ok=False, msg=str(e))
+    return jsonify(ok=True, id=aid)
+
+
+@app.route("/api/account-switch", methods=["POST"])
+def api_account_switch():
+    b = request.get_json(force=True) or {}
+    aid = b.get("id")
+    d = load_accounts()
+    if not any(a["id"] == aid for a in d["accounts"]):
+        return jsonify(ok=False, msg="없는 계정입니다.")
+    d["active"] = aid
+    save_accounts(d)
+    _AUTH_CACHE["t"] = 0
+    return jsonify(ok=True)
+
+
+@app.route("/api/account-remove", methods=["POST"])
+def api_account_remove():
+    b = request.get_json(force=True) or {}
+    aid = b.get("id")
+    if aid == "default":
+        return jsonify(ok=False, msg="기본 계정은 삭제할 수 없습니다.")
+    d = load_accounts()
+    acc = next((a for a in d["accounts"] if a["id"] == aid), None)
+    d["accounts"] = [a for a in d["accounts"] if a["id"] != aid]
+    if d["active"] == aid:
+        d["active"] = "default"
+    save_accounts(d)
+    _AUTH_CACHE["t"] = 0
+    try:
+        if acc and acc.get("dir") and os.path.isdir(acc["dir"]):
+            shutil.rmtree(acc["dir"], ignore_errors=True)
+    except Exception:
+        pass
+    return jsonify(ok=True)
 
 
 @app.route("/api/browse")
@@ -1258,6 +1409,7 @@ select:focus{border-color:var(--brand)}
   <select id="brandsel" onchange="switchBrand(this.value)" title="브랜드 선택"></select>
   <button class="btn" style="padding:7px 12px" onclick="openBrandMgr()">⚙ 브랜드</button>
   <span class="pill" id="engine">확인 중…</span>
+  <button class="btn" style="padding:7px 12px" onclick="openAccounts()" title="Claude 계정 관리">👤 계정</button>
   <span id="ver" style="font-size:11px;color:var(--muted);font-weight:700"></span></div>
 <div id="loginwarn" class="warn" style="display:none"></div>
 <div id="toasts"></div>
@@ -1298,6 +1450,17 @@ select:focus{border-color:var(--brand)}
       <span id="pvbrandsel"></span>
       <button class="btn" onclick="el('previewmodal').style.display='none'">닫기</button></div>
     <div id="pvgrid" style="padding:18px 20px;overflow:auto;display:flex;flex-wrap:wrap;gap:14px;justify-content:center"></div>
+  </div></div>
+<div id="acctmodal" class="modal-bg" onclick="if(event.target==this)el('acctmodal').style.display='none'">
+  <div class="modal" style="max-width:560px;margin:7vh auto;max-height:86vh;display:flex;flex-direction:column">
+    <div style="padding:15px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px">
+      <b style="font-size:15px">👤 Claude 계정</b>
+      <span style="font-size:11.5px;color:var(--muted)">한도 차면 자동으로 다른 계정으로 전환됩니다</span><span class="spacer"></span>
+      <button class="btn" onclick="el('acctmodal').style.display='none'">닫기</button></div>
+    <div id="acctbody" style="padding:14px 20px;overflow:auto"></div>
+    <div style="padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center">
+      <button class="btn pri" onclick="addAccount()">➕ 다른 Claude 계정 추가</button>
+      <span style="font-size:11.5px;color:var(--muted)">검은 콘솔이 열리면 브라우저에서 그 계정으로 로그인하세요</span></div>
   </div></div>
 <div id="brandmodal" class="modal-bg" onclick="if(event.target==this)closeBrandMgr()">
   <div class="modal" style="max-width:640px;margin:5vh auto;max-height:88vh;display:flex;flex-direction:column">
@@ -1353,6 +1516,46 @@ function pollAuth(){let n=0;const iv=setInterval(()=>{n++;
     if(a.logged_in){clearInterval(iv);el('loginwarn').style.display='none';el('engine').textContent='✓ Claude 로그인됨';}
     else if(n>80){clearInterval(iv);el('loginwarn').innerHTML='아직 로그인 안 됨. 콘솔 창에서 완료 후 <button class="btn" style="padding:5px 12px" onclick="checkAuth()">다시 확인</button>';}
   });},3000);}
+// ── 멀티 계정 ──
+function openAccounts(){el('acctmodal').style.display='block';loadAccounts();}
+function loadAccounts(){el('acctbody').innerHTML='<div style="color:var(--muted);font-size:13px">계정 상태 확인 중…</div>';
+  fetch('/api/accounts').then(r=>r.json()).then(renderAccounts).catch(()=>{el('acctbody').innerHTML='<div class="warn">계정 정보를 불러오지 못했습니다.</div>';});}
+function renderAccounts(d){
+  el('acctbody').innerHTML = d.accounts.map(a=>{
+    const on = a.id==d.active;
+    const st = a.logged_in
+      ? `<span style="color:#138a36;font-weight:700">● 로그인됨</span>${a.email?' · '+esc(a.email):''}${a.plan?' · '+esc(a.plan):''}`
+      : `<span style="color:#c0392b;font-weight:700">● 로그인 필요</span>`;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:11px 12px;margin-bottom:8px;border:1.5px solid ${on?'var(--brand)':'var(--line)'};border-radius:11px;background:${on?'rgba(253,111,34,.05)':'#fff'}">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:800;font-size:13.5px">${esc(a.label)}${on?' <span style="color:var(--brand);font-size:11px">✓ 사용 중</span>':''}</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:2px">${st}</div>
+      </div>
+      ${!on?`<button class="btn" onclick="switchAccount('${a.id}')">전환</button>`:''}
+      ${!a.logged_in?`<button class="btn pri" onclick="loginAccount('${a.id}')">🔑 로그인</button>`:''}
+      ${a.id!='default'?`<button class="btn" style="color:#c0392b" onclick="removeAccount('${a.id}','${esc(a.label)}')">삭제</button>`:''}
+    </div>`;}).join('');
+}
+function switchAccount(id){fetch('/api/account-switch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})})
+  .then(r=>r.json()).then(d=>{if(d.ok){toast('계정 전환됨');loadAccounts();checkAuth();}else toast(d.msg||'전환 실패','err');});}
+function loginAccount(id){fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})})
+  .then(r=>r.json()).then(d=>{if(!d.ok){toast(d.msg||'로그인 실행 실패','err');return;}
+    toast('🔑 로그인 콘솔이 열렸어요');pollAccounts();});}
+let PENDING_ACCT=null;
+function addAccount(){const label=prompt('추가할 계정 이름 (예: 회사 계정, 두번째 구독)','추가 계정');if(label===null)return;
+  fetch('/api/account-add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({label})})
+  .then(r=>r.json()).then(d=>{if(!d.ok){toast(d.msg||'추가 실패','err');return;}
+    PENDING_ACCT=d.id;toast('🔑 새 계정 로그인 콘솔이 열렸어요. 로그인하면 자동 전환됩니다');loadAccounts();pollAccounts();});}
+function removeAccount(id,label){if(!confirm('"'+label+'" 계정을 삭제할까요? (저장된 로그인이 지워집니다)'))return;
+  fetch('/api/account-remove',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})})
+  .then(r=>r.json()).then(d=>{if(d.ok){toast('삭제됨');loadAccounts();checkAuth();}else toast(d.msg||'삭제 실패','err');});}
+function pollAccounts(){let n=0;const iv=setInterval(()=>{n++;
+  fetch('/api/accounts').then(r=>r.json()).then(d=>{renderAccounts(d);
+    // 로그인 기다리던 새 계정이 로그인되면 그 계정으로 자동 전환
+    if(PENDING_ACCT){const p=d.accounts.find(a=>a.id==PENDING_ACCT);
+      if(p&&p.logged_in){clearInterval(iv);const id=PENDING_ACCT;PENDING_ACCT=null;switchAccount(id);return;}}
+    else if(d.accounts.some(a=>a.id==d.active&&a.logged_in)){clearInterval(iv);checkAuth();}
+    if(n>80)clearInterval(iv);});},3000);}
 function renderTabs(){
   el('tabs').innerHTML = TABS.map((t,i)=>`<div class="tab ${i==CUR?'on':''}" onclick="sel(${i})">글 ${i+1}${t.keyword?': '+esc(t.keyword.slice(0,10)):''}<span class="x" onclick="event.stopPropagation();delTab(${i})">×</span></div>`).join('')
     + `<div class="addtab" onclick="addTab()">+ 새 글</div>`;

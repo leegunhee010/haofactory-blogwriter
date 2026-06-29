@@ -1,14 +1,15 @@
 {
  "size": 1080,
- "pt_height": 810.0,
+ "pt_height": 1080.0,
  "bg": "FFFFFF",
  "slide_bg": [
-  "C0E1D2",
-  "C0E1D2",
-  "C0E1D2",
-  "C0E1D2",
-  "C0E1D2",
-  "C0E1D2"
+  "000000",
+  "000000",
+  "000000",
+  "000000",
+  "000000",
+  "000000",
+  "000000"
  ],
  "theme_recolor": false,
  "photo_round": 0.0,
@@ -17,10 +18,10 @@
    {
     "role": "deco",
     "box": [
-     80,
-     80,
-     920,
-     920
+     0,
+     0,
+     1080,
+     1080
     ],
     "asset": "s0_0.png",
     "recolor": false
@@ -28,10 +29,10 @@
    {
     "role": "deco",
     "box": [
-     455,
-     953,
-     171,
-     85
+     -346,
+     -346,
+     1771,
+     1771
     ],
     "asset": "s0_1.png",
     "recolor": false
@@ -39,10 +40,10 @@
    {
     "role": "deco",
     "box": [
-     455,
-     41,
-     171,
-     85
+     0,
+     0,
+     1080,
+     1080
     ],
     "asset": "s0_2.png",
     "recolor": false
@@ -50,10 +51,10 @@
    {
     "role": "deco",
     "box": [
-     632,
-     775,
-     359,
-     359
+     0,
+     0,
+     1080,
+     1080
     ],
     "asset": "s0_3.png",
     "recolor": false
@@ -61,51 +62,108 @@
    {
     "role": "deco",
     "box": [
-     39,
-     775,
-     279,
-     279
+     101,
+     109,
+     878,
+     863
     ],
     "asset": "s0_4.png",
     "recolor": false
    },
    {
+    "role": "deco",
+    "box": [
+     101,
+     234,
+     878,
+     188
+    ],
+    "asset": "s0_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     135,
+     705,
+     135,
+     41
+    ],
+    "asset": "s0_6.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     101,
+     406,
+     878,
+     452
+    ]
+   },
+   {
+    "role": "deco",
+    "box": [
+     412,
+     881,
+     255,
+     67
+    ],
+    "asset": "s0_8.png",
+    "recolor": false
+   },
+   {
     "role": "headline",
     "box": [
-     68,
-     293,
-     944,
-     331
+     131,
+     235,
+     819,
+     149
     ],
     "text": "",
-    "size": 95.0,
+    "size": 106.66,
     "color": "000000",
-    "align": "center",
-    "font": "210 Sanullim Regular"
+    "font": "Pretendard SemiBold",
+    "align": "center"
    },
    {
     "role": "subtitle",
     "box": [
-     123,
-     651,
-     836,
-     127
+     175,
+     178,
+     730,
+     65
     ],
     "text": "",
-    "size": 34.0,
+    "size": 46.66,
     "color": "000000",
+    "font": "Pretendard Light",
     "align": "center",
-    "font": "210 Sanullim Regular"
+    "oneline": true
+   },
+   {
+    "role": "label",
+    "box": [
+     650,
+     630,
+     174,
+     56
+    ],
+    "text": "Continue",
+    "size": 40.0,
+    "color": "FFFFFF",
+    "font": "Pretendard Regular",
+    "align": "left"
    }
   ],
   [
    {
     "role": "deco",
     "box": [
-     944,
-     944,
-     136,
-     136
+     0,
+     0,
+     1080,
+     1080
     ],
     "asset": "s1_0.png",
     "recolor": false
@@ -114,9 +172,9 @@
     "role": "deco",
     "box": [
      0,
-     944,
-     136,
-     136
+     0,
+     1080,
+     1080
     ],
     "asset": "s1_1.png",
     "recolor": false
@@ -125,9 +183,9 @@
     "role": "deco",
     "box": [
      0,
-     944,
-     136,
-     136
+     390,
+     1080,
+     690
     ],
     "asset": "s1_2.png",
     "recolor": false
@@ -135,10 +193,10 @@
    {
     "role": "deco",
     "box": [
-     944,
-     944,
-     136,
-     136
+     0,
+     90,
+     1080,
+     1080
     ],
     "asset": "s1_3.png",
     "recolor": false
@@ -146,10 +204,10 @@
    {
     "role": "deco",
     "box": [
-     60,
-     603,
-     960,
-     420
+     0,
+     0,
+     1080,
+     1080
     ],
     "asset": "s1_4.png",
     "recolor": false
@@ -157,10 +215,10 @@
    {
     "role": "deco",
     "box": [
-     0,
-     944,
-     136,
-     136
+     90,
+     90,
+     900,
+     600
     ],
     "asset": "s1_5.png",
     "recolor": false
@@ -168,514 +226,900 @@
    {
     "role": "deco",
     "box": [
-     944,
-     944,
-     136,
-     136
+     158,
+     121,
+     18,
+     18
     ],
     "asset": "s1_6.png",
     "recolor": false
    },
    {
-    "role": "photo",
+    "role": "deco",
     "box": [
-     108,
-     273,
-     865,
-     465
-    ]
+     126,
+     121,
+     18,
+     18
+    ],
+    "asset": "s1_7.png",
+    "recolor": false
    },
    {
-    "role": "headline",
+    "role": "deco",
     "box": [
-     39,
-     120,
-     1001,
-     88
+     191,
+     121,
+     18,
+     18
     ],
-    "text": "",
-    "size": 47.0,
-    "color": "000000",
-    "align": "center",
-    "font": "210 Sanullim Regular"
+    "asset": "s1_8.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     925,
+     110,
+     40,
+     40
+    ],
+    "asset": "s1_9.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     476,
+     119,
+     129,
+     34
+    ],
+    "asset": "s1_10.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     90,
+     175,
+     900,
+     452
+    ]
    },
    {
     "role": "body",
     "box": [
-     133,
-     795,
-     815,
-     153
+     44,
+     874,
+     992,
+     146
     ],
     "text": "",
-    "size": 19.0,
-    "color": "000000",
+    "size": 34.66,
+    "color": "FFFFFF",
+    "font": "Pretendard Regular",
     "align": "center",
-    "font": "Gmarket Sans Medium"
+    "lines": 2
+   },
+   {
+    "role": "headline",
+    "box": [
+     122,
+     751,
+     835,
+     103
+    ],
+    "text": "",
+    "size": 73.33,
+    "color": "FFFFFF",
+    "font": "Pretendard SemiBold",
+    "align": "center"
    }
   ],
   [
    {
     "role": "deco",
     "box": [
-     944,
-     944,
-     136,
-     136
+     0,
+     0,
+     1080,
+     1080
     ],
-    "asset": "s1_0.png",
+    "asset": "s2_0.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
      0,
-     944,
-     136,
-     136
+     0,
+     1080,
+     1080
     ],
-    "asset": "s1_1.png",
+    "asset": "s2_1.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
      0,
-     944,
-     136,
-     136
+     390,
+     1080,
+     690
     ],
-    "asset": "s1_2.png",
-    "recolor": false
-   },
-   {
-    "role": "deco",
-    "box": [
-     944,
-     944,
-     136,
-     136
-    ],
-    "asset": "s1_3.png",
-    "recolor": false
-   },
-   {
-    "role": "deco",
-    "box": [
-     60,
-     603,
-     960,
-     420
-    ],
-    "asset": "s1_4.png",
+    "asset": "s2_2.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
      0,
-     944,
-     136,
-     136
+     90,
+     1080,
+     1080
     ],
-    "asset": "s1_5.png",
+    "asset": "s2_3.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
-     944,
-     944,
-     136,
-     136
+     0,
+     0,
+     1080,
+     1080
     ],
-    "asset": "s1_6.png",
+    "asset": "s2_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     90,
+     90,
+     900,
+     600
+    ],
+    "asset": "s2_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     158,
+     121,
+     18,
+     18
+    ],
+    "asset": "s2_6.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     126,
+     121,
+     18,
+     18
+    ],
+    "asset": "s2_7.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     191,
+     121,
+     18,
+     18
+    ],
+    "asset": "s2_8.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     925,
+     110,
+     40,
+     40
+    ],
+    "asset": "s2_9.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     476,
+     119,
+     129,
+     34
+    ],
+    "asset": "s2_10.png",
     "recolor": false
    },
    {
     "role": "photo",
     "box": [
-     108,
-     273,
-     865,
-     465
+     90,
+     175,
+     900,
+     452
     ]
-   },
-   {
-    "role": "headline",
-    "box": [
-     39,
-     120,
-     1001,
-     88
-    ],
-    "text": "",
-    "size": 47.0,
-    "color": "000000",
-    "align": "center",
-    "font": "210 Sanullim Regular"
    },
    {
     "role": "body",
     "box": [
-     133,
-     795,
-     815,
-     153
+     44,
+     874,
+     992,
+     146
     ],
     "text": "",
-    "size": 19.0,
-    "color": "000000",
+    "size": 34.66,
+    "color": "FFFFFF",
+    "font": "Pretendard Regular",
     "align": "center",
-    "font": "Gmarket Sans Medium"
+    "lines": 2
+   },
+   {
+    "role": "headline",
+    "box": [
+     122,
+     751,
+     835,
+     103
+    ],
+    "text": "",
+    "size": 73.33,
+    "color": "FFFFFF",
+    "font": "Pretendard SemiBold",
+    "align": "center"
    }
   ],
   [
    {
     "role": "deco",
     "box": [
-     944,
-     944,
-     136,
-     136
+     0,
+     0,
+     1080,
+     1080
     ],
-    "asset": "s1_0.png",
+    "asset": "s3_0.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
      0,
-     944,
-     136,
-     136
+     0,
+     1080,
+     1080
     ],
-    "asset": "s1_1.png",
+    "asset": "s3_1.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
      0,
-     944,
-     136,
-     136
+     390,
+     1080,
+     690
     ],
-    "asset": "s1_2.png",
-    "recolor": false
-   },
-   {
-    "role": "deco",
-    "box": [
-     944,
-     944,
-     136,
-     136
-    ],
-    "asset": "s1_3.png",
-    "recolor": false
-   },
-   {
-    "role": "deco",
-    "box": [
-     60,
-     603,
-     960,
-     420
-    ],
-    "asset": "s1_4.png",
+    "asset": "s3_2.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
      0,
-     944,
-     136,
-     136
+     90,
+     1080,
+     1080
     ],
-    "asset": "s1_5.png",
+    "asset": "s3_3.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
-     944,
-     944,
-     136,
-     136
+     0,
+     0,
+     1080,
+     1080
     ],
-    "asset": "s1_6.png",
+    "asset": "s3_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     90,
+     90,
+     900,
+     600
+    ],
+    "asset": "s3_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     158,
+     121,
+     18,
+     18
+    ],
+    "asset": "s3_6.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     126,
+     121,
+     18,
+     18
+    ],
+    "asset": "s3_7.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     191,
+     121,
+     18,
+     18
+    ],
+    "asset": "s3_8.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     925,
+     110,
+     40,
+     40
+    ],
+    "asset": "s3_9.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     476,
+     119,
+     129,
+     34
+    ],
+    "asset": "s3_10.png",
     "recolor": false
    },
    {
     "role": "photo",
     "box": [
-     108,
-     273,
-     865,
-     465
+     90,
+     175,
+     900,
+     452
     ]
-   },
-   {
-    "role": "headline",
-    "box": [
-     39,
-     120,
-     1001,
-     88
-    ],
-    "text": "",
-    "size": 47.0,
-    "color": "000000",
-    "align": "center",
-    "font": "210 Sanullim Regular"
    },
    {
     "role": "body",
     "box": [
-     133,
-     795,
-     815,
-     153
+     44,
+     874,
+     992,
+     146
     ],
     "text": "",
-    "size": 19.0,
-    "color": "000000",
+    "size": 34.66,
+    "color": "FFFFFF",
+    "font": "Pretendard Regular",
     "align": "center",
-    "font": "Gmarket Sans Medium"
+    "lines": 2
+   },
+   {
+    "role": "headline",
+    "box": [
+     122,
+     751,
+     835,
+     103
+    ],
+    "text": "",
+    "size": 73.33,
+    "color": "FFFFFF",
+    "font": "Pretendard SemiBold",
+    "align": "center"
    }
   ],
   [
    {
     "role": "deco",
     "box": [
-     944,
-     944,
-     136,
-     136
+     0,
+     0,
+     1080,
+     1080
     ],
-    "asset": "s1_0.png",
+    "asset": "s4_0.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
      0,
-     944,
-     136,
-     136
+     0,
+     1080,
+     1080
     ],
-    "asset": "s1_1.png",
+    "asset": "s4_1.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
      0,
-     944,
-     136,
-     136
+     390,
+     1080,
+     690
     ],
-    "asset": "s1_2.png",
-    "recolor": false
-   },
-   {
-    "role": "deco",
-    "box": [
-     944,
-     944,
-     136,
-     136
-    ],
-    "asset": "s1_3.png",
-    "recolor": false
-   },
-   {
-    "role": "deco",
-    "box": [
-     60,
-     603,
-     960,
-     420
-    ],
-    "asset": "s1_4.png",
+    "asset": "s4_2.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
      0,
-     944,
-     136,
-     136
+     90,
+     1080,
+     1080
     ],
-    "asset": "s1_5.png",
+    "asset": "s4_3.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
-     944,
-     944,
-     136,
-     136
+     0,
+     0,
+     1080,
+     1080
     ],
-    "asset": "s1_6.png",
+    "asset": "s4_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     90,
+     90,
+     900,
+     600
+    ],
+    "asset": "s4_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     158,
+     121,
+     18,
+     18
+    ],
+    "asset": "s4_6.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     126,
+     121,
+     18,
+     18
+    ],
+    "asset": "s4_7.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     191,
+     121,
+     18,
+     18
+    ],
+    "asset": "s4_8.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     925,
+     110,
+     40,
+     40
+    ],
+    "asset": "s4_9.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     476,
+     119,
+     129,
+     34
+    ],
+    "asset": "s4_10.png",
     "recolor": false
    },
    {
     "role": "photo",
     "box": [
-     108,
-     273,
-     865,
-     465
+     90,
+     175,
+     900,
+     452
     ]
-   },
-   {
-    "role": "headline",
-    "box": [
-     39,
-     120,
-     1001,
-     88
-    ],
-    "text": "",
-    "size": 47.0,
-    "color": "000000",
-    "align": "center",
-    "font": "210 Sanullim Regular"
    },
    {
     "role": "body",
     "box": [
-     133,
-     795,
-     815,
-     153
+     44,
+     874,
+     992,
+     146
     ],
     "text": "",
-    "size": 19.0,
-    "color": "000000",
+    "size": 34.66,
+    "color": "FFFFFF",
+    "font": "Pretendard Regular",
     "align": "center",
-    "font": "Gmarket Sans Medium"
+    "lines": 2
+   },
+   {
+    "role": "headline",
+    "box": [
+     122,
+     751,
+     835,
+     103
+    ],
+    "text": "",
+    "size": 73.33,
+    "color": "FFFFFF",
+    "font": "Pretendard SemiBold",
+    "align": "center"
    }
   ],
   [
    {
     "role": "deco",
     "box": [
-     944,
-     944,
-     136,
-     136
+     0,
+     0,
+     1080,
+     1080
     ],
-    "asset": "s1_0.png",
+    "asset": "s5_0.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
      0,
-     944,
-     136,
-     136
+     0,
+     1080,
+     1080
     ],
-    "asset": "s1_1.png",
+    "asset": "s5_1.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
      0,
-     944,
-     136,
-     136
+     390,
+     1080,
+     690
     ],
-    "asset": "s1_2.png",
-    "recolor": false
-   },
-   {
-    "role": "deco",
-    "box": [
-     944,
-     944,
-     136,
-     136
-    ],
-    "asset": "s1_3.png",
-    "recolor": false
-   },
-   {
-    "role": "deco",
-    "box": [
-     60,
-     603,
-     960,
-     420
-    ],
-    "asset": "s1_4.png",
+    "asset": "s5_2.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
      0,
-     944,
-     136,
-     136
+     90,
+     1080,
+     1080
     ],
-    "asset": "s1_5.png",
+    "asset": "s5_3.png",
     "recolor": false
    },
    {
     "role": "deco",
     "box": [
-     944,
-     944,
-     136,
-     136
+     0,
+     0,
+     1080,
+     1080
     ],
-    "asset": "s1_6.png",
+    "asset": "s5_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     90,
+     90,
+     900,
+     600
+    ],
+    "asset": "s5_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     158,
+     121,
+     18,
+     18
+    ],
+    "asset": "s5_6.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     126,
+     121,
+     18,
+     18
+    ],
+    "asset": "s5_7.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     191,
+     121,
+     18,
+     18
+    ],
+    "asset": "s5_8.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     925,
+     110,
+     40,
+     40
+    ],
+    "asset": "s5_9.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     476,
+     119,
+     129,
+     34
+    ],
+    "asset": "s5_10.png",
     "recolor": false
    },
    {
     "role": "photo",
     "box": [
-     108,
-     273,
-     865,
-     465
+     90,
+     175,
+     900,
+     452
     ]
-   },
-   {
-    "role": "headline",
-    "box": [
-     39,
-     120,
-     1001,
-     88
-    ],
-    "text": "",
-    "size": 47.0,
-    "color": "000000",
-    "align": "center",
-    "font": "210 Sanullim Regular"
    },
    {
     "role": "body",
     "box": [
-     133,
-     795,
-     815,
-     153
+     44,
+     874,
+     992,
+     146
     ],
     "text": "",
-    "size": 19.0,
-    "color": "000000",
+    "size": 34.66,
+    "color": "FFFFFF",
+    "font": "Pretendard Regular",
     "align": "center",
-    "font": "Gmarket Sans Medium"
+    "lines": 2
+   },
+   {
+    "role": "headline",
+    "box": [
+     122,
+     751,
+     835,
+     103
+    ],
+    "text": "",
+    "size": 73.33,
+    "color": "FFFFFF",
+    "font": "Pretendard SemiBold",
+    "align": "center"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     0,
+     0,
+     1080,
+     1080
+    ],
+    "asset": "s6_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     0,
+     1080,
+     1080
+    ],
+    "asset": "s6_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     390,
+     1080,
+     690
+    ],
+    "asset": "s6_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     90,
+     1080,
+     1080
+    ],
+    "asset": "s6_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     0,
+     1080,
+     1080
+    ],
+    "asset": "s6_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     90,
+     90,
+     900,
+     600
+    ],
+    "asset": "s6_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     158,
+     121,
+     18,
+     18
+    ],
+    "asset": "s6_6.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     126,
+     121,
+     18,
+     18
+    ],
+    "asset": "s6_7.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     191,
+     121,
+     18,
+     18
+    ],
+    "asset": "s6_8.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     925,
+     110,
+     40,
+     40
+    ],
+    "asset": "s6_9.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     476,
+     119,
+     129,
+     34
+    ],
+    "asset": "s6_10.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     90,
+     175,
+     900,
+     452
+    ]
+   },
+   {
+    "role": "body",
+    "box": [
+     44,
+     874,
+     992,
+     146
+    ],
+    "text": "",
+    "size": 34.66,
+    "color": "FFFFFF",
+    "font": "Pretendard Regular",
+    "align": "center",
+    "lines": 2
+   },
+   {
+    "role": "headline",
+    "box": [
+     122,
+     751,
+     835,
+     103
+    ],
+    "text": "",
+    "size": 73.33,
+    "color": "FFFFFF",
+    "font": "Pretendard SemiBold",
+    "align": "center"
    }
   ]
  ]
