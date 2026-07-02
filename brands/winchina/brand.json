@@ -32,5 +32,6 @@
  "label": "윈차이나",
  "prompt": "",
  "brand_placement": "end",
+ "web_update": true,
  "id": "winchina"
 }

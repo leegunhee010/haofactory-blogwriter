@@ -46,6 +46,7 @@ DEFAULTS = {
     "label": "",     # 글 속 표기명(예: FIRST DESIGN). 비면 name 사용
     "prompt": "",    # 완전 커스텀 스크립트(있으면 공통구조 대신 이걸 사용, 출력형식은 자동 부착)
     "brand_placement": "end",   # end=본문은 정보만·브랜드는 마무리에서만(기본) / each=소제목마다 브랜드 언급
+    "web_update": False,         # True면 작성 전 웹검색으로 최신 공개 정보 확인(레드트랜스·윈차이나). 회사 가격·절차는 기준서 유지
 }
 
 
