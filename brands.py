@@ -8,6 +8,23 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 BRANDS_DIR = os.path.join(HERE, "brands")
 os.makedirs(BRANDS_DIR, exist_ok=True)
 
+# 사용자가 앱에서 직접 수정한 브랜드 설정은 여기(작성기_설정.json)에 저장 → 런처 PRESERVE 목록이라
+# 업데이트(update.zip)로 덮어써지지 않음. 브랜드 담당자가 고친 설정이 업데이트 후에도 유지된다.
+_CFG_FILE = os.path.join(HERE, "작성기_설정.json")
+
+
+def _load_cfg_raw():
+    try:
+        return json.load(open(_CFG_FILE, encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def load_overrides():
+    """앱에서 사용자가 저장한 브랜드별 오버라이드({brand_id: {필드...}})."""
+    d = _load_cfg_raw()
+    return d.get("brand_overrides") or {}
+
 # 조형물 제작 기본 단계(다른 업종은 폼에서 바꿔도 됨)
 DEFAULT_STAGES = [["대표", "대표"], ["콘셉트", "대표"], ["조각", "공정"], ["몰드", "공정"],
                   ["적층", "공정"], ["샌딩", "공정"], ["퍼티", "공정"], ["공정", "공정"],
@@ -28,6 +45,7 @@ DEFAULTS = {
     "identity": "",  # 회사 정체성/서비스/강점 (공통 블로그 구조에 끼워짐)
     "label": "",     # 글 속 표기명(예: FIRST DESIGN). 비면 name 사용
     "prompt": "",    # 완전 커스텀 스크립트(있으면 공통구조 대신 이걸 사용, 출력형식은 자동 부착)
+    "brand_placement": "each",  # each=소제목마다 브랜드 언급 / end=본문은 정보만·브랜드는 마무리에서만
 }
 
 
@@ -68,12 +86,33 @@ def load_brand(bid):
         c = {}
     out = dict(DEFAULTS)
     out.update(c)
+    ov = load_overrides().get(bid)          # 사용자가 앱에서 고친 설정(업데이트에도 보존) → 최우선
+    if ov:
+        out.update({k: v for k, v in ov.items() if k in DEFAULTS})
     out["id"] = bid
     out["has_cards"] = has_cards(bid)
     out["card_templates"] = card_templates(bid)
     if not out.get("stages"):
         out["stages"] = DEFAULT_STAGES
     return out
+
+
+def save_override(cfg):
+    """앱 UI에서 사용자가 저장한 브랜드 설정 → 작성기_설정.json(보존됨)에 브랜드별로 기록.
+    base brand.json(배포본)은 건드리지 않음 → 업데이트가 base를 갱신해도 사용자 수정분은 유지."""
+    bid = cfg.get("id") or slugify(cfg.get("name", ""))
+    cfg["id"] = bid
+    keep = {k: cfg.get(k, DEFAULTS.get(k)) for k in DEFAULTS}
+    keep["id"] = bid
+    d = _load_cfg_raw()
+    ov = d.get("brand_overrides") or {}
+    ov[bid] = keep
+    d["brand_overrides"] = ov
+    try:
+        json.dump(d, open(_CFG_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    except Exception:
+        pass
+    return bid
 
 
 def save_brand(cfg):
@@ -124,6 +163,16 @@ def _output_format(b):
 표지부제: (표지 큰제목 아래 들어갈 한 줄 부제 — 이 글 주제를 요약하는 짧은 후킹 문장, 18자 내외)"""
 
 
+_AEO_BLOCK = """[AEO·GEO 최적화 — AI(네이버 AI·ChatGPT·Gemini 등)가 읽고 '인용'하기 쉬운 글쓰기]
+- 두괄식: 도입과 각 소제목의 첫 1~2문장에서 그 질문에 대한 '결론·핵심 답'을 먼저 분명히 말한 뒤 근거를 푼다.
+- 소제목은 독자가 실제로 검색·질문하는 형태(질문형 또는 핵심 명사형)로 짓는다. 매 소제목이 하나의 구체적 궁금증에 답하게 한다.
+- 구체적 사실 우선: '다양한/여러/많은' 같은 막연한 표현 금지 → 개수·명칭·수치로 명시한다(예: "다양한 방법" X → "3가지: A·B·C" O).
+- 수치·통계·법령을 지어내지 말 것. 근거가 분명한 사실만 쓰고, 확실치 않으면 그 수치·데이터 자체를 아예 언급하지 않는다.
+- 비교·가격·절차·조건처럼 정리가 필요한 정보는 이미지가 아니라 '텍스트 표/목록'으로 또박또박 제시한다(줄바꿈으로 항목을 나눠 네이버에 붙여도 읽기 쉽게). 글자로 정리해야 AI가 읽고 인용할 수 있다.
+- 지역·대상·서비스를 분명히 밝혀(누구를 위한 무슨 서비스인지) AI가 "이건 누가 하나?"라는 질문에 이 브랜드를 떠올리게 한다.
+- 절대 뻔한 일반론으로 흐르지 말고, 실제로 바로 써먹을 수 있는 사실·기준·팁으로 채운다. 각도는 창의적으로 잡되 사실은 정확해야 한다."""
+
+
 def _shared_structure(b):
     """전 브랜드 공통 블로그 '기술 구조'(소제목6·제목키워드·SEO·도입/마무리 형식)는 고정.
     톤·회사소개·서비스·장점·CTA만 브랜드별 필드로 끼워 넣는다."""
@@ -134,6 +183,15 @@ def _shared_structure(b):
     tone = (b.get("tone") or "").strip() or DEFAULTS["tone"]
     cta = (b.get("cta") or "").strip().replace("{name}", label) or \
         f'부담을 덜어주는 한 줄로 자연스럽게 닫되, 메인키워드를 제대로 하고 싶다면 {label}을(를) 떠올리게 한다.'
+    placement = (b.get("brand_placement") or "each").strip()
+    if placement == "end":
+        flow = (f"- 각 소제목 본문은 **오직 독자에게 유용한 정보**만 담는다. 고객이 실제로 궁금해하는 것"
+                f"(비용·필요서류·절차·선택 기준·주의점·자주 하는 실수 등)에 곧바로, 구체적으로 답한다.\n"
+                f"- 본문(도입~여섯 번째 소제목)에서는 회사({label}) 소개·홍보·강점 언급을 넣지 않는다. 정보 자체로 신뢰를 준다.\n"
+                f"- {label}에 대한 소개·강점·문의 유도는 **오직 마지막 마무리 문단에서만** 자연스럽게 한다.")
+    else:
+        flow = (f"- 각 단락은 [고객의 흔한 고민·궁금증 → 그래서 이게 왜 중요한지 → {label}은 이렇게 합니다"
+                f"(강점·디테일)] 흐름으로 전개한다.")
     return f"""너는 '{name}'{('(' + industry + ')') if industry else ''}의 네이버 블로그 글을 쓰는 카피라이터다.
 
 [회사 소개 — 이 회사의 서비스·강점(브랜드별)]
@@ -145,9 +203,11 @@ def _shared_structure(b):
 [블로그 구조 — 모든 글 공통(기술 규칙)]
 - 도입: "안녕하세요"로 인사하고 {label}을(를) 한 줄로 소개한 뒤, "오늘은 ... (메인키워드) 이야기를 해볼까 해요" 식으로 주제를 안내한다.
 - 소제목 **정확히 6개**. 각 소제목 아래 본문 단락. 소제목 스타일은 위 톤에 맞춘다(질문형/선언형/넘버링 등).
-- 각 단락은 [고객의 흔한 고민·궁금증 → 그래서 이게 왜 중요한지 → {label}은 이렇게 합니다(강점·디테일)] 흐름으로 전개한다.
+{flow}
 - 제목에 메인키워드를 포함한다. 공백 제외 1,500자 이상. 메인키워드를 제목·소제목·본문에 자연스럽게 5~8회 녹인다(억지 반복 금지).
 - 한 문장(또는 의미단위)마다 줄바꿈(네이버 모바일 가독성). 과장·AI티('~에 대해 알아보겠습니다' 등) 금지.
+
+{_AEO_BLOCK}
 
 [마무리]
 {cta}"""
@@ -180,10 +240,19 @@ def _guide_block(b):
             "----- 기준서 시작 -----\n" + g + "\n----- 기준서 끝 -----")
 
 
+_SELFCHECK = """[발행 전 자가 점검 — 아래를 스스로 확인한 뒤 최종본만 출력한다. 점검 결과·체크리스트는 절대 출력하지 말 것]
+- 지어낸 수치·사실이 없는가. (사실 기준서가 있으면 그 값만 썼는가.)
+- 막연한 표현 대신 구체적 사실·수치·명칭으로 썼는가. 뻔한 일반론이 아니라 실제로 유용한가.
+- 소제목 정확히 6개, (사진) 정확히 7개, 제목·본문에 메인키워드가 자연스럽게 들어갔는가.
+- 문체가 지정한 톤과 맞고, 어색하거나 딱딱하지 않고 자연스러운가.
+- 비교·가격·절차 같은 정보는 텍스트 표/목록으로 정리했는가."""
+
+
 def build_style(b):
     """브랜드 설정 → 글 생성 시스템 프롬프트.
     prompt(완전 커스텀)가 있으면 그걸 쓰고, 없으면 전 브랜드 공통 구조 + 회사 소개. 출력 형식은 항상 부착.
-    브랜드 폴더에 guide.md(사실 기준서)가 있으면 '반드시 준수' 블록으로 함께 부착."""
+    브랜드 폴더에 guide.md(사실 기준서)가 있으면 '반드시 준수' 블록으로 함께 부착.
+    발행 전 자가 점검(AEO·사실 정확성)은 모든 글에 부착."""
     custom = (b.get("prompt") or "").strip()
     head = custom.replace("{name}", b.get("name", "")) if custom else _shared_structure(b)
-    return head + _guide_block(b) + "\n\n" + _output_format(b)
+    return head + _guide_block(b) + "\n\n" + _output_format(b) + "\n\n" + _SELFCHECK

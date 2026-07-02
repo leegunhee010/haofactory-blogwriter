@@ -906,7 +906,13 @@ def api_brand_save():
     ch = cfg.get("card_headlines")
     if isinstance(ch, str):
         cfg["card_headlines"] = [t.strip() for t in ch.split("\n") if t.strip()]
-    bid = brands.save_brand(cfg)
+    # 이미 있는 브랜드를 앱에서 수정하면 → 오버라이드(작성기_설정.json)에 저장해 업데이트에도 유지(C7).
+    # 새 브랜드 생성은 base(brands/<id>/brand.json)에 저장해야 목록에 뜨고 배포 대상이 됨.
+    bid0 = cfg.get("id") or brands.slugify(cfg.get("name", ""))
+    if os.path.isfile(os.path.join(brands.brand_dir(bid0), "brand.json")):
+        bid = brands.save_override(cfg)
+    else:
+        bid = brands.save_brand(cfg)
     return jsonify(ok=True, id=bid, brand=brands.load_brand(bid))
 
 
