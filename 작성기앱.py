@@ -199,12 +199,16 @@ def _variation_block():
             "- 마무리의 브랜드 소개도 정형화된 나열을 복붙하지 말고, 이번 글 주제와 연결해 다른 문장·다른 순서·다른 강조점으로 매번 새롭게 쓴다.")
 
 
-def build_prompt(keyword, photo_files, project_hint="", brand=None):
+def build_prompt(keyword, photo_files, project_hint="", brand=None, subkeyword="", title=""):
     photos = "\n".join(f"- {f}" for f in photo_files) if photo_files else "(없음 — (사진N) 자리표시만, 파일명은 비워둠)"
     hint = f"\n[실제 프로젝트 정보] {project_hint}" if project_hint else ""
+    subkeyword = (subkeyword or "").strip()
+    title = (title or "").strip()
+    subblk = (f"\n[서브키워드] {subkeyword}\n- 본문에 '{subkeyword}' 문구를 쪼개지 말고 정확히 그대로, 자연스러운 자리에 4회 반복해 넣는다(억지스럽지 않게)." if subkeyword else "")
+    titleblk = (f"\n[제목 — 반드시 이 제목을 그대로 사용]\n{title}\n- 출력의 '제목:' 줄에는 위 제목을 토씨 하나 바꾸지 말고 그대로 쓴다. 새 제목을 지어내지 않는다." if title else "")
     style = brands.build_style(brand) if brand else STYLE
     return (style + "\n\n" + _variation_block() +
-            f"\n\n[메인키워드] {keyword}{hint}\n\n[사용 사진] (순서대로 적절한 슬롯에 배치)\n{photos}\n\n위 규칙대로 지금 작성하라.")
+            f"\n\n[메인키워드] {keyword}{hint}{subblk}{titleblk}\n\n[사용 사진] (순서대로 적절한 슬롯에 배치)\n{photos}\n\n위 규칙대로 지금 작성하라.")
 
 
 def run_claude(prompt, model="", acc_id=None, _tried=None):
@@ -1092,6 +1096,8 @@ def api_generate():
     keyword = (b.get("keyword") or "").strip()
     folder = b.get("folder") or ""
     hint = (b.get("hint") or "").strip()
+    subkeyword = (b.get("subkeyword") or "").strip()   # b는 아래 루프에서 덮어써지므로 먼저 읽음
+    title = (b.get("title") or "").strip()
     tpl = str(b.get("template") or "1")   # 카드 디자인 슬롯(b는 아래 루프에서 덮어써지므로 먼저 읽음)
     if not keyword:
         return jsonify(ok=False, msg="키워드를 입력하세요.")
@@ -1101,7 +1107,7 @@ def api_generate():
     random.shuffle(files)                               # ★매 생성마다 다른 순서(Claude도 매번 다르게 고름)
     files = files[:150]
     model = (b.get("model") or load_cfg().get("model") or "opus")
-    prompt = build_prompt(keyword, files, hint, brand)
+    prompt = build_prompt(keyword, files, hint, brand, subkeyword, title)
     out, err = run_claude(prompt, model)
     if err:
         return jsonify(ok=False, msg=err)
@@ -1122,6 +1128,8 @@ def api_generate():
     if ms:
         sub = re.sub(r"\([^)]*\)", "", ms.group(1)).strip() or ms.group(1).strip()
     post = parse_manuscript(parts[0], files)
+    if title:
+        post["title"] = title                 # 사용자가 정한 제목을 그대로 사용(C2)
     post["folder"] = folder
     post["keyword"] = keyword
     post["cards"] = cards[:7]
@@ -1151,6 +1159,67 @@ def api_generate():
         photo_paths = [os.path.join(folder, f) for f in card_files]
         threading.Thread(target=_cardnews_job, args=(jid, photo_paths, cards, keyword, adir, sub, bodies, post.get("title", "")), daemon=True).start()
     return jsonify(ok=True, post=post)
+
+
+# ── 제목 추천 (AEO/GEO — geo-tracker 고객 질문 기반) ──────────────
+GEO_RESULTS_DIR = r"C:/geo-tracker/results"
+
+
+def geo_questions(bid, cap=24):
+    """geo-tracker 결과에서 이 브랜드 고객이 AI에 묻는 질문 + 인용 여부. 없으면 []."""
+    try:
+        fs = sorted(glob.glob(os.path.join(GEO_RESULTS_DIR, f"{bid}-*.json")))
+        if not fs:
+            return []
+        d = jload(fs[-1], {})                 # 파일명에 날짜 → 마지막이 최신
+        qs = d.get("questions") or []
+        cells = d.get("cells") or {}
+        out = []
+        for i, q in enumerate(qs):
+            cited = any((cells.get(f"{i}:{p}") or {}).get("cited")
+                        for p in ("naver", "google", "chatgpt", "perplexity"))
+            out.append({"q": q, "cited": bool(cited)})
+        return out[:cap]
+    except Exception:
+        return []
+
+
+@app.route("/api/title-suggest", methods=["POST"])
+def api_title_suggest():
+    """메인/서브키워드 + geo-tracker 고객 질문으로 AEO/GEO 최적화 제목 5개 제안."""
+    b = request.get_json(force=True) or {}
+    keyword = (b.get("keyword") or "").strip()
+    subkeyword = (b.get("subkeyword") or "").strip()
+    if not keyword:
+        return jsonify(ok=False, msg="메인키워드를 먼저 입력하세요.")
+    brand = brands.load_brand(b.get("brand") or "haofactory")
+    qs = geo_questions(brand["id"])
+    geo_block = ""
+    if qs:
+        qs.sort(key=lambda x: x["cited"])     # 미인용(기회) 먼저
+        qlines = "\n".join(("★ " if not x["cited"] else "· ") + x["q"] for x in qs[:20])
+        geo_block = ("아래는 이 브랜드 고객이 실제로 AI(네이버 AI·ChatGPT 등)에 자주 묻는 질문이다. "
+                     "★는 아직 이 브랜드가 AI 답변에 인용되지 못한 질문(=인용 기회가 큼):\n" + qlines + "\n\n")
+    subrule = (f"- 서브키워드 '{subkeyword}'가 있다. 메인키워드와 겹치는 부분은 빼고, 나머지 핵심어만 제목에 자연스럽게 녹인다.\n"
+               if subkeyword else "")
+    prompt = (f"너는 '{brand['name']}'의 네이버 블로그 제목을 짓는 SEO·AEO·GEO 전문가다.\n"
+              f"[메인키워드] {keyword}\n" + (f"[서브키워드] {subkeyword}\n" if subkeyword else "") + "\n" + geo_block +
+              "[규칙]\n- 메인키워드를 제목에 자연스럽게 포함한다.\n" + subrule +
+              "- 고객이 실제로 검색·질문하는 형태로 만든다. 질문형 제목을 우선하되 단정형도 섞어 다양하게.\n"
+              "- 위 고객 질문(특히 ★)을 정조준하는 제목을 우선 만든다.\n"
+              "- 서로 다른 각도로 정확히 5개. 각 제목은 한 줄, 25자 내외.\n"
+              "오직 제목 5개만 출력한다(형식: 1. 제목 / 2. 제목 ... 다른 설명·머리말·따옴표 금지).")
+    out, err = run_claude(prompt, b.get("model") or "sonnet")   # 제목은 빠른 모델로 충분
+    if err:
+        return jsonify(ok=False, msg=err)
+    titles = []
+    for ln in (out or "").split("\n"):
+        m = re.match(r"^\s*\d+\s*[.)]\s*(.+)$", ln.strip())
+        if m:
+            t = re.sub(r'^["\'“‘\-•\s]+|["\'”’\s]+$', "", m.group(1)).strip()
+            if t:
+                titles.append(t)
+    return jsonify(ok=True, titles=titles[:5], geo=bool(qs))
 
 
 @app.route("/api/cardnews-status")
@@ -1491,7 +1560,7 @@ select:focus{border-color:var(--brand)}
 <script>
 let TABS=[], CUR=0, REC=null, seq=1, BRAND='haofactory', BRANDS=[], BFORM=null;
 const el=id=>document.getElementById(id), esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-function newTab(){return {id:seq++, keyword:'', folder:'', files:[], hint:'', post:null, busy:false, model:'opus'};}
+function newTab(){return {id:seq++, keyword:'', subkeyword:'', title:'', folder:'', files:[], hint:'', post:null, busy:false, model:'opus'};}
 // ── 브랜드 ──
 function hexMix(hex,amt){hex=(hex||'#FD6F22').replace('#','');if(hex.length<6)hex='FD6F22';
   const r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16),m=v=>Math.round(v+(255-v)*amt);
@@ -1591,6 +1660,16 @@ function render(){renderTabs();
         <button class="btn" onclick="toggleRec()">📝 추천</button></div>
       <div class="recbox" id="recbox"></div>
     </div>
+    <div class="field"><label>서브키워드 <span style="font-weight:600;color:#b4bcc8">(선택 — 비워도 됩니다)</span></label>
+      <div class="row"><input type="text" id="subkw" value="${esc(x.subkeyword||'')}" placeholder="예: 제품브로슈어인쇄 — 본문에 4회 반복" oninput="t().subkeyword=this.value">
+        <button class="btn" onclick="toggleRecSub()">📝 추천</button></div>
+      <div class="recbox" id="recboxsub"></div>
+    </div>
+    <div class="field"><label>제목 <span style="font-weight:600;color:#b4bcc8">(직접 입력하거나 제목 추천 후 수정 가능 · 비우면 AI가 제목 생성)</span></label>
+      <div class="row"><input type="text" id="title" value="${esc(x.title||'')}" placeholder="제목 추천으로 뽑아 쓰거나 직접 입력하세요" oninput="t().title=this.value">
+        <button class="btn pri" onclick="suggestTitle()">✨ 제목 추천</button></div>
+      <div class="recbox" id="titlebox"></div>
+    </div>
     <div class="field"><label>사진 폴더</label>
       <div class="row"><input type="text" id="folder" value="${esc(x.folder)}" placeholder="폴더 경로" oninput="t().folder=this.value">
         <button class="btn" onclick="pickFolder()">폴더 선택</button>
@@ -1630,6 +1709,23 @@ function toggleRec(){const b=el('recbox');if(b.style.display=='block'){b.style.d
   }).catch(e=>{b.innerHTML='<div style="padding:16px;color:#c0392b;font-size:12.5px">추천 불러오기 오류: '+esc(''+e)+'</div>';});
 }
 function pickKw(k){t().keyword=k;el('recbox').style.display='none';render();}
+function toggleRecSub(){const b=el('recboxsub');if(b.style.display=='block'){b.style.display='none';return;}
+  b.style.display='block';b.innerHTML='<div style="padding:14px;color:#889;font-size:12px">불러오는 중…</div>';
+  fetch('/api/recommend?brand='+encodeURIComponent(BRAND)).then(r=>r.json()).then(d=>{const R=d.items||[];
+    if(!R.length){b.innerHTML='<div style="padding:16px;color:#c0392b;font-size:12.5px;line-height:1.6">'+esc(d.msg||'추천할 키워드가 없습니다.')+'</div>';return;}
+    b.innerHTML='<table>'+R.map(it=>`<tr onclick="pickSub('${esc(it.keyword).replace(/'/g,"\\'")}')"><td><b>${esc(it.keyword)}</b></td><td style="color:#889">${esc(it.category)}</td><td style="text-align:right;color:#889">${Number(it.volume).toLocaleString()}</td><td><span class="recst ${it.state}">${it.state}</span></td></tr>`).join('')+'</table>';
+  }).catch(e=>{b.innerHTML='<div style="padding:16px;color:#c0392b;font-size:12.5px">추천 오류: '+esc(''+e)+'</div>';});
+}
+function pickSub(k){t().subkeyword=k;el('recboxsub').style.display='none';render();}
+function suggestTitle(){const x=t();if(!x.keyword){toast('메인키워드를 먼저 입력하세요','err');return;}
+  const b=el('titlebox');b.style.display='block';b.innerHTML='<div style="padding:14px;color:var(--brand);font-size:12.5px;font-weight:700"><span class="spin" style="border-color:var(--brand);border-top-color:transparent"></span> AEO/GEO 분석해 제목 뽑는 중…</div>';
+  fetch('/api/title-suggest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',brand:BRAND})})
+   .then(r=>r.json()).then(d=>{if(!d.ok){b.innerHTML='<div style="padding:16px;color:#c0392b;font-size:12.5px">'+esc(d.msg||'실패')+'</div>';return;}
+     if(!d.titles||!d.titles.length){b.innerHTML='<div style="padding:16px;color:#c0392b;font-size:12.5px">제목을 뽑지 못했어요. 다시 시도해 주세요.</div>';return;}
+     b.innerHTML='<div style="padding:8px 12px;font-size:11px;font-weight:800;color:#8b95a5;background:#fafbfc;border-bottom:1px solid var(--line2)">'+(d.geo?'AEO/GEO 분석 기반':'키워드 기반')+' 추천 · 클릭하면 위 제목칸에 입력(수정 가능)</div>'+d.titles.map(tt=>`<div class="br-item" onclick="pickTitle('${esc(tt).replace(/'/g,"\\'")}')">${esc(tt)}</div>`).join('');
+   }).catch(e=>{b.innerHTML='<div style="padding:16px;color:#c0392b;font-size:12.5px">오류: '+esc(''+e)+'</div>';});
+}
+function pickTitle(tt){t().title=tt;el('titlebox').style.display='none';render();}
 let BR={path:'',drive:true}, BRF=[], PLACES=[];
 function pickFolder(){el('brmodal').style.display='block';browse('');}
 function closeBrowse(){el('brmodal').style.display='none';}
@@ -1663,7 +1759,7 @@ function pollOrg(){const iv=setInterval(()=>{fetch('/api/organize-status').then(
 });},1500);}
 function generate(){const x=t();if(!x.keyword){toast('키워드를 입력하세요','err');return;}
   x.busy=true;render();
-  fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,folder:x.folder,hint:x.hint,model:x.model||'opus',brand:BRAND,template:x.cardTpl||'1'})})
+  fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',title:x.title||'',folder:x.folder,hint:x.hint,model:x.model||'opus',brand:BRAND,template:x.cardTpl||'1'})})
    .then(r=>r.json()).then(d=>{x.busy=false;
      if(!d.ok){toast(d.msg||'생성 실패','err');render();return;}
      x.post=d.post;render();toast('✍ 원고 완성','ok');
