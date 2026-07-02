@@ -199,16 +199,27 @@ def _variation_block():
             "- 마무리의 브랜드 소개도 정형화된 나열을 복붙하지 말고, 이번 글 주제와 연결해 다른 문장·다른 순서·다른 강조점으로 매번 새롭게 쓴다.")
 
 
+# 가장 중요한 규칙은 프롬프트 맨 끝(작성 직전)에 다시 못박는다 — 긴 기준서에 묻히지 않게.
+_CORE_RULES = ("[★★반드시 지킬 핵심 — 이 글의 품질을 좌우한다]\n"
+               "1. 제목과 본문이 딱 맞아야 한다: 본문 전체가 제목이 약속한 주제에 답하고, 제목과 동떨어진 내용은 넣지 않는다.\n"
+               "2. 각 소제목과 그 아래 본문이 정확히 일치해야 한다: 소제목이 말하는 그 하나의 주제만 그 문단에서 다룬다(소제목과 상관없는 딴 얘기·범위 이탈 금지).\n"
+               "3. 매번 구조를 다르게: 지난 글과 같은 소제목 순서·같은 문장 틀·같은 예시·같은 비유를 재사용하지 말고, 이번 글만의 흐름으로 새로 짠다. 뻔한 '개요→절차→비용' 반복을 피한다.")
+
+
 def build_prompt(keyword, photo_files, project_hint="", brand=None, subkeyword="", title=""):
     photos = "\n".join(f"- {f}" for f in photo_files) if photo_files else "(없음 — (사진N) 자리표시만, 파일명은 비워둠)"
-    hint = f"\n[실제 프로젝트 정보] {project_hint}" if project_hint else ""
+    project_hint = (project_hint or "").strip()
+    hint = (f"\n[★실제 프로젝트·사례 정보 — 이 글은 이 '실제 건'을 다루는 사례(포트폴리오) 글이다]\n{project_hint}\n"
+            f"- 위 실제 정보를 근거로, 어떤 요청이었고 어떻게 진행·해결됐는지 이 케이스의 실제 상황·서류·처리 과정을 구체적으로 살려 '사례 중심'으로 쓴다(막연한 일반론 금지). 사실 기준서의 가격·절차 규칙은 그대로 지킨다."
+            if project_hint else "")
     subkeyword = (subkeyword or "").strip()
     title = (title or "").strip()
     subblk = (f"\n[서브키워드] {subkeyword}\n- 본문에 '{subkeyword}' 문구를 쪼개지 말고 정확히 그대로, 자연스러운 자리에 4회 반복해 넣는다(억지스럽지 않게)." if subkeyword else "")
     titleblk = (f"\n[제목 — 반드시 이 제목을 그대로 사용]\n{title}\n- 출력의 '제목:' 줄에는 위 제목을 토씨 하나 바꾸지 말고 그대로 쓴다. 새 제목을 지어내지 않는다." if title else "")
     style = brands.build_style(brand) if brand else STYLE
     return (style + "\n\n" + _variation_block() +
-            f"\n\n[메인키워드] {keyword}{hint}{subblk}{titleblk}\n\n[사용 사진] (순서대로 적절한 슬롯에 배치)\n{photos}\n\n위 규칙대로 지금 작성하라.")
+            f"\n\n[메인키워드] {keyword}{hint}{subblk}{titleblk}\n\n[사용 사진] (순서대로 적절한 슬롯에 배치)\n{photos}\n\n" +
+            _CORE_RULES + "\n\n위 규칙대로 지금 작성하라.")
 
 
 def run_claude(prompt, model="", acc_id=None, _tried=None):
