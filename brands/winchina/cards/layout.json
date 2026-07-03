@@ -174,7 +174,7 @@
      690
     ],
     "asset": "s1_2.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "deco",
@@ -335,7 +335,7 @@
      690
     ],
     "asset": "s2_2.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "deco",
@@ -496,7 +496,7 @@
      690
     ],
     "asset": "s3_2.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "deco",
@@ -657,7 +657,7 @@
      690
     ],
     "asset": "s4_2.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "deco",
@@ -818,7 +818,7 @@
      690
     ],
     "asset": "s5_2.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "deco",
@@ -979,7 +979,7 @@
      690
     ],
     "asset": "s6_2.png",
-    "recolor": false
+    "recolor": true
    },
    {
     "role": "deco",
