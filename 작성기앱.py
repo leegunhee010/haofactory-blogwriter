@@ -146,7 +146,7 @@ STYLE = """너는 조형물 제작 회사 '하오팩토리(HAOFACTORY)'의 네�
 - 넘버링 소제목 **정확히 6개**(개요/요구사항/설계/공정/설치/결과 흐름). 소재 비교(금속·FRP·EPS) 자연스럽게.
 - 마무리: "~ 고민되는 경우라면 HAOFACTORY로 편하게 문의 주셔도 좋습니다."
 [SEO 규칙]
-- 공백 제외 1,500자 이상.
+- 분량은 공백 제외 1,500~2,000자(★2,000자 절대 초과 금지 — 넘칠 것 같으면 군더더기를 덜어낸다).
 - 제목에 메인키워드 포함. 본문에 메인키워드 5~8회 자연스럽게(억지 반복 금지).
 [출력 형식 — 정확히 이 형식만, 다른 설명/머리말 금지]
 제목: (메인키워드 포함한 제목)
@@ -2059,10 +2059,11 @@ function renderPost(p){
   if(!pngs.length && p.cardnews_err) extra=`<div style="font-size:11px;color:#d55;margin:8px 0">카드뉴스 오류: ${esc(p.cardnews_err)}</div>`;
   else if(!pngs.length && p.cardnews_png_err) extra=`<div style="font-size:11px;color:#d55;margin:8px 0">카드 렌더 실패: ${esc(p.cardnews_png_err)}</div>`;
   else if(!pngs.length && p.cardnews_job) extra=`<div style="font-size:12px;color:var(--brand);font-weight:700;margin:8px 0"><span class="spin" style="border-color:var(--brand);border-top-color:transparent"></span> 카드뉴스 만드는 중… (원고 먼저 확인하세요. 잠시 후 본문 이미지로 채워집니다)</div>`;
-  const cc=p.char_count||0, okLen=cc>=1500;
+  const cc=p.char_count||0, okLen=cc>=1500&&cc<=2000;
+  const lenmsg=cc<1500?' · 1500 미달':(cc>2000?' · 2000 초과':'');
   return `<div class="pv-head"><div class="pv-title">${esc(p.title)}</div></div>
     <div class="badges">
-      <span class="badge ${okLen?'ok':'warn'}">${okLen?'✓':'⚠'} 공백제외 ${cc}자${okLen?'':' · 1500 미달'}</span>
+      <span class="badge ${okLen?'ok':'warn'}">${okLen?'✓':'⚠'} 공백제외 ${cc}자${lenmsg}</span>
       ${useCards?`<span class="badge brand">🎴 카드뉴스 ${pngs.length}장</span>`:`<span class="badge">📷 본문사진 ${p.blocks.filter(b=>b.type=='photo'&&b.file).length}장</span>`}</div>
     <div class="naver-box">
       <div class="naver-title">📤 네이버 블로그로 옮기기</div>
