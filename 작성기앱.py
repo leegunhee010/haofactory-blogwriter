@@ -1681,6 +1681,8 @@ select:focus{border-color:var(--brand)}
 .editpanel textarea{width:100%;min-height:60px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:13px;resize:vertical;box-sizing:border-box}
 .editpanel textarea:focus{outline:none;border-color:var(--brand)}
 .edithint{font-size:11px;color:var(--muted);margin-top:7px}
+.secbtn.run{border-color:var(--brand);color:var(--brand);background:var(--brand-l)}
+.editq{font-size:12px;font-weight:700;color:var(--brand);display:flex;align-items:center;gap:6px}
 .cpick{border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin:2px 0 10px;background:#fff;box-shadow:var(--sh)}
 .cpick-h{font-size:12.5px;font-weight:800;color:var(--ink2);margin-bottom:10px}
 .cpick-sw{display:grid;grid-template-columns:repeat(13,1fr);gap:6px;margin-bottom:12px}
@@ -2080,34 +2082,52 @@ function renderPost(p){
     ${extra}
     <div class="pv-body">${body}</div>`;
 }
-function editPanel(p){const x=t();const sid=x.editSid||'';const busy=x.editBusy;
+function editPanel(p){const x=t();const sid=x.editSid||'';
+  const q=x.editQueue||[]; const pending=(x.editActive?1:0)+q.length;
   const undoN=(x.undo&&x.undo.length)||0;
   return `<details class="opt editpanel" ${x.editOpen?'open':''} ontoggle="t().editOpen=this.open">
-    <summary>✏️ 부분 수정 — 한 부분만 AI로 고치기 (전체 다시 안 씀)</summary>
+    <summary>✏️ 부분 수정 — 여러 부분을 기다리지 않고 연달아 맡기기</summary>
     <div class="editbox">
       <div class="seclabel">① 고칠 부분 선택</div>
-      <div class="secbtns">${p.sections.map(s=>`<button class="secbtn ${sid==s.id?'sel':''}" onclick="pickSec('${s.id}')">${esc(s.label)}</button>`).join('')}</div>
+      <div class="secbtns">${p.sections.map(s=>{
+        const mk = x.editActive===s.id?'⏳ ':(q.some(e=>e.sid===s.id)?'⋯ ':'');
+        return `<button class="secbtn ${sid==s.id?'sel':''} ${mk?'run':''}" onclick="pickSec('${s.id}')">${mk}${esc(s.label)}</button>`;
+      }).join('')}</div>
       <div class="seclabel">② 어떻게 고칠지 지시</div>
       <textarea id="editinstr" placeholder="예: 더 짧고 담백하게 / 구체적 사례 한 개 추가 / 이 소제목을 질문형으로" oninput="t().editInstr=this.value">${esc(x.editInstr||'')}</textarea>
-      <div class="row" style="margin-top:8px;gap:8px">
-        <button class="btn pri" onclick="applyEdit()" ${busy||!sid?'disabled':''}>${busy?'<span class=spin></span> 수정 중…':'✏️ 이 부분만 수정'}</button>
-        <button class="btn" onclick="undoEdit()" ${undoN?'':'disabled'}>↩ 하나 전으로${undoN?' ('+undoN+')':''}</button>
+      <div class="row" style="margin-top:8px;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn pri" onclick="applyEdit()" ${!sid?'disabled':''}>➕ 이 부분 수정 맡기기</button>
+        <button class="btn" onclick="undoEdit()" ${(undoN&&!pending)?'':'disabled'}>↩ 하나 전으로${undoN?' ('+undoN+')':''}</button>
+        ${pending?`<span class="editq"><span class=spin></span> 처리 중 ${pending}개…</span>`:''}
       </div>
-      <div class="edithint">한 번에 한 부분씩. 마무리는 마지막 소제목에 포함돼 있어요.</div>
+      <div class="edithint">기다릴 필요 없어요 — 한 부분 맡기고 바로 다음 부분을 골라 또 맡기면 순서대로 반영됩니다.</div>
     </div></details>`;
 }
 function pickSec(id){t().editSid=id;render();setTimeout(()=>{const e=el('editinstr');if(e)e.focus();},0);}
-function undoEdit(){const x=t();if(x.undo&&x.undo.length){x.post=x.undo.pop();toast('↩ 되돌렸어요','ok');render();}}
+function undoEdit(){const x=t();if(x.editActive||(x.editQueue&&x.editQueue.length)){toast('처리 중엔 되돌릴 수 없어요','err');return;}
+  if(x.undo&&x.undo.length){x.post=x.undo.pop();toast('↩ 되돌렸어요','ok');render();}}
 function applyEdit(){const x=t();const sid=x.editSid;const instr=(x.editInstr||'').trim();
   if(!sid){toast('고칠 부분을 먼저 고르세요','err');return;}
   if(!instr){toast('어떻게 고칠지 입력하세요','err');return;}
-  x.editBusy=true;render();
-  fetch('/api/edit-section',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({post:x.post,section:sid,instruction:instr,brand:x.brand||BRAND,model:x.model||'opus'})})
-   .then(r=>r.json()).then(d=>{x.editBusy=false;
-     if(d.ok){(x.undo=x.undo||[]).push(x.post);if(x.undo.length>20)x.undo.shift();x.post=d.post;x.editInstr='';toast('✏️ 수정됐어요','ok');}
+  (x.editQueue=x.editQueue||[]).push({sid,instr});
+  x.editInstr='';                       // 입력 비워서 다음 부분 바로 지시 가능
+  toast('➕ 대기열에 추가 — 계속 다른 부분도 맡기세요','ok');
+  render();
+  runEditQueue(x);
+}
+function runEditQueue(tab){
+  if(tab.editActive) return;             // 순차 처리 — 이미 하나 처리 중이면 대기
+  const q=tab.editQueue||[];
+  if(!q.length){ if(tab===t())render(); return; }
+  const job=q.shift(); tab.editActive=job.sid;
+  if(tab===t())render();
+  fetch('/api/edit-section',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({post:tab.post,section:job.sid,instruction:job.instr,brand:tab.brand||BRAND,model:tab.model||'opus'})})
+   .then(r=>r.json()).then(d=>{
+     if(d.ok){(tab.undo=tab.undo||[]).push(tab.post);if(tab.undo.length>30)tab.undo.shift();tab.post=d.post;toast('✏️ 한 부분 반영됨','ok');}
      else toast(d.msg||'수정 실패','err');
-     render();
-   }).catch(()=>{x.editBusy=false;toast('수정 실패(네트워크)','err');render();});
+     tab.editActive=null; if(tab===t())render();
+     runEditQueue(tab);                  // 다음 대기 작업 이어서
+   }).catch(()=>{tab.editActive=null;toast('수정 실패(네트워크)','err');if(tab===t())render();runEditQueue(tab);});
 }
 const CPAL=['#111111','#4B4B4B','#8A8A8A','#C4C4C4','#E9ECEF',
   '#F5A9A9','#F7DE9A','#BCE3AE','#A5DAD0','#AECBFA','#B7B1E8','#DBB7E3',
