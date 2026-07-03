@@ -1435,9 +1435,13 @@ def api_pick_file():
     initdir = b.get("folder") or os.path.join(os.path.expanduser("~"), "Pictures")
     try:
         import win32gui, win32con
+        try:
+            hwnd = win32gui.GetForegroundWindow()   # 현재 앞에 있는 창(브라우저)을 소유자로 → 대화상자가 창 뒤로 숨지 않음
+        except Exception:
+            hwnd = 0
         filt = "이미지 파일\0*.jpg;*.jpeg;*.png;*.webp;*.gif\0모든 파일\0*.*\0"
         fname, _, _ = win32gui.GetOpenFileNameW(
-            InitialDir=initdir, Title="카드에 넣을 사진 선택", Filter=filt,
+            hwndOwner=hwnd, InitialDir=initdir, Title="카드에 넣을 사진 선택", Filter=filt,
             Flags=win32con.OFN_FILEMUSTEXIST | win32con.OFN_EXPLORER)
         return jsonify(ok=True, path=fname)
     except Exception:
