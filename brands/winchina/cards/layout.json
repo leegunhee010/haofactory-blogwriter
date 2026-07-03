@@ -2,6 +2,15 @@
  "size": 1080,
  "pt_height": 1080.0,
  "bg": "FFFFFF",
+ "theme_from_photo": true,
+ "bg_palette": [
+  "0F8C84",
+  "1E965C",
+  "5B5FC7",
+  "4A6FA5",
+  "96508C",
+  "C85060"
+ ],
  "slide_bg": [
   "000000",
   "000000",
@@ -27,15 +36,15 @@
     "recolor": false
    },
    {
-    "role": "deco",
+    "role": "photo",
     "box": [
-     -346,
-     -346,
-     1771,
-     1771
+     0,
+     0,
+     1080,
+     1080
     ],
-    "asset": "s0_1.png",
-    "recolor": false
+    "blur": 40,
+    "round": 0
    },
    {
     "role": "deco",

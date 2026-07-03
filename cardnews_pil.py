@@ -251,6 +251,20 @@ def _accent_from_image(path, light_bg=True):
     return (r, g, b)
 
 
+def _accent_bg_from_image(path):
+    """사진 색조를 살린 '배경 주조색'. 흰 글자 얹혀도 읽히게 명도·채도를 보정
+    (어두운 사진→탁한 진갈색 방지: 명도 살짝 올리고 채도 확보, 너무 밝아지진 않게)."""
+    import colorsys
+    base = _accent_from_image(path, light_bg=False)
+    if base is None:
+        return None
+    h, s, v = colorsys.rgb_to_hsv(*[c / 255 for c in base])
+    s = max(0.42, min(0.85, s * 1.1))            # 채도 확보(회색빠짐 방지)·과채도 억제
+    v = max(0.52, min(0.66, v * 1.12))           # 어두우면 올리고 밝으면 눌러 밴드 안으로
+    r, g, b = colorsys.hsv_to_rgb(h, s, v)
+    return (int(round(r * 255)), int(round(g * 255)), int(round(b * 255)))
+
+
 def _random_accent():
     """생성마다 다른 선명한 색(밝은배경 위 가독·장식 recolor 겸용 중간명도)."""
     import colorsys
@@ -445,7 +459,8 @@ def render_card(slide_idx, photo_path, headline, theme, out_path, assets_dir,
                     bl = it.get("blur")
                     if bl:
                         ph = ph.filter(ImageFilter.GaussianBlur(bl if isinstance(bl, (int, float)) and bl > 1 else 28))
-                    ph = _round(ph, int(min(box[2], box[3]) * pround))
+                    prad = it.get("round", pround)          # 항목별 라운딩 override(전체블러 배경=0)
+                    ph = _round(ph, int(min(box[2], box[3]) * prad))
                     canvas = _paste(canvas, ph, box[0], box[1])
         elif role in ("deco", "line", "logo"):
             canvas = _paste(canvas, _asset(assets_dir, it["asset"], box, eff_theme, it.get("recolor", False)), box[0], box[1])
@@ -488,9 +503,19 @@ def make_cards(photo_paths, headlines, out_dir, assets_dir, theme=None, subtitle
     """카드 N장 생성. subtitle=표지부제, bodies=카드별본문, title=블로그제목(source=title 헤드라인용)."""
     os.makedirs(out_dir, exist_ok=True)
     bodies = bodies or []
-    if theme is None:
-        theme = PALETTE[random.choice([c for c in PALETTE if c != "orange"])]
     lay = _layout(assets_dir)
+    if theme is None:
+        # 1순위: 표지/썸네일 사진 대표색을 카드뉴스 전체 주조색으로(theme_from_photo)
+        if lay.get("theme_from_photo") and photo_paths and os.path.isfile(photo_paths[0]):
+            theme = _accent_bg_from_image(photo_paths[0])
+        # 폴백: 사진 없으면 브랜드 엄선 팔레트, 그것도 없으면 기본 팔레트
+        if theme is None:
+            pal = lay.get("bg_palette")
+            if pal:
+                hx = random.choice(pal)
+                theme = tuple(int(hx[i:i+2], 16) for i in (0, 2, 4))
+            else:
+                theme = PALETTE[random.choice([c for c in PALETTE if c != "orange"])]
     slides = lay["slides"]
     n = len(slides)
     salt = "%08x" % random.randrange(16 ** 8)
