@@ -1603,7 +1603,7 @@ select:focus{border-color:var(--brand)}
 <script>
 let TABS=[], CUR=0, REC=null, seq=1, BRAND='haofactory', BRANDS=[], BFORM=null;
 const el=id=>document.getElementById(id), esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-function newTab(){return {id:seq++, keyword:'', subkeyword:'', title:'', folder:'', files:[], hint:'', post:null, busy:false, model:'opus'};}
+function newTab(){return {id:seq++, brand:((typeof BRAND!=='undefined'&&BRAND)||'haofactory'), keyword:'', subkeyword:'', title:'', folder:'', files:[], hint:'', post:null, busy:false, model:'opus'};}
 // ── 브랜드 ──
 function hexMix(hex,amt){hex=(hex||'#FD6F22').replace('#','');if(hex.length<6)hex='FD6F22';
   const r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16),m=v=>Math.round(v+(255-v)*amt);
@@ -1619,9 +1619,9 @@ function renderBrandSel(){const s=el('brandsel');if(!s)return;
 function loadBrands(cb){return fetch('/api/brands').then(r=>r.json()).then(d=>{BRANDS=d.brands||[];
   if(!BRANDS.find(b=>b.id==BRAND))BRAND=(BRANDS[0]||{}).id||'haofactory';
   renderBrandSel();applyBrandColor();if(cb)cb();});}
-function switchBrand(id){BRAND=id;applyBrandColor();renderBrandSel();
+function switchBrand(id){BRAND=id;if(TABS[CUR])TABS[CUR].brand=id;   // 현재 탭의 브랜드만 바꿈(탭별 브랜드)
   if(el('recbox')&&el('recbox').style.display=='block'){el('recbox').style.display='none';}
-  toast('브랜드: '+(curBrand().name||id));}
+  render();toast('이 글 브랜드: '+(curBrand().name||id));}
 function init(){TABS=[newTab()];CUR=0;loadBrands();render();
   fetch('/api/version').then(r=>r.json()).then(d=>{if(el('ver'))el('ver').textContent='v'+d.version;}).catch(()=>{});
   fetch('/api/status').then(r=>r.json()).then(s=>{
@@ -1688,15 +1688,18 @@ function pollAccounts(){let n=0;const iv=setInterval(()=>{n++;
     else if(d.accounts.some(a=>a.id==d.active&&a.logged_in)){clearInterval(iv);checkAuth();}
     if(n>80)clearInterval(iv);});},3000);}
 function renderTabs(){
-  el('tabs').innerHTML = TABS.map((t,i)=>`<div class="tab ${i==CUR?'on':''}" onclick="sel(${i})">글 ${i+1}${t.keyword?': '+esc(t.keyword.slice(0,10)):''}<span class="x" onclick="event.stopPropagation();delTab(${i})">×</span></div>`).join('')
+  el('tabs').innerHTML = TABS.map((tb,i)=>{const bn=(BRANDS.find(b=>b.id==tb.brand)||{}).name||'';
+    return `<div class="tab ${i==CUR?'on':''}" onclick="sel(${i})">${bn?'<b style="color:var(--brand)">'+esc(bn)+'</b> · ':''}글 ${i+1}${tb.keyword?': '+esc(tb.keyword.slice(0,10)):''}<span class="x" onclick="event.stopPropagation();delTab(${i})">×</span></div>`;}).join('')
     + `<div class="addtab" onclick="addTab()">+ 새 글</div>`;
 }
 function sel(i){CUR=i;render();}
 function addTab(){TABS.push(newTab());CUR=TABS.length-1;render();}
 function delTab(i){if(TABS.length==1)return;TABS.splice(i,1);if(CUR>=TABS.length)CUR=TABS.length-1;render();}
 function t(){return TABS[CUR];}
-function render(){renderTabs();
+function render(){
   const x=t();
+  if(x.brand&&BRANDS.find(b=>b.id==x.brand))BRAND=x.brand;   // 활성 탭의 브랜드로 동기화(색·선택기·카드디자인 반영)
+  applyBrandColor();renderBrandSel();renderTabs();
   el('card').innerHTML=`
     <div class="field"><label>메인키워드</label>
       <div class="row"><input type="text" id="kw" value="${esc(x.keyword)}" placeholder="예: FRP조형물 — 입력 후 Enter로 바로 생성" oninput="t().keyword=this.value;renderTabs()" onkeydown="if(event.key=='Enter'){event.preventDefault();generate();}">
@@ -1805,7 +1808,7 @@ function pollOrg(){const iv=setInterval(()=>{fetch('/api/organize-status').then(
 });},1500);}
 function generate(){const x=t();if(!x.keyword){toast('키워드를 입력하세요','err');return;}
   x.busy=true;render();
-  fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',title:x.title||'',folder:x.folder,hint:x.hint,model:x.model||'opus',brand:BRAND,template:x.cardTpl||'1'})})
+  fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',title:x.title||'',folder:x.folder,hint:x.hint,model:x.model||'opus',brand:x.brand||BRAND,template:x.cardTpl||'1'})})
    .then(r=>r.json()).then(d=>{x.busy=false;
      if(!d.ok){toast(d.msg||'생성 실패','err');render();return;}
      x.post=d.post;render();toast('✍ 원고 완성','ok');
