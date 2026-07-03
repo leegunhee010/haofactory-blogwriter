@@ -431,7 +431,11 @@ def render_card(slide_idx, photo_path, headline, theme, out_path, assets_dir,
             acc = _accent_from_image(photo_path)
     eff_theme = acc if (auto_theme and acc) else theme   # 장식 recolor용 테마
     sb = lay.get("slide_bg")
-    bg = (sb[slide_idx] if sb and slide_idx < len(sb) else lay.get("bg", "FFFFFF")) or "FFFFFF"
+    # 슬라이드 수 > slide_bg 개수면 마지막 배경색을 이어받는다(색 누락→흰색 폴백 방지)
+    if sb:
+        bg = (sb[slide_idx] if slide_idx < len(sb) else sb[-1]) or "FFFFFF"
+    else:
+        bg = lay.get("bg", "FFFFFF") or "FFFFFF"
     if auto_theme and acc:
         br, bgc, bb = (int(bg[i:i+2], 16) for i in (0, 2, 4))
         if max(br, bgc, bb) - min(br, bgc, bb) > 30:     # 채도있는(브랜드색) 배경만 치환, 흰/검 유지
@@ -596,6 +600,26 @@ def edit_card(out_dir, index, src=None, center=None, zoom=None,
                 accent=st.get("accent"))
     save_state(out_dir, st)
     return out
+
+
+def recolor_cards(out_dir, color):
+    """카드뉴스 전체를 지정한 색으로 다시 착색(수동 색상 선택). color=(r,g,b).
+    각 템플릿이 쓰던 방식(recolor 장식·slide_bg·auto_color 글자) 그대로, 색만 교체."""
+    st = load_state(out_dir)
+    col = tuple(int(c) for c in color)
+    st["theme"] = list(col)
+    st["accent"] = list(col)          # auto_theme/auto_color 계열은 accent를 씀
+    adir = st.get("assets_dir")
+    pngs = []
+    for i, c in enumerate(st["cards"]):
+        out = os.path.join(out_dir, "card%02d.png" % (i + 1))
+        render_card(i, c.get("src", ""), c.get("headline", ""), col, out, adir,
+                    center=(c.get("cx", 0.5), c.get("cy", 0.5)), zoom=c.get("zoom", 1.0),
+                    seed="recolor:%d" % i, subtitle=c.get("subtitle", ""),
+                    body=c.get("body", ""), title=c.get("title", ""), accent=col)
+        pngs.append(out)
+    save_state(out_dir, st)
+    return pngs
 
 
 def extract_template(pptx_path, out_assets_dir, theme_recolor=False, photo_round=0.0):

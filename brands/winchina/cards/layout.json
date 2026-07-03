@@ -36,15 +36,15 @@
     "recolor": false
    },
    {
-    "role": "photo",
+    "role": "deco",
     "box": [
-     0,
-     0,
-     1080,
-     1080
+     -346,
+     -346,
+     1771,
+     1771
     ],
-    "blur": 40,
-    "round": 0
+    "asset": "s0_1.png",
+    "recolor": false
    },
    {
     "role": "deco",

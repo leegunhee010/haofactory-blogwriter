@@ -8,9 +8,12 @@
   "63794B",
   "63794B",
   "63794B",
+  "63794B",
   "63794B"
  ],
  "theme_recolor": false,
+ "auto_theme": true,
+ "random_theme": true,
  "photo_round": 0.0,
  "slides": [
   [

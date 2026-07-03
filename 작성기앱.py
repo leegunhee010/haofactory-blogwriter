@@ -1170,6 +1170,8 @@ def api_generate():
     post["card_bodies"] = bodies[:7]
     post["subtitle"] = sub
     post["raw"] = out
+    post["brand"] = brand["id"]
+    post["sections"] = _section_list(parts[0])   # C3: 부분 수정용 구간 목록
     # 카드뉴스 생성 (순수 PIL)
     post["cardnews"] = ""
     # 카드 7장 = 서로 다른 사진(Claude 매칭 우선 + 폴더 전체에서 분산 채움)
@@ -1193,6 +1195,152 @@ def api_generate():
         photo_paths = [os.path.join(folder, f) for f in card_files]
         threading.Thread(target=_cardnews_job, args=(jid, photo_paths, cards, keyword, adir, sub, bodies, post.get("title", "")), daemon=True).start()
     return jsonify(ok=True, post=post)
+
+
+# ── C3: 생성 후 부분 수정 (chat으로 한 구간만 다시 쓰기) ──────────
+_HEAD_RE = re.compile(r"^\s*\*\*.+\*\*\s*$")
+_PHOTO_LINE_RE = re.compile(r"^\s*\(사진")
+_TITLE_LINE_RE = re.compile(r"^제목\s*[:：]")
+
+
+def _split_manuscript(raw):
+    """raw(전체 출력)에서 '카드뉴스:' 앞의 원고 부분(ms)과 나머지(tail)를 분리."""
+    ms = re.split(r"\n\s*카드뉴스\s*[:：]\s*\n?", raw, maxsplit=1)[0]
+    return ms, raw[len(ms):]
+
+
+def _sections(lines):
+    """원고 줄 목록 → 논리 구간(도입 + 소제목1~N). 각 {id,label,start,end(줄 인덱스)}."""
+    heads = [i for i, l in enumerate(lines) if _HEAD_RE.match(l)]
+    title_idx = next((i for i, l in enumerate(lines) if _TITLE_LINE_RE.match(l)), None)
+    secs = []
+    intro_start = (title_idx + 1) if title_idx is not None else 0
+    first = heads[0] if heads else len(lines)
+    secs.append({"id": "intro", "label": "도입", "start": intro_start, "end": first})
+    for k, h in enumerate(heads):
+        end = heads[k + 1] if k + 1 < len(heads) else len(lines)
+        htxt = re.sub(r"\*", "", lines[h]).strip()
+        secs.append({"id": "sub%d" % (k + 1), "label": htxt or ("소제목 %d" % (k + 1)),
+                     "start": h, "end": end})
+    return secs
+
+
+def _section_list(ms):
+    """프론트 버튼용 구간 목록(제목 + 도입 + 소제목들)."""
+    out = [{"id": "title", "label": "제목"}]
+    for s in _sections(ms.split("\n")):
+        out.append({"id": s["id"], "label": s["label"][:24]})
+    return out
+
+
+def _edit_call(brand, keyword, partname, old_text, instruction, model):
+    """한 구간만 사용자 지시대로 다시 쓰게 하는 집중 프롬프트."""
+    style = brands.build_style(brand) if brand else STYLE
+    p = (style + "\n\n[부분 수정 작업 — 글 전체가 아니라 아래 한 부분만 고친다]\n"
+         f"아래는 '{keyword}' 블로그 글의 '{partname}' 부분이다. 사용자의 요청대로 이 부분만 자연스럽게 다시 써라.\n"
+         f"[사용자 요청] {instruction}\n"
+         "[규칙]\n"
+         "- 이 구간의 텍스트만 고쳐서 출력한다. 다른 구간·제목·인사말을 새로 만들지 않는다.\n"
+         "- 브랜드 문체·톤·한 문장마다 줄바꿈 규칙을 그대로 유지한다.\n"
+         "- (사진N: ...) 같은 사진 표시 줄은 출력에 절대 넣지 마라(자동으로 원위치 유지된다).\n"
+         "- 맨 앞의 **소제목** 줄(별표 두 개)이 원문에 있으면 형식을 유지한다(요청이 소제목 변경이면 그 줄만 바꾼다).\n"
+         "- 특별한 요청이 없으면 길이는 원문과 비슷하게. 억지로 늘리거나 줄이지 마라.\n"
+         "- 설명·머리말·따옴표·코드블록 없이 수정된 본문 텍스트만 출력한다.\n\n"
+         f"[현재 '{partname}' 원문]\n{old_text}\n\n[수정본만 출력]")
+    out, err = run_claude(p, model)
+    return ("" if err else (out or "").strip())
+
+
+@app.route("/api/edit-section", methods=["POST"])
+def api_edit_section():
+    b = request.get_json(force=True)
+    post = b.get("post") or {}
+    sid = (b.get("section") or "").strip()
+    instr = (b.get("instruction") or "").strip()
+    if not instr:
+        return jsonify(ok=False, msg="어떻게 고칠지 입력하세요.")
+    if not sid:
+        return jsonify(ok=False, msg="수정할 부분을 고르세요.")
+    brand = brands.load_brand(b.get("brand") or post.get("brand") or "haofactory")
+    keyword = post.get("keyword") or ""
+    folder = post.get("folder") or ""
+    raw = post.get("raw") or ""
+    if not raw:
+        return jsonify(ok=False, msg="이 글은 부분 수정을 지원하지 않습니다(다시 생성 후 사용).")
+    model = (b.get("model") or load_cfg().get("model") or "opus")
+    ms, tail = _split_manuscript(raw)
+    lines = ms.split("\n")
+    if sid == "title":
+        new_title = _edit_call(brand, keyword, "제목", post.get("title", ""), instr, model)
+        if not new_title:
+            return jsonify(ok=False, msg="수정 실패(빈 응답). 다시 시도하세요.")
+        new_title = new_title.splitlines()[0].strip().lstrip("제목:： ").strip()
+        done = False
+        for i, l in enumerate(lines):
+            if _TITLE_LINE_RE.match(l):
+                lines[i] = "제목: " + new_title; done = True; break
+        if not done:
+            lines.insert(0, "제목: " + new_title)
+        new_ms = "\n".join(lines)
+    else:
+        secs = _sections(lines)
+        sec = next((s for s in secs if s["id"] == sid), None)
+        if not sec:
+            return jsonify(ok=False, msg="잘못된 구간입니다.")
+        seg = lines[sec["start"]:sec["end"]]
+        photos = [l for l in seg if _PHOTO_LINE_RE.match(l)]
+        editable = "\n".join(l for l in seg if not _PHOTO_LINE_RE.match(l)).strip()
+        newtxt = _edit_call(brand, keyword, sec["label"], editable, instr, model)
+        if not newtxt:
+            return jsonify(ok=False, msg="수정 실패(빈 응답). 다시 시도하세요.")
+        nl = [l for l in newtxt.split("\n") if not _PHOTO_LINE_RE.match(l)]  # 혹시 사진줄 뱉으면 제거
+        if sid.startswith("sub") and photos:
+            if nl and _HEAD_RE.match(nl[0].strip()):
+                rebuilt = [nl[0]] + photos + nl[1:]          # 소제목 → 사진 → 본문
+            else:
+                rebuilt = photos + nl
+        elif photos:
+            rebuilt = photos + nl                             # 도입: 사진1 먼저
+        else:
+            rebuilt = nl
+        lines[sec["start"]:sec["end"]] = rebuilt
+        new_ms = "\n".join(lines)
+    files = list_images(folder, cap=20000) if folder else []
+    newpost = parse_manuscript(new_ms, files)
+    out = dict(post)                                          # 카드뉴스 등 기존 필드 보존
+    out["title"] = newpost["title"] or post.get("title", "")
+    out["blocks"] = newpost["blocks"]
+    out["char_count"] = newpost["char_count"]
+    out["raw"] = new_ms + tail
+    out["sections"] = _section_list(new_ms)
+    return jsonify(ok=True, post=out)
+
+
+# ── 카드뉴스 색상 수동 변경 (이 글 카드만, 원하는 색으로) ──────────
+@app.route("/api/recolor-cards", methods=["POST"])
+def api_recolor_cards():
+    b = request.get_json(force=True)
+    cdir = b.get("cardnews_dir") or ""
+    brand = (b.get("brand") or "").strip()
+    hx = re.sub(r"[^0-9A-Fa-f]", "", (b.get("color") or ""))
+    if not (cdir and os.path.isdir(cdir) and os.path.isfile(os.path.join(cdir, "cards.json"))):
+        return jsonify(ok=False, msg="카드뉴스를 찾을 수 없습니다(먼저 카드 생성).")
+    if len(hx) != 6:
+        return jsonify(ok=False, msg="색상 코드(#RRGGBB)가 올바르지 않습니다.")
+    col = [int(hx[i:i+2], 16) for i in (0, 2, 4)]
+    note = ""
+    # 하오스튜디오: 배경(녹색 띠)이 색을 받는데 흰색에 가까우면 흰 로고와 겹쳐 안 보임 → 명도 상한
+    if brand == "haostudio" and min(col) > 205:
+        import colorsys
+        h, s, v = colorsys.rgb_to_hsv(*[c / 255 for c in col])
+        s = max(s, 0.25); v = min(v, 0.78)
+        col = [int(round(x * 255)) for x in colorsys.hsv_to_rgb(h, s, v)]
+        note = "하오스튜디오는 흰 로고와 겹쳐서 너무 밝은 색은 살짝 진하게 조정했어요."
+    try:
+        pngs = cardnews_pil.recolor_cards(cdir, tuple(col))
+        return jsonify(ok=True, pngs=pngs, color="%02X%02X%02X" % tuple(col), msg=note)
+    except Exception as e:
+        return jsonify(ok=False, msg=str(e)[:200])
 
 
 # ── 제목 추천 (AEO/GEO — geo-tracker 고객 질문 기반) ──────────────
@@ -1519,6 +1667,31 @@ select:focus{border-color:var(--brand)}
 .pv-body h3{font-size:15.5px;font-weight:800;margin:22px 0 8px;padding-left:11px;border-left:3px solid var(--brand)}
 .pv-body img{max-width:320px;border-radius:12px;display:block;margin:12px 0;box-shadow:var(--sh)}
 .cardsec-hint{font-size:11.5px;color:var(--muted);font-weight:600;margin:6px 0 2px;display:flex;align-items:center;gap:6px}
+.editpanel{margin:10px 0 4px}
+.editpanel .editbox{padding:12px 14px 14px}
+.editpanel .seclabel{font-size:11.5px;font-weight:800;color:var(--ink2);margin:2px 0 6px}
+.secbtns{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.secbtn{font-size:12px;font-weight:700;color:var(--ink2);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer;transition:.12s;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.secbtn:hover{border-color:var(--brand);color:var(--brand)}
+.secbtn.sel{background:var(--brand);border-color:var(--brand);color:#fff}
+.editpanel textarea{width:100%;min-height:60px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:13px;resize:vertical;box-sizing:border-box}
+.editpanel textarea:focus{outline:none;border-color:var(--brand)}
+.edithint{font-size:11px;color:var(--muted);margin-top:7px}
+.cpick{border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin:2px 0 10px;background:#fff;box-shadow:var(--sh)}
+.cpick-h{font-size:12.5px;font-weight:800;color:var(--ink2);margin-bottom:10px}
+.cpick-sw{display:grid;grid-template-columns:repeat(13,1fr);gap:6px;margin-bottom:12px}
+.cpsw{aspect-ratio:1;border:1px solid rgba(0,0,0,.08);border-radius:7px;cursor:pointer;padding:0;transition:transform .1s}
+.cpsw:hover{transform:scale(1.18);box-shadow:var(--sh)}
+.cpick-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cpspec{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer}
+.cpspec input[type=color]{width:34px;height:30px;border:1px solid var(--line);border-radius:8px;padding:0;background:none;cursor:pointer}
+.cphex{display:flex;align-items:center;gap:3px;border:1px solid var(--line);border-radius:8px;padding:4px 9px;font-weight:700;color:var(--ink2)}
+.cphex span{font-size:13px;color:var(--muted)}
+.cphex input{width:78px;border:none;outline:none;font:inherit;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.btn.sm{padding:7px 12px;font-size:12px}
+.cpdrop{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:700;color:var(--ink2);cursor:pointer}
+.cpdrop:hover{border-color:var(--brand);color:var(--brand)}
+.cpbusy{font-size:12px;font-weight:700;color:var(--brand);display:flex;align-items:center;gap:6px}
 .cardwrap{position:relative;display:inline-block;margin:10px 0;border-radius:14px;overflow:hidden;box-shadow:var(--sh);transition:.15s}
 .cardwrap:hover{box-shadow:var(--sh-lg)}
 .cardwrap img{display:block;border-radius:14px}
@@ -1895,10 +2068,77 @@ function renderPost(p){
     </div>
     <div class="row" style="margin:10px 0;flex-wrap:wrap">
       <button class="btn" onclick="saveDocx()">📄 워드로 저장</button>
-      <button class="btn" onclick="generate()">↻ 다시 생성</button></div>
+      <button class="btn" onclick="generate()">↻ 다시 생성</button>
+      ${useCards?`<button class="btn" onclick="openColorPicker(event)">🎨 카드 색상 바꾸기</button>`:''}</div>
+    ${useCards?colorPicker(p):''}
+    ${(p.sections&&p.sections.length)?editPanel(p):''}
     ${useCards?`<div class="cardsec-hint">🖱 카드에 마우스를 올리면 하단 툴바에서 <b style="color:var(--ink2)">✏️ 글 수정 · 🔄 사진 교체 · 위치 ▲▼◀▶ · 확대 ＋－</b></div>`:''}
     ${extra}
     <div class="pv-body">${body}</div>`;
+}
+function editPanel(p){const x=t();const sid=x.editSid||'';const busy=x.editBusy;
+  const undoN=(x.undo&&x.undo.length)||0;
+  return `<details class="opt editpanel" ${x.editOpen?'open':''} ontoggle="t().editOpen=this.open">
+    <summary>✏️ 부분 수정 — 한 부분만 AI로 고치기 (전체 다시 안 씀)</summary>
+    <div class="editbox">
+      <div class="seclabel">① 고칠 부분 선택</div>
+      <div class="secbtns">${p.sections.map(s=>`<button class="secbtn ${sid==s.id?'sel':''}" onclick="pickSec('${s.id}')">${esc(s.label)}</button>`).join('')}</div>
+      <div class="seclabel">② 어떻게 고칠지 지시</div>
+      <textarea id="editinstr" placeholder="예: 더 짧고 담백하게 / 구체적 사례 한 개 추가 / 이 소제목을 질문형으로" oninput="t().editInstr=this.value">${esc(x.editInstr||'')}</textarea>
+      <div class="row" style="margin-top:8px;gap:8px">
+        <button class="btn pri" onclick="applyEdit()" ${busy||!sid?'disabled':''}>${busy?'<span class=spin></span> 수정 중…':'✏️ 이 부분만 수정'}</button>
+        <button class="btn" onclick="undoEdit()" ${undoN?'':'disabled'}>↩ 하나 전으로${undoN?' ('+undoN+')':''}</button>
+      </div>
+      <div class="edithint">한 번에 한 부분씩. 마무리는 마지막 소제목에 포함돼 있어요.</div>
+    </div></details>`;
+}
+function pickSec(id){t().editSid=id;render();setTimeout(()=>{const e=el('editinstr');if(e)e.focus();},0);}
+function undoEdit(){const x=t();if(x.undo&&x.undo.length){x.post=x.undo.pop();toast('↩ 되돌렸어요','ok');render();}}
+function applyEdit(){const x=t();const sid=x.editSid;const instr=(x.editInstr||'').trim();
+  if(!sid){toast('고칠 부분을 먼저 고르세요','err');return;}
+  if(!instr){toast('어떻게 고칠지 입력하세요','err');return;}
+  x.editBusy=true;render();
+  fetch('/api/edit-section',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({post:x.post,section:sid,instruction:instr,brand:x.brand||BRAND,model:x.model||'opus'})})
+   .then(r=>r.json()).then(d=>{x.editBusy=false;
+     if(d.ok){(x.undo=x.undo||[]).push(x.post);if(x.undo.length>20)x.undo.shift();x.post=d.post;x.editInstr='';toast('✏️ 수정됐어요','ok');}
+     else toast(d.msg||'수정 실패','err');
+     render();
+   }).catch(()=>{x.editBusy=false;toast('수정 실패(네트워크)','err');render();});
+}
+const CPAL=['#111111','#4B4B4B','#8A8A8A','#C4C4C4','#E9ECEF',
+  '#F5A9A9','#F7DE9A','#BCE3AE','#A5DAD0','#AECBFA','#B7B1E8','#DBB7E3',
+  '#F0806A','#F6B93B','#7FB069','#2FA69A','#4C9BE8','#6C79D6','#B072C4',
+  '#E24A34','#E1730F','#3E7D33','#188A7B','#1668C7','#3B44A0','#7A2E9B'];
+function colorPicker(p){const x=t();if(!x.colorOpen)return '';
+  const cur=x.cardColor||'#63794B';
+  return `<div class="cpick" onclick="event.stopPropagation()">
+    <div class="cpick-h">🎨 이 글 카드 전체 색상 바꾸기</div>
+    <div class="cpick-sw">${CPAL.map(c=>`<button class="cpsw" style="background:${c}" onclick="pickColor('${c}')" title="${c}"></button>`).join('')}</div>
+    <div class="cpick-row">
+      <label class="cpspec" title="색상환에서 직접 고르기"><input type="color" value="${cur}" onchange="pickColor(this.value)"><span>🌈 색상환</span></label>
+      <div class="cphex"><span>#</span><input id="cphex" maxlength="6" value="${cur.replace('#','')}" onkeydown="if(event.key==='Enter')pickColor('#'+this.value)" placeholder="RRGGBB"></div>
+      <button class="btn sm" onclick="pickColor('#'+el('cphex').value)">적용</button>
+      <button class="cpdrop" onclick="pickEyedropper()" title="화면에서 색 추출(스포이드)">🔎 스포이드</button>
+      ${x.colorBusy?'<span class="cpbusy"><span class=spin></span> 바꾸는 중…</span>':''}
+    </div></div>`;
+}
+function openColorPicker(e){if(e)e.stopPropagation();const x=t();x.colorOpen=!x.colorOpen;render();}
+function pickColor(hex){hex=(hex||'').trim();if(hex[0]!=='#')hex='#'+hex;
+  if(!/^#[0-9a-fA-F]{6}$/.test(hex)){toast('색상 코드가 올바르지 않아요 (예: #3B82F6)','err');return;}
+  applyCardColor(hex);}
+function applyCardColor(hex){const x=t();const p=x.post;
+  if(!p||!p.cardnews_dir){toast('먼저 카드뉴스를 만들어 주세요','err');return;}
+  x.cardColor=hex;x.colorBusy=true;render();
+  fetch('/api/recolor-cards',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cardnews_dir:p.cardnews_dir,color:hex,brand:x.brand||p.brand||BRAND})})
+   .then(r=>r.json()).then(d=>{x.colorBusy=false;
+     if(d.ok){p.cardnews_pngs=(d.pngs||[]).slice();x.cardColor='#'+d.color;toast(d.msg||'🎨 카드 색이 바뀌었어요','ok');}
+     else toast(d.msg||'색 변경 실패','err');
+     render();
+   }).catch(()=>{x.colorBusy=false;toast('색 변경 실패(네트워크)','err');render();});
+}
+async function pickEyedropper(){
+  if(!window.EyeDropper){toast('이 브라우저는 스포이드를 지원하지 않아요(색상환·팔레트를 쓰세요)','err');return;}
+  try{const r=await new EyeDropper().open();pickColor(r.sRGBHex);}catch(e){}
 }
 function copyClip(text,msg){const done=()=>toast(msg,'ok');
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text,done));}
