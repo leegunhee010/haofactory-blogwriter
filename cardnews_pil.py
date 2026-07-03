@@ -283,6 +283,7 @@ def _draw_text(canvas, box, text, font_path, size_pt, theme, align, pt2px, oneli
     x, y, w, h = box
     col = (theme[0], theme[1], theme[2], 255)
     px = max(10, int(round(size_pt * pt2px)))
+    ew = min(w, canvas.size[0])   # 실제 카드(캔버스) 폭 기준으로 맞춤 — box가 카드보다 넓어도(블리드) 글자가 카드 밖으로 안 넘치게
     layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
 
@@ -294,12 +295,12 @@ def _draw_text(canvas, box, text, font_path, size_pt, theme, align, pt2px, oneli
             raw = raw.strip()
             if not raw:
                 out.append(""); continue
-            if d.textlength(raw, font=fnt) <= w or " " not in raw:
+            if d.textlength(raw, font=fnt) <= ew or " " not in raw:
                 out.append(raw); continue
             cur = ""
             for wd in raw.split(" "):
                 tt = (cur + " " + wd).strip()
-                if d.textlength(tt, font=fnt) <= w:
+                if d.textlength(tt, font=fnt) <= ew:
                     cur = tt
                 else:
                     if cur:
@@ -310,7 +311,7 @@ def _draw_text(canvas, box, text, font_path, size_pt, theme, align, pt2px, oneli
         return out
     fnt = _font(font_path, px)
     lines = build(fnt)
-    while px > 12 and lines and max((d.textlength(ln, font=fnt) for ln in lines if ln), default=0) > w:
+    while px > 12 and lines and max((d.textlength(ln, font=fnt) for ln in lines if ln), default=0) > ew:
         px -= 2; fnt = _font(font_path, px); lines = build(fnt)
     # 세로로도 박스 안에 들어오도록 축소 — 글자가 박스를 넘어 위/아래 다른 요소를 침범(겹침)하는 것 방지
     asc, desc = fnt.getmetrics(); lh = asc + desc

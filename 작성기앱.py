@@ -214,7 +214,7 @@ def build_prompt(keyword, photo_files, project_hint="", brand=None, subkeyword="
             if project_hint else "")
     subkeyword = (subkeyword or "").strip()
     title = (title or "").strip()
-    subblk = (f"\n[서브키워드] {subkeyword}\n- 본문에 '{subkeyword}' 문구를 쪼개지 말고 정확히 그대로, 자연스러운 자리에 4회 반복해 넣는다(억지스럽지 않게)." if subkeyword else "")
+    subblk = (f"\n[서브키워드] {subkeyword}\n- 쉼표로 구분된 각 서브키워드를 본문에 자연스럽게 녹인다. 관련 있는 대목에서 자연스럽게 몇 번씩 등장하게 하되, 억지로 똑같이 반복하거나 키워드를 나열식으로 쑤셔 넣지 말 것." if subkeyword else "")
     titleblk = (f"\n[제목 — 반드시 이 제목을 그대로 사용]\n{title}\n- 출력의 '제목:' 줄에는 위 제목을 토씨 하나 바꾸지 말고 그대로 쓴다. 새 제목을 지어내지 않는다." if title else "")
     latest = (latest or "").strip()
     latestblk = (f"\n[참고 — 최신 일반 정보(웹검색 확인). ★공개 사실(정책·제도·법령·협약 상태 등)만 이걸로 최신화한다. "
@@ -1155,6 +1155,8 @@ def api_generate():
                 h = re.sub(r"\([^)]*\)", "", hpart).strip() or hpart.strip()
                 b = re.sub(r"\([^)]*\)", "", bpart).strip()
                 cards.append(h); bodies.append(b)
+    if cards:
+        cards[0] = keyword   # 표지 큰 제목은 항상 메인키워드로 고정(전 브랜드 공통)
     sub = ""
     ms = re.search(r"표지\s*부제\s*[:：]\s*(.+)", out)
     if ms:
@@ -1240,16 +1242,18 @@ def api_title_suggest():
                          "★는 아직 이 브랜드가 AI 답변에 인용되지 못한 질문(=인용 기회가 큼):\n" + qlines + "\n\n")
             used_geo = True
         prompt = (f"너는 '{brand['name']}'의 네이버 블로그 제목을 짓는 SEO·AEO·GEO 전문가다.\n" + kwline + "\n" + geo_block +
-                  "[규칙]\n- 메인키워드를 제목에 자연스럽게 포함한다.\n" + subrule +
-                  "- 고객이 실제로 검색·질문하는 형태로 만든다. 질문형 제목을 우선하되 단정형도 섞어 다양하게.\n"
-                  "- 위 고객 질문(특히 ★)을 정조준하는 제목을 우선 만든다.\n"
+                  "[규칙]\n"
+                  "- 철저히 '고객 관점'으로 짓는다. 고객은 브랜드명으로 검색하지 않으니, 제목에 브랜드명('" + brand["name"] + "')을 넣지 말 것(정말 자연스러운 1개만 예외 허용).\n"
+                  "- 두 유형을 섞는다: (1) 메인키워드가 들어간 제목(예: '브로슈어 제작 잘하는 곳'), (2) 키워드는 없어도 고객의 상황·업종 맥락을 담은 제목(예: '전시회 준비, 지금 뭐부터 해야 할까').\n"
+                  "- 위 고객 질문(특히 ★)을 정조준하고, 실제로 검색·질문하는 형태로. 질문형 우선하되 단정형도 섞어 다양하게.\n" + subrule +
                   "- 서로 다른 각도로 정확히 5개. 각 제목은 한 줄, 25자 내외.\n"
                   "오직 제목 5개만 출력한다(형식: 1. 제목 / 2. 제목 ... 다른 설명·머리말·따옴표 금지).")
     else:  # ai — geo 데이터 없이 키워드만으로 창의적 제안
         prompt = (f"너는 '{brand['name']}'의 네이버 블로그 제목을 짓는 감각 좋은 SEO 카피라이터다.\n" + kwline + "\n"
-                  "[규칙]\n- 메인키워드를 제목에 자연스럽게 포함한다.\n" + subrule +
-                  "- 클릭하고 싶게, 검색에도 강하게. 질문형·단정형·숫자형·호기심형 등 서로 확실히 다른 스타일로 5개.\n"
-                  "- 뻔하지 않고 각도가 서로 다르게. 과장·낚시성 표현은 금지.\n"
+                  "[규칙]\n"
+                  "- 철저히 '고객 관점'으로. 고객은 브랜드명으로 검색하지 않으니 제목에 브랜드명('" + brand["name"] + "')을 넣지 말 것.\n"
+                  "- 두 유형을 섞는다: (1) 메인키워드가 들어간 제목, (2) 키워드는 없어도 고객의 상황·업종 맥락을 담은 제목(예: '전시회 준비, 지금 뭐부터').\n"
+                  "- 클릭하고 싶게, 검색에도 강하게. 질문형·단정형·숫자형·호기심형 등 서로 확실히 다른 스타일로 5개. 과장·낚시성은 금지.\n" + subrule +
                   "- 각 제목은 한 줄, 25자 내외.\n"
                   "오직 제목 5개만 출력한다(형식: 1. 제목 / 2. 제목 ... 다른 설명·머리말·따옴표 금지).")
     out, err = run_claude(prompt, b.get("model") or "sonnet")   # 제목은 빠른 모델로 충분
@@ -1763,7 +1767,10 @@ function toggleRecSub(){const b=el('recboxsub');if(b.style.display=='block'){b.s
     b.innerHTML='<table>'+R.map(it=>`<tr onclick="pickSub('${esc(it.keyword).replace(/'/g,"\\'")}')"><td><b>${esc(it.keyword)}</b></td><td style="color:#889">${esc(it.category)}</td><td style="text-align:right;color:#889">${Number(it.volume).toLocaleString()}</td><td><span class="recst ${it.state}">${it.state}</span></td></tr>`).join('')+'</table>';
   }).catch(e=>{b.innerHTML='<div style="padding:16px;color:#c0392b;font-size:12.5px">추천 오류: '+esc(''+e)+'</div>';});
 }
-function pickSub(k){t().subkeyword=k;el('recboxsub').style.display='none';render();}
+function pickSub(k){const cur=(t().subkeyword||'').trim();
+  const parts=cur?cur.split(',').map(s=>s.trim()).filter(Boolean):[];
+  if(!parts.includes(k))parts.push(k);          // 추천 누를 때마다 kw1, kw2… 누적(중복은 제외). 바꾸려면 직접 지우기
+  t().subkeyword=parts.join(', ');el('recboxsub').style.display='none';render();}
 function suggestTitle(mode){mode=mode||'geo';const x=t();if(!x.keyword){toast('메인키워드를 먼저 입력하세요','err');return;}
   const b=el('titlebox');b.style.display='block';
   b.innerHTML='<div style="padding:14px;color:var(--brand);font-size:12.5px;font-weight:700"><span class="spin" style="border-color:var(--brand);border-top-color:transparent"></span> '+(mode=='ai'?'AI가 키워드로 제목 뽑는 중…':'AEO/GEO 분석해 제목 뽑는 중…')+'</div>';
