@@ -1280,6 +1280,22 @@ def api_cardnews_status():
     return jsonify(j)
 
 
+@app.route("/api/pick-file", methods=["POST"])
+def api_pick_file():
+    """네이티브 Windows '파일 열기' 대화상자로 이미지 1장 선택 → 절대경로 반환(느린 썸네일 그리드 대체)."""
+    b = request.get_json(silent=True) or {}
+    initdir = b.get("folder") or os.path.join(os.path.expanduser("~"), "Pictures")
+    try:
+        import win32gui, win32con
+        filt = "이미지 파일\0*.jpg;*.jpeg;*.png;*.webp;*.gif\0모든 파일\0*.*\0"
+        fname, _, _ = win32gui.GetOpenFileNameW(
+            InitialDir=initdir, Title="카드에 넣을 사진 선택", Filter=filt,
+            Flags=win32con.OFN_FILEMUSTEXIST | win32con.OFN_EXPLORER)
+        return jsonify(ok=True, path=fname)
+    except Exception:
+        return jsonify(ok=False, canceled=True)   # 사용자가 취소하면 예외 → 조용히 취소
+
+
 @app.route("/api/swap-card", methods=["POST"])
 def api_swap_card():
     """카드 1장의 사진만 교체 → 그 카드만 재렌더(전체 재생성 X)."""
@@ -1287,7 +1303,7 @@ def api_swap_card():
     cdir = b.get("cardnews_dir", "")
     folder = b.get("folder", "")
     idx = int(b.get("index", 0))
-    photo = os.path.join(folder, b.get("file", ""))
+    photo = b.get("path") or os.path.join(folder, b.get("file", ""))   # path=절대경로(네이티브 선택) 우선
     if not (cdir and os.path.isdir(cdir) and os.path.isfile(photo)):
         return jsonify(ok=False, msg="파일을 찾을 수 없습니다.")
     try:
@@ -1900,23 +1916,23 @@ function copyBody(){const p=t().post;const pngs=p.cardnews_pngs||[],useCards=png
 function saveDocx(){toast('📄 워드 저장 중…');fetch('/api/docx',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({post:t().post})})
   .then(r=>r.json()).then(d=>{if(d.ok)toast('📄 워드 저장됨 · 파일이 열립니다','ok');else toast(d.msg||'저장 실패','err');});}
 function openFile(p){fetch('/api/open',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:p})}).then(r=>r.json()).then(d=>{if(!d.ok)toast('파일을 열 수 없습니다','err');});}
-let SWAP_CI=0, SWAP_FILES=[];
-function openSwap(ci){SWAP_CI=ci;el('swapmodal').style.display='block';
-  el('swaplist').innerHTML='<div style="padding:14px;color:#889;font-size:12px">사진 불러오는 중…</div>';
-  fetch('/api/photos?folder='+encodeURIComponent(t().folder)).then(r=>r.json()).then(d=>{SWAP_FILES=d.files;
-    el('swaplist').innerHTML=d.files.map((f,i)=>`<img src="/img?folder=${encodeURIComponent(t().folder)}&name=${encodeURIComponent(f)}" title="${esc(f)}" onclick="doSwap(${i})" style="width:84px;height:84px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid transparent">`).join('')||'<div style="padding:14px;color:#889">사진 없음</div>';});}
-function closeSwap(){el('swapmodal').style.display='none';}
-function doSwap(i){const file=SWAP_FILES[i], x=t().post;
-  el('swaplist').style.opacity='.5';
-  fetch('/api/swap-card',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pptx:x.cardnews,cardnews_dir:x.cardnews_dir,folder:x.folder,index:SWAP_CI,file:file})})
-   .then(r=>r.json()).then(d=>{el('swaplist').style.opacity='1';
-     if(!d.ok){toast(d.msg||'교체 실패','err');return;}
-     closeSwap();
-     (x.card_srcs=x.card_srcs||[])[SWAP_CI]=d.src||'';      // 교체된 원본 기억(위치조정용)
-     (x.card_adj=x.card_adj||{})[SWAP_CI]={cx:.5,cy:.5,zoom:1};   // 위치/확대 초기화
-     const img=el('cardimg'+SWAP_CI); if(img) img.src='/img?folder='+encodeURIComponent(x.cardnews_dir)+'&name='+encodeURIComponent(d.name)+'&v='+Date.now();
-     toast('🔄 사진 교체됨','ok');
-   }).catch(e=>{el('swaplist').style.opacity='1';toast('오류: '+e,'err');});}
+function closeSwap(){el('swapmodal').style.display='none';}   // (레거시 그리드 — 미사용)
+function openSwap(ci){   // 네이티브 Windows 파일 선택창으로 바로 교체(썸네일 그리드 렉 제거)
+  toast('📂 사진 선택 창을 여는 중…');
+  fetch('/api/pick-file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({folder:t().folder})})
+   .then(r=>r.json()).then(d=>{
+     if(!d.ok||!d.path)return;                       // 취소
+     const x=t().post; toast('🔄 교체 중…');
+     fetch('/api/swap-card',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cardnews_dir:x.cardnews_dir,path:d.path,index:ci})})
+      .then(r=>r.json()).then(s=>{
+        if(!s.ok){toast(s.msg||'교체 실패','err');return;}
+        (x.card_srcs=x.card_srcs||[])[ci]=s.src||'';       // 교체된 원본 기억(위치조정용)
+        (x.card_adj=x.card_adj||{})[ci]={cx:.5,cy:.5,zoom:1};
+        const img=el('cardimg'+ci); if(img) img.src='/img?folder='+encodeURIComponent(x.cardnews_dir)+'&name='+encodeURIComponent(s.name)+'&v='+Date.now();
+        toast('🔄 사진 교체됨','ok');
+      }).catch(e=>toast('오류: '+e,'err'));
+   }).catch(e=>toast('오류: '+e,'err'));
+}
 // ── 카드별 위치 이동 / 확대 ──
 function cardCtl(ci){return `<div class="cardbar">
   <button class="tb" onclick="openTextEdit(${ci})" title="카드 글 수정">✏️ 글</button>
