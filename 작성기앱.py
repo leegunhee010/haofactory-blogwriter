@@ -1218,29 +1218,40 @@ def geo_questions(bid, cap=24):
 
 @app.route("/api/title-suggest", methods=["POST"])
 def api_title_suggest():
-    """메인/서브키워드 + geo-tracker 고객 질문으로 AEO/GEO 최적화 제목 5개 제안."""
+    """제목 제안. mode='geo' → geo-tracker 고객 질문 기반 AEO/GEO. mode='ai' → 메인/서브키워드만으로 창의적 제안."""
     b = request.get_json(force=True) or {}
     keyword = (b.get("keyword") or "").strip()
     subkeyword = (b.get("subkeyword") or "").strip()
+    mode = (b.get("mode") or "geo").strip()
     if not keyword:
         return jsonify(ok=False, msg="메인키워드를 먼저 입력하세요.")
     brand = brands.load_brand(b.get("brand") or "haofactory")
-    qs = geo_questions(brand["id"])
-    geo_block = ""
-    if qs:
-        qs.sort(key=lambda x: x["cited"])     # 미인용(기회) 먼저
-        qlines = "\n".join(("★ " if not x["cited"] else "· ") + x["q"] for x in qs[:20])
-        geo_block = ("아래는 이 브랜드 고객이 실제로 AI(네이버 AI·ChatGPT 등)에 자주 묻는 질문이다. "
-                     "★는 아직 이 브랜드가 AI 답변에 인용되지 못한 질문(=인용 기회가 큼):\n" + qlines + "\n\n")
     subrule = (f"- 서브키워드 '{subkeyword}'가 있다. 메인키워드와 겹치는 부분은 빼고, 나머지 핵심어만 제목에 자연스럽게 녹인다.\n"
                if subkeyword else "")
-    prompt = (f"너는 '{brand['name']}'의 네이버 블로그 제목을 짓는 SEO·AEO·GEO 전문가다.\n"
-              f"[메인키워드] {keyword}\n" + (f"[서브키워드] {subkeyword}\n" if subkeyword else "") + "\n" + geo_block +
-              "[규칙]\n- 메인키워드를 제목에 자연스럽게 포함한다.\n" + subrule +
-              "- 고객이 실제로 검색·질문하는 형태로 만든다. 질문형 제목을 우선하되 단정형도 섞어 다양하게.\n"
-              "- 위 고객 질문(특히 ★)을 정조준하는 제목을 우선 만든다.\n"
-              "- 서로 다른 각도로 정확히 5개. 각 제목은 한 줄, 25자 내외.\n"
-              "오직 제목 5개만 출력한다(형식: 1. 제목 / 2. 제목 ... 다른 설명·머리말·따옴표 금지).")
+    kwline = f"[메인키워드] {keyword}\n" + (f"[서브키워드] {subkeyword}\n" if subkeyword else "")
+    used_geo = False
+    if mode == "geo":
+        qs = geo_questions(brand["id"])
+        geo_block = ""
+        if qs:
+            qs.sort(key=lambda x: x["cited"])     # 미인용(기회) 먼저
+            qlines = "\n".join(("★ " if not x["cited"] else "· ") + x["q"] for x in qs[:20])
+            geo_block = ("아래는 이 브랜드 고객이 실제로 AI(네이버 AI·ChatGPT 등)에 자주 묻는 질문이다. "
+                         "★는 아직 이 브랜드가 AI 답변에 인용되지 못한 질문(=인용 기회가 큼):\n" + qlines + "\n\n")
+            used_geo = True
+        prompt = (f"너는 '{brand['name']}'의 네이버 블로그 제목을 짓는 SEO·AEO·GEO 전문가다.\n" + kwline + "\n" + geo_block +
+                  "[규칙]\n- 메인키워드를 제목에 자연스럽게 포함한다.\n" + subrule +
+                  "- 고객이 실제로 검색·질문하는 형태로 만든다. 질문형 제목을 우선하되 단정형도 섞어 다양하게.\n"
+                  "- 위 고객 질문(특히 ★)을 정조준하는 제목을 우선 만든다.\n"
+                  "- 서로 다른 각도로 정확히 5개. 각 제목은 한 줄, 25자 내외.\n"
+                  "오직 제목 5개만 출력한다(형식: 1. 제목 / 2. 제목 ... 다른 설명·머리말·따옴표 금지).")
+    else:  # ai — geo 데이터 없이 키워드만으로 창의적 제안
+        prompt = (f"너는 '{brand['name']}'의 네이버 블로그 제목을 짓는 감각 좋은 SEO 카피라이터다.\n" + kwline + "\n"
+                  "[규칙]\n- 메인키워드를 제목에 자연스럽게 포함한다.\n" + subrule +
+                  "- 클릭하고 싶게, 검색에도 강하게. 질문형·단정형·숫자형·호기심형 등 서로 확실히 다른 스타일로 5개.\n"
+                  "- 뻔하지 않고 각도가 서로 다르게. 과장·낚시성 표현은 금지.\n"
+                  "- 각 제목은 한 줄, 25자 내외.\n"
+                  "오직 제목 5개만 출력한다(형식: 1. 제목 / 2. 제목 ... 다른 설명·머리말·따옴표 금지).")
     out, err = run_claude(prompt, b.get("model") or "sonnet")   # 제목은 빠른 모델로 충분
     if err:
         return jsonify(ok=False, msg=err)
@@ -1251,7 +1262,7 @@ def api_title_suggest():
             t = re.sub(r'^["\'“‘\-•\s]+|["\'”’\s]+$', "", m.group(1)).strip()
             if t:
                 titles.append(t)
-    return jsonify(ok=True, titles=titles[:5], geo=bool(qs))
+    return jsonify(ok=True, titles=titles[:5], geo=used_geo, mode=mode)
 
 
 @app.route("/api/cardnews-status")
@@ -1699,7 +1710,8 @@ function render(){renderTabs();
     </div>
     <div class="field"><label>제목 <span style="font-weight:600;color:#b4bcc8">(직접 입력하거나 제목 추천 후 수정 가능 · 비우면 AI가 제목 생성)</span></label>
       <div class="row"><input type="text" id="title" value="${esc(x.title||'')}" placeholder="제목 추천으로 뽑아 쓰거나 직접 입력하세요" oninput="t().title=this.value">
-        <button class="btn pri" onclick="suggestTitle()">✨ 제목 추천</button></div>
+        <button class="btn pri" onclick="suggestTitle('geo')" title="geo-tracker 고객 질문 기반 AEO/GEO 제목">✨ AEO/GEO 추천</button>
+        <button class="btn" onclick="suggestTitle('ai')" title="메인·서브키워드로 AI가 창의적 제목 제안">🤖 AI 추천</button></div>
       <div class="recbox" id="titlebox"></div>
     </div>
     <div class="field"><label>사진 폴더</label>
@@ -1749,12 +1761,14 @@ function toggleRecSub(){const b=el('recboxsub');if(b.style.display=='block'){b.s
   }).catch(e=>{b.innerHTML='<div style="padding:16px;color:#c0392b;font-size:12.5px">추천 오류: '+esc(''+e)+'</div>';});
 }
 function pickSub(k){t().subkeyword=k;el('recboxsub').style.display='none';render();}
-function suggestTitle(){const x=t();if(!x.keyword){toast('메인키워드를 먼저 입력하세요','err');return;}
-  const b=el('titlebox');b.style.display='block';b.innerHTML='<div style="padding:14px;color:var(--brand);font-size:12.5px;font-weight:700"><span class="spin" style="border-color:var(--brand);border-top-color:transparent"></span> AEO/GEO 분석해 제목 뽑는 중…</div>';
-  fetch('/api/title-suggest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',brand:BRAND})})
+function suggestTitle(mode){mode=mode||'geo';const x=t();if(!x.keyword){toast('메인키워드를 먼저 입력하세요','err');return;}
+  const b=el('titlebox');b.style.display='block';
+  b.innerHTML='<div style="padding:14px;color:var(--brand);font-size:12.5px;font-weight:700"><span class="spin" style="border-color:var(--brand);border-top-color:transparent"></span> '+(mode=='ai'?'AI가 키워드로 제목 뽑는 중…':'AEO/GEO 분석해 제목 뽑는 중…')+'</div>';
+  fetch('/api/title-suggest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',brand:BRAND,mode:mode})})
    .then(r=>r.json()).then(d=>{if(!d.ok){b.innerHTML='<div style="padding:16px;color:#c0392b;font-size:12.5px">'+esc(d.msg||'실패')+'</div>';return;}
      if(!d.titles||!d.titles.length){b.innerHTML='<div style="padding:16px;color:#c0392b;font-size:12.5px">제목을 뽑지 못했어요. 다시 시도해 주세요.</div>';return;}
-     b.innerHTML='<div style="padding:8px 12px;font-size:11px;font-weight:800;color:#8b95a5;background:#fafbfc;border-bottom:1px solid var(--line2)">'+(d.geo?'AEO/GEO 분석 기반':'키워드 기반')+' 추천 · 클릭하면 위 제목칸에 입력(수정 가능)</div>'+d.titles.map(tt=>`<div class="br-item" onclick="pickTitle('${esc(tt).replace(/'/g,"\\'")}')">${esc(tt)}</div>`).join('');
+     const label = d.mode=='ai' ? '🤖 AI 키워드 기반' : (d.geo ? '✨ AEO/GEO 분석 기반' : '✨ AEO/GEO (geo 데이터 없어 키워드 기반)');
+     b.innerHTML='<div style="padding:8px 12px;font-size:11px;font-weight:800;color:#8b95a5;background:#fafbfc;border-bottom:1px solid var(--line2)">'+label+' 추천 · 클릭하면 위 제목칸에 입력(수정 가능)</div>'+d.titles.map(tt=>`<div class="br-item" onclick="pickTitle('${esc(tt).replace(/'/g,"\\'")}')">${esc(tt)}</div>`).join('');
    }).catch(e=>{b.innerHTML='<div style="padding:16px;color:#c0392b;font-size:12.5px">오류: '+esc(''+e)+'</div>';});
 }
 function pickTitle(tt){t().title=tt;el('titlebox').style.display='none';render();}
