@@ -312,8 +312,12 @@ def _draw_text(canvas, box, text, font_path, size_pt, theme, align, pt2px, oneli
     lines = build(fnt)
     while px > 12 and lines and max((d.textlength(ln, font=fnt) for ln in lines if ln), default=0) > w:
         px -= 2; fnt = _font(font_path, px); lines = build(fnt)
+    # 세로로도 박스 안에 들어오도록 축소 — 글자가 박스를 넘어 위/아래 다른 요소를 침범(겹침)하는 것 방지
     asc, desc = fnt.getmetrics(); lh = asc + desc
-    cy = y + (h - lh * len(lines)) / 2
+    while px > 10 and lines and lh * len(lines) > h:
+        px -= 2; fnt = _font(font_path, px); lines = build(fnt)
+        asc, desc = fnt.getmetrics(); lh = asc + desc
+    cy = max(y, y + (h - lh * len(lines)) / 2)   # 위로 넘쳐 상단 요소와 겹치지 않게 클램프
     for ln in lines:
         tw = d.textlength(ln, font=fnt) if ln else 0
         tx = x + w - tw if align == "right" else (x + (w - tw) / 2 if align == "center" else x)
