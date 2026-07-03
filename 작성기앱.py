@@ -1714,7 +1714,8 @@ function pollAccounts(){let n=0;const iv=setInterval(()=>{n++;
     if(n>80)clearInterval(iv);});},3000);}
 function renderTabs(){
   el('tabs').innerHTML = TABS.map((tb,i)=>{const bn=(BRANDS.find(b=>b.id==tb.brand)||{}).name||'';
-    return `<div class="tab ${i==CUR?'on':''}" onclick="sel(${i})">${bn?'<b style="color:var(--brand)">'+esc(bn)+'</b> · ':''}글 ${i+1}${tb.keyword?': '+esc(tb.keyword.slice(0,10)):''}<span class="x" onclick="event.stopPropagation();delTab(${i})">×</span></div>`;}).join('')
+    const load=tb.titleSug&&tb.titleSug.loading?' <span class="spin" style="width:9px;height:9px;border-width:1.5px;vertical-align:0"></span>':'';
+    return `<div class="tab ${i==CUR?'on':''}" onclick="sel(${i})">${bn?'<b style="color:var(--brand)">'+esc(bn)+'</b> · ':''}글 ${i+1}${tb.keyword?': '+esc(tb.keyword.slice(0,10)):''}${load}<span class="x" onclick="event.stopPropagation();delTab(${i})">×</span></div>`;}).join('')
     + `<div class="addtab" onclick="addTab()">+ 새 글</div>`;
 }
 function sel(i){CUR=i;render();}
@@ -1804,8 +1805,8 @@ function suggestTitle(mode){mode=mode||'geo';const x=t();if(!x.keyword){toast('�
   fetch('/api/title-suggest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',brand:x.brand||BRAND,mode:mode})})
    .then(r=>r.json()).then(d=>{
      x.titleSug = d.ok ? {items:d.titles||[],geo:d.geo,mode:d.mode||mode} : {err:d.msg||'실패',mode:mode};
-     if(t()===x)render();
-   }).catch(e=>{x.titleSug={err:''+e,mode:mode};if(t()===x)render();});
+     if(t()===x)render(); else {renderTabs();toast('📝 글 '+(TABS.indexOf(x)+1)+' 제목 추천 완료','ok');}   // 다른 탭이어도 완료 알림
+   }).catch(e=>{x.titleSug={err:''+e,mode:mode};if(t()===x)render();else renderTabs();});
 }
 function pickTitle(tt){t().title=tt;t().titleSug=null;render();}
 let BR={path:'',drive:true}, BRF=[], PLACES=[];
