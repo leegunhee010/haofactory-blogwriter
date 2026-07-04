@@ -1330,8 +1330,8 @@ def _sections(lines):
 
 
 def _section_list(ms):
-    """프론트 버튼용 구간 목록(제목 + 도입 + 소제목들)."""
-    out = [{"id": "title", "label": "제목"}]
+    """프론트 버튼용 구간 목록(글 전체 + 제목 + 도입 + 소제목들)."""
+    out = [{"id": "all", "label": "📄 글 전체"}, {"id": "title", "label": "제목"}]
     for s in _sections(ms.split("\n")):
         out.append({"id": s["id"], "label": s["label"][:24]})
     return out
@@ -1355,6 +1355,21 @@ def _edit_call(brand, keyword, partname, old_text, instruction, model):
     return ("" if err else (out or "").strip())
 
 
+def _edit_whole(brand, keyword, ms, instruction, model):
+    """글 전체에 사용자 요청을 적용해 다시 쓴다(톤·분량 등 공통 수정용). 구조·마커는 그대로 유지."""
+    style = brands.build_style(brand) if brand else STYLE
+    p = (style + "\n\n[글 전체 다듬기 — 아래 원고 '전체'에 사용자 요청을 반영해 다시 쓴다]\n"
+         f"'{keyword}' 블로그 글 원고 전체다. 사용자 요청을 글 전체에 적용해서 다시 써라.\n"
+         f"[사용자 요청] {instruction}\n"
+         "[반드시 지킬 것]\n"
+         "- '제목:' 줄, 소제목(정확히 6개), (사진N) 줄, (표N)/(차트N) 줄을 그대로 유지한다(개수·위치·순서 보존, 마커를 지우거나 옮기지 말 것).\n"
+         "- 브랜드 문체·톤·구조를 지키고, 요청한 부분만 바꾼다. 분량 요청이 없으면 공백 제외 1,500~2,000자.\n"
+         "- 설명·머리말·따옴표·코드블록 없이 '제목:'부터 마지막 문단까지 다듬은 원고 전체만 출력한다(카드뉴스/표차트 섹션은 출력하지 말 것).\n\n"
+         f"[원고]\n{ms}")
+    out, err = run_claude(p, model)
+    return ("" if err else (out or "").strip())
+
+
 @app.route("/api/edit-section", methods=["POST"])
 def api_edit_section():
     b = request.get_json(force=True)
@@ -1374,7 +1389,11 @@ def api_edit_section():
     model = (b.get("model") or load_cfg().get("model") or "opus")
     ms, tail = _split_manuscript(raw)
     lines = ms.split("\n")
-    if sid == "title":
+    if sid == "all":
+        new_ms = _edit_whole(brand, keyword, ms, instr, model)
+        if not new_ms:
+            return jsonify(ok=False, msg="수정 실패(빈 응답). 다시 시도하세요.")
+    elif sid == "title":
         new_title = _edit_call(brand, keyword, "제목", post.get("title", ""), instr, model)
         if not new_title:
             return jsonify(ok=False, msg="수정 실패(빈 응답). 다시 시도하세요.")
@@ -1411,6 +1430,12 @@ def api_edit_section():
         new_ms = "\n".join(lines)
     files = list_images(folder, cap=20000) if folder else []
     newpost = parse_manuscript(new_ms, files)
+    # 표·차트 이미지(cid별)는 재파싱하면 img가 비므로 기존 post에서 복원
+    old_charts = {b.get("cid"): b for b in post.get("blocks", []) if b.get("type") == "chart"}
+    for blk in newpost["blocks"]:
+        if blk.get("type") == "chart" and blk.get("cid") in old_charts:
+            ob = old_charts[blk["cid"]]
+            blk["img"] = ob.get("img", ""); blk["spec"] = ob.get("spec")
     out = dict(post)                                          # 카드뉴스 등 기존 필드 보존
     out["title"] = newpost["title"] or post.get("title", "")
     out["blocks"] = newpost["blocks"]
@@ -1589,13 +1614,21 @@ $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+# 투명(Opacity=0)·TopMost 소유자 폼을 '마우스 커서가 있는 모니터' 중앙에 둔다
+# → 방금 버튼을 누른 그 화면에 대화상자가 뜨고(멀티모니터 대응), 항상 앞에 온다
 $owner = New-Object System.Windows.Forms.Form
-$owner.TopMost = $true
+$owner.FormBorderStyle = 'None'
+$owner.Opacity = 0
 $owner.ShowInTaskbar = $false
+$owner.TopMost = $true
 $owner.StartPosition = 'Manual'
-$owner.Location = New-Object System.Drawing.Point(-4000, -4000)
-$owner.Size = New-Object System.Drawing.Size(1, 1)
-$owner.Show(); $owner.Activate()
+$owner.Size = New-Object System.Drawing.Size(2, 2)
+$cur = [System.Windows.Forms.Cursor]::Position
+$area = [System.Windows.Forms.Screen]::FromPoint($cur).WorkingArea
+$owner.Location = New-Object System.Drawing.Point([int]($area.X + $area.Width / 2), [int]($area.Y + $area.Height / 2))
+$owner.Add_Shown({ $owner.Activate(); $owner.BringToFront() })
+$owner.Show()
+[System.Windows.Forms.Application]::DoEvents()
 $dlg = New-Object System.Windows.Forms.OpenFileDialog
 $dlg.Title = '카드에 넣을 사진 선택'
 $dlg.Filter = '이미지 파일|*.jpg;*.jpeg;*.png;*.webp;*.gif|모든 파일|*.*'
@@ -1873,6 +1906,8 @@ select:focus{border-color:var(--brand)}
 .editpanel textarea:focus{outline:none;border-color:var(--brand)}
 .edithint{font-size:11px;color:var(--muted);margin-top:7px}
 .secbtn.run{border-color:var(--brand);color:var(--brand);background:var(--brand-l)}
+.secbtn.allsec{border-color:var(--brand);color:var(--brand);font-weight:800}
+.secbtn.allsec.sel{background:var(--brand);color:#fff}
 .editq{font-size:12px;font-weight:700;color:var(--brand);display:flex;align-items:center;gap:6px}
 .chartwrap{position:relative;display:block;margin:14px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--sh)}
 .chartwrap img{display:block;width:100%}
@@ -2295,7 +2330,7 @@ function editPanel(p){const x=t();const sid=x.editSid||'';
       <div class="seclabel">① 고칠 부분 선택</div>
       <div class="secbtns">${p.sections.map(s=>{
         const mk = x.editActive===s.id?'⏳ ':(q.some(e=>e.sid===s.id)?'⋯ ':'');
-        return `<button class="secbtn ${sid==s.id?'sel':''} ${mk?'run':''}" onclick="pickSec('${s.id}')">${mk}${esc(s.label)}</button>`;
+        return `<button class="secbtn ${s.id=='all'?'allsec':''} ${sid==s.id?'sel':''} ${mk?'run':''}" onclick="pickSec('${s.id}')">${mk}${esc(s.label)}</button>`;
       }).join('')}</div>
       <div class="seclabel">② 어떻게 고칠지 지시</div>
       <textarea id="editinstr" placeholder="예: 더 짧고 담백하게 / 구체적 사례 한 개 추가 / 이 소제목을 질문형으로" oninput="t().editInstr=this.value">${esc(x.editInstr||'')}</textarea>
