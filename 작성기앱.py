@@ -1428,24 +1428,49 @@ def api_cardnews_status():
     return jsonify(j)
 
 
+# 파일 선택 대화상자를 STA PowerShell로 띄우는 스크립트(TopMost 소유자 폼 → 항상 앞에)
+_PS_PICKFILE = r"""
+$ErrorActionPreference = 'Stop'
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$owner = New-Object System.Windows.Forms.Form
+$owner.TopMost = $true
+$owner.ShowInTaskbar = $false
+$owner.StartPosition = 'Manual'
+$owner.Location = New-Object System.Drawing.Point(-4000, -4000)
+$owner.Size = New-Object System.Drawing.Size(1, 1)
+$owner.Show(); $owner.Activate()
+$dlg = New-Object System.Windows.Forms.OpenFileDialog
+$dlg.Title = '카드에 넣을 사진 선택'
+$dlg.Filter = '이미지 파일|*.jpg;*.jpeg;*.png;*.webp;*.gif|모든 파일|*.*'
+if ($env:PICKDIR -and (Test-Path -LiteralPath $env:PICKDIR)) { $dlg.InitialDirectory = $env:PICKDIR }
+$res = $dlg.ShowDialog($owner)
+$owner.Close()
+if ($res -eq [System.Windows.Forms.DialogResult]::OK) { [Console]::Out.Write($dlg.FileName) }
+"""
+
+
 @app.route("/api/pick-file", methods=["POST"])
 def api_pick_file():
-    """네이티브 Windows '파일 열기' 대화상자로 이미지 1장 선택 → 절대경로 반환(느린 썸네일 그리드 대체)."""
+    """PowerShell '파일 열기' 대화상자로 이미지 1장 선택 → 절대경로 반환(느린 썸네일 그리드 대체)."""
     b = request.get_json(silent=True) or {}
     initdir = b.get("folder") or os.path.join(os.path.expanduser("~"), "Pictures")
+    # 파일 대화상자를 별도 PowerShell 프로세스(STA)로 띄운다 — TopMost 소유자 폼을 owner로 줘서
+    # 앱(브라우저) 뒤로 숨지 않고 항상 앞에 뜨게 한다. (Flask 배경 스레드의 win32 대화상자는 포그라운드를 못 잡아 뒤로 숨던 문제 해결)
     try:
-        import win32gui, win32con
-        try:
-            hwnd = win32gui.GetForegroundWindow()   # 현재 앞에 있는 창(브라우저)을 소유자로 → 대화상자가 창 뒤로 숨지 않음
-        except Exception:
-            hwnd = 0
-        filt = "이미지 파일\0*.jpg;*.jpeg;*.png;*.webp;*.gif\0모든 파일\0*.*\0"
-        fname, _, _ = win32gui.GetOpenFileNameW(
-            hwndOwner=hwnd, InitialDir=initdir, Title="카드에 넣을 사진 선택", Filter=filt,
-            Flags=win32con.OFN_FILEMUSTEXIST | win32con.OFN_EXPLORER)
-        return jsonify(ok=True, path=fname)
+        ps1 = os.path.join(OUT_DIR, "_pickfile.ps1")
+        with open(ps1, "w", encoding="utf-8-sig") as f:
+            f.write(_PS_PICKFILE)
+        env = dict(os.environ)
+        env["PICKDIR"] = initdir
+        r = subprocess.run(
+            ["powershell", "-NoProfile", "-STA", "-ExecutionPolicy", "Bypass", "-File", ps1],
+            capture_output=True, timeout=300, env=env)
+        path = (r.stdout or b"").decode("utf-8", "ignore").strip()
+        return jsonify(ok=True, path=path)          # 취소하면 path="" → 프론트에서 조용히 무시
     except Exception:
-        return jsonify(ok=False, canceled=True)   # 사용자가 취소하면 예외 → 조용히 취소
+        return jsonify(ok=False, canceled=True)
 
 
 @app.route("/api/swap-card", methods=["POST"])
