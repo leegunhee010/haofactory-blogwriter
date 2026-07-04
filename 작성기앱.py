@@ -21,12 +21,13 @@ TEMPLATE = os.path.join(HERE, "템플릿", "카드뉴스_템플릿.pptx")
 sys.path.insert(0, HERE)
 import cardnews_pil  # noqa  (순수 Pillow 엔진 — PowerPoint 불필요)
 import brands  # noqa  (브랜드 설정 관리)
+import charts_pil  # noqa  (C6: 내용 기반 표·차트 이미지)
 
 CARD_JOBS = {}
 CARD_LOCK = threading.Lock()
 
 
-def _cardnews_job(jid, photo_paths, cards, keyword, assets_dir, subtitle="", bodies=None, title=""):
+def _cardnews_job(jid, photo_paths, cards, keyword, assets_dir, subtitle="", bodies=None, title="", chart_specs=None):
     try:
         safe = re.sub(r'[\\/:*?"<>|]', "_", keyword)
         stamp = datetime.datetime.now().strftime("%H%M%S%f")[:9]
@@ -34,8 +35,19 @@ def _cardnews_job(jid, photo_paths, cards, keyword, assets_dir, subtitle="", bod
         res = cardnews_pil.make_cards(photo_paths, cards[:7], png_dir, assets_dir,
                                       subtitle=subtitle, bodies=bodies, title=title)   # 순수 PIL, 즉시
         srcs = [c["src"] for c in res["cards"]]
+        # C6: 표·차트를 카드뉴스 색으로 렌더(cards.json accent 사용) → cid별 파일명 반환
+        chart_imgs = {}
+        if chart_specs:
+            col = article_color(png_dir, None) or _hex_rgb(res.get("theme", ""))
+            for cid, spec in chart_specs.items():
+                try:
+                    nm = "chart_%s.png" % cid
+                    charts_pil.render_spec(os.path.join(png_dir, nm), spec, col)
+                    chart_imgs[cid] = nm
+                except Exception:
+                    pass
         CARD_JOBS[jid] = {"status": "done", "pngs": res["pngs"], "dir": png_dir, "srcs": srcs,
-                          "cards": res["cards"]}
+                          "cards": res["cards"], "chart_imgs": chart_imgs}
     except Exception as e:
         CARD_JOBS[jid] = {"status": "error", "msg": str(e)[:200]}
 
@@ -301,8 +313,13 @@ def parse_manuscript(text, photo_files):
         s = ln.strip()
         m_title = re.match(r"^제목\s*[:：]\s*(.+)$", s)
         m_photo = re.match(r"^\(사진[^:：]*[:：]\s*(.*?)\)\s*$", s)
+        m_chart = re.match(r"^\(\s*(표|차트)\s*(\d+)\s*\)\s*$", s)   # C6: (표1)/(차트1) 위치 표시
         if m_title and not title:
             title = m_title.group(1).strip()
+            continue
+        if m_chart:
+            flush()
+            blocks.append({"type": "chart", "cid": m_chart.group(1) + m_chart.group(2), "img": ""})
             continue
         if m_photo:
             flush()
@@ -325,6 +342,89 @@ def parse_manuscript(text, photo_files):
     body = "".join(b["text"] for b in blocks if b["type"] == "text")
     nospace = re.sub(r"\s", "", body)
     return {"title": title, "blocks": blocks, "char_count": len(nospace)}
+
+
+# ── C6: 표·차트 (내용 기반 이미지) ────────────────────────
+def parse_charts(text):
+    """출력 끝의 '표차트:' 섹션 → {cid: spec}. 형식:
+      표1 | 제목 | 헤더,셀,셀 ; 행2셀,셀,셀 ; ...
+      차트1 | 막대|원|선 | 제목 | 라벨:값, 라벨:값, ..."""
+    m = re.search(r"표\s*차트\s*[:：]\s*\n?(.+)$", text, re.S)
+    if not m:
+        return {}
+    out = {}
+    for ln in m.group(1).split("\n"):
+        s = ln.strip()
+        if not s or s.startswith("없음"):
+            continue
+        cid_m = re.match(r"^\(?\s*(표|차트)\s*(\d+)\s*\)?", s)
+        if not cid_m:
+            continue
+        cid = cid_m.group(1) + cid_m.group(2)
+        parts = [p.strip() for p in s.split("|")]
+        if cid.startswith("표"):
+            if len(parts) < 3:
+                continue
+            title = parts[1]
+            rows = [[c.strip() for c in r.split(",")] for r in parts[2].split(";") if r.strip()]
+            if not rows:
+                continue
+            out[cid] = {"kind": "표", "title": title, "headers": rows[0], "rows": rows[1:]}
+        else:  # 차트
+            if len(parts) < 4:
+                continue
+            kind, title, datastr = parts[1], parts[2], parts[3]
+            data = []
+            for pair in datastr.split(","):
+                if ":" in pair:
+                    lab, val = pair.split(":", 1)
+                    data.append([lab.strip(), val.strip()])
+            if not data:
+                continue
+            out[cid] = {"kind": kind, "title": title, "data": data}
+    return out
+
+
+def _hex_rgb(hx, default=(37, 99, 175)):
+    hx = re.sub(r"[^0-9A-Fa-f]", "", hx or "")
+    if len(hx) != 6:
+        return default
+    return tuple(int(hx[i:i+2], 16) for i in (0, 2, 4))
+
+
+def article_color(cardnews_dir, brand):
+    """표·차트 색 = 그 글 카드뉴스 색(cards.json accent/theme). 없으면 브랜드 색."""
+    try:
+        cj = os.path.join(cardnews_dir or "", "cards.json")
+        if os.path.isfile(cj):
+            st = jload(cj, {})
+            c = st.get("accent") or st.get("theme")
+            if c and len(c) == 3:
+                return tuple(int(x) for x in c)
+    except Exception:
+        pass
+    return _hex_rgb((brand or {}).get("color", ""))
+
+
+def render_chart_blocks(blocks, specs, out_dir, color):
+    """blocks 안의 chart 블록을 spec대로 이미지 렌더(out_dir에 저장, 파일명만 img에 채움)."""
+    if not out_dir:
+        return blocks
+    os.makedirs(out_dir, exist_ok=True)
+    for b in blocks:
+        if b.get("type") != "chart":
+            continue
+        spec = specs.get(b.get("cid"))
+        if not spec:
+            continue
+        name = "chart_%s.png" % b["cid"]
+        try:
+            charts_pil.render_spec(os.path.join(out_dir, name), spec, color)
+            b["img"] = name
+            b["spec"] = spec
+        except Exception:
+            b["img"] = ""
+    return blocks
 
 
 # ── 라우트 ───────────────────────────────────────────────
@@ -1172,6 +1272,10 @@ def api_generate():
     post["raw"] = out
     post["brand"] = brand["id"]
     post["sections"] = _section_list(parts[0])   # C3: 부분 수정용 구간 목록
+    chart_specs = parse_charts(out)               # C6: (표N)/(차트N) 마커에 대응하는 표·차트 데이터
+    chart_specs = {cid: sp for cid, sp in chart_specs.items()
+                   if any(b.get("cid") == cid for b in post["blocks"] if b.get("type") == "chart")}
+    post["chart_specs"] = chart_specs
     # 카드뉴스 생성 (순수 PIL)
     post["cardnews"] = ""
     # 카드 7장 = 서로 다른 사진(Claude 매칭 우선 + 폴더 전체에서 분산 채움)
@@ -1193,7 +1297,7 @@ def api_generate():
         CARD_JOBS[jid] = {"status": "rendering"}
         post["cardnews_job"] = jid
         photo_paths = [os.path.join(folder, f) for f in card_files]
-        threading.Thread(target=_cardnews_job, args=(jid, photo_paths, cards, keyword, adir, sub, bodies, post.get("title", "")), daemon=True).start()
+        threading.Thread(target=_cardnews_job, args=(jid, photo_paths, cards, keyword, adir, sub, bodies, post.get("title", ""), chart_specs), daemon=True).start()
     return jsonify(ok=True, post=post)
 
 
@@ -1341,6 +1445,57 @@ def api_recolor_cards():
         return jsonify(ok=True, pngs=pngs, color="%02X%02X%02X" % tuple(col), msg=note)
     except Exception as e:
         return jsonify(ok=False, msg=str(e)[:200])
+
+
+# ── C6: 표·차트 수동 추가(버튼) ──────────────────────────
+@app.route("/api/add-chart", methods=["POST"])
+def api_add_chart():
+    b = request.get_json(force=True)
+    post = b.get("post") or {}
+    raw = post.get("raw") or ""
+    cdir = post.get("cardnews_dir") or ""
+    brand = brands.load_brand(post.get("brand") or "haofactory")
+    if not raw:
+        return jsonify(ok=False, msg="원고가 없습니다.")
+    if not (cdir and os.path.isdir(cdir)):
+        return jsonify(ok=False, msg="카드뉴스가 만들어진 뒤에 표·차트를 추가할 수 있어요.")
+    model = (b.get("model") or load_cfg().get("model") or "opus")
+    ms = _split_manuscript(raw)[0]
+    existing = [blk.get("spec", {}).get("title", "") for blk in post.get("blocks", []) if blk.get("type") == "chart"]
+    prompt = (
+        "아래 블로그 글 내용에서 독자에게 실제로 도움이 되는 '표' 또는 '차트'를 딱 1개만 만들어라.\n"
+        "글에 담긴(또는 자연스럽게 유추되는) 정보를 바탕으로 비교·단계·비율·추이 중 가장 잘 맞는 형식을 고른다.\n"
+        + ("이미 만든 것: " + " / ".join(x for x in existing if x) + " — 이것과 겹치지 않는 다른 관점으로.\n" if any(existing) else "")
+        + "[출력 — 아래 중 한 줄만, 다른 설명 없이]\n"
+        "표1 | 제목 | 헤더1,헤더2,헤더3 ; 항목,값,값 ; 항목,값,값\n"
+        "차트1 | 막대 | 제목 | 라벨:숫자, 라벨:숫자, 라벨:숫자   (막대 대신 원/선 가능)\n"
+        "- 수치 비교·추이면 차트(막대/선), 구성비면 원, 항목별 특성 비교면 표.\n"
+        "- 값은 근거 있는 것만(지어내기 금지). 정확한 수치가 없으면 표로, 억지 숫자는 만들지 말 것.\n\n"
+        "[글]\n" + ms)
+    out, err = run_claude(prompt, model)
+    if err:
+        return jsonify(ok=False, msg=err)
+    specs = parse_charts("표차트:\n" + (out or "").strip())
+    if not specs:
+        return jsonify(ok=False, msg="표·차트를 만들지 못했어요. 다시 시도해 주세요.")
+    spec = next(iter(specs.values()))
+    ex_cids = [blk.get("cid", "") for blk in post.get("blocks", []) if blk.get("type") == "chart"]
+    n = 1
+    while ("수동%d" % n) in ex_cids:
+        n += 1
+    cid = "수동%d" % n
+    name = "chart_%s.png" % cid
+    try:
+        charts_pil.render_spec(os.path.join(cdir, name), spec, article_color(cdir, brand))
+    except Exception as e:
+        return jsonify(ok=False, msg="렌더 실패: " + str(e)[:120])
+    blk = {"type": "chart", "cid": cid, "img": name, "spec": spec}
+    idx = len(post["blocks"])
+    for i in range(len(post["blocks"]) - 1, -1, -1):    # 마지막 텍스트(마무리) 앞에 삽입
+        if post["blocks"][i].get("type") == "text":
+            idx = i; break
+    post["blocks"].insert(idx, blk)
+    return jsonify(ok=True, post=post)
 
 
 # ── 제목 추천 (AEO/GEO — geo-tracker 고객 질문 기반) ──────────────
@@ -1550,6 +1705,7 @@ def api_docx():
 
     pngs = post.get("cardnews_pngs", [])
     use_cards = bool(pngs) and post.get("use_cards", True)
+    cdir = post.get("cardnews_dir", "")
     pidx = [0]
     doc = Document()
     for s in doc.sections:
@@ -1558,6 +1714,16 @@ def api_docx():
         p = doc.add_paragraph(); p.paragraph_format.space_after = Pt(14)
         setf(p.add_run(post["title"]), 16, True)
     for blk in post.get("blocks", []):
+        if blk["type"] == "chart":                       # C6: 표·차트 이미지
+            img = os.path.join(cdir, blk.get("img", "")) if (cdir and blk.get("img")) else None
+            if img and os.path.isfile(img):
+                pp = doc.add_paragraph(); pp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                pp.paragraph_format.space_before = Pt(6); pp.paragraph_format.space_after = Pt(12)
+                try:
+                    pp.add_run().add_picture(img, width=Cm(14))
+                except Exception:
+                    pass
+            continue
         if blk["type"] == "photo":
             img = None
             if use_cards:
@@ -1708,6 +1874,11 @@ select:focus{border-color:var(--brand)}
 .edithint{font-size:11px;color:var(--muted);margin-top:7px}
 .secbtn.run{border-color:var(--brand);color:var(--brand);background:var(--brand-l)}
 .editq{font-size:12px;font-weight:700;color:var(--brand);display:flex;align-items:center;gap:6px}
+.chartwrap{position:relative;display:block;margin:14px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--sh)}
+.chartwrap img{display:block;width:100%}
+.chartdel{position:absolute;top:8px;right:8px;width:28px;height:28px;border:none;border-radius:50%;background:rgba(20,24,30,.55);color:#fff;font-size:14px;cursor:pointer;opacity:0;transition:.15s}
+.chartwrap:hover .chartdel{opacity:1}
+.chartpend{margin:14px 0;padding:18px;border:1px dashed var(--line);border-radius:12px;color:var(--brand);font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px;justify-content:center}
 .cpick{border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin:2px 0 10px;background:#fff;box-shadow:var(--sh)}
 .cpick-h{font-size:12.5px;font-weight:800;color:var(--ink2);margin-bottom:10px}
 .cpick-sw{display:grid;grid-template-columns:repeat(13,1fr);gap:6px;margin-bottom:12px}
@@ -2054,14 +2225,20 @@ function generate(){const x=t();if(!x.keyword){toast('키워드를 입력하세�
    }).catch(e=>{x.busy=false;toast('오류: '+e,'err');render();});
 }
 function pollCards(job, tab){const iv=setInterval(()=>{fetch('/api/cardnews-status?id='+job).then(r=>r.json()).then(s=>{
-  if(s.status=='done'){clearInterval(iv);tab.post.cardnews_pngs=s.pngs||[];tab.post.cardnews_dir=s.dir;tab.post.cardnews=s.pptx;tab.post.card_srcs=s.srcs||[];tab.post.card_state=s.cards||[];if(t()===tab)render();toast('🎴 카드뉴스 '+(s.pngs||[]).length+'장 완성','ok');}
+  if(s.status=='done'){clearInterval(iv);tab.post.cardnews_pngs=s.pngs||[];tab.post.cardnews_dir=s.dir;tab.post.cardnews=s.pptx;tab.post.card_srcs=s.srcs||[];tab.post.card_state=s.cards||[];
+    const ci=s.chart_imgs||{};(tab.post.blocks||[]).forEach(b=>{if(b.type=='chart'&&ci[b.cid])b.img=ci[b.cid];});   // C6: 표·차트 이미지 채우기
+    if(t()===tab)render();toast('🎴 카드뉴스 '+(s.pngs||[]).length+'장 완성','ok');}
   else if(s.status=='error'){clearInterval(iv);tab.post.cardnews_png_err=s.msg||'카드 렌더 실패';if(t()===tab)render();toast('카드 렌더 실패','err');}
 }).catch(()=>{});},2000);}
 function renderPost(p){
   const folder=p.folder||'', cdir=p.cardnews_dir||'';
   const pngs=p.cardnews_pngs||[], useCards=pngs.length>0;
   let pi=0;
-  let body=p.blocks.map(b=>{
+  let body=p.blocks.map((b,bi)=>{
+    if(b.type=='chart'){       // C6: 표·차트 이미지
+      if(b.img) return `<div class="chartwrap"><img src="/img?folder=${encodeURIComponent(cdir)}&name=${encodeURIComponent(b.img)}&v=${Date.now()}"><button class="chartdel" onclick="delChart(${bi})" title="이 표/차트 삭제">✕</button></div>`;
+      return `<div class="chartpend"><span class="spin"></span> 📊 표·차트 만드는 중…</div>`;
+    }
     if(b.type=='photo'){
       if(useCards){
         if(pi<pngs.length){ const ci=pi; const nm=pngs[ci].split(/[\\\\/]/).pop(); pi++;
@@ -2101,7 +2278,8 @@ function renderPost(p){
     <div class="row" style="margin:10px 0;flex-wrap:wrap">
       <button class="btn" onclick="saveDocx()">📄 워드로 저장</button>
       <button class="btn" onclick="generate()">↻ 다시 생성</button>
-      ${useCards?`<button class="btn" onclick="openColorPicker(event)">🎨 카드 색상 바꾸기</button>`:''}</div>
+      ${useCards?`<button class="btn" onclick="openColorPicker(event)">🎨 카드 색상 바꾸기</button>`:''}
+      ${useCards?`<button class="btn" onclick="addChart()" ${t().chartBusy?'disabled':''}>${t().chartBusy?'<span class=spin></span> 표·차트 만드는 중…':'📊 표·차트 추가'}</button>`:''}</div>
     ${useCards?colorPicker(p):''}
     ${(p.sections&&p.sections.length)?editPanel(p):''}
     ${useCards?`<div class="cardsec-hint">🖱 카드에 마우스를 올리면 하단 툴바에서 <b style="color:var(--ink2)">✏️ 글 수정 · 🔄 사진 교체 · 위치 ▲▼◀▶ · 확대 ＋－</b></div>`:''}
@@ -2196,14 +2374,26 @@ function copyClip(text,msg){const done=()=>toast(msg,'ok');
 function fallbackCopy(text,done){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done();}catch(e){toast('복사 실패','err');}document.body.removeChild(ta);}
 function copyTitle(){copyClip(t().post.title||'','① 제목 복사됨 · 네이버 제목칸에 붙여넣기');}
 function copyBody(){const p=t().post;const pngs=p.cardnews_pngs||[],useCards=pngs.length>0;let pi=0;const out=[];
+  let ti=0;
   p.blocks.forEach(b=>{
-    if(b.type=='photo'){
+    if(b.type=='chart'){ if(b.img){ti++;out.push('📊 [표차트'+ti+']');} }
+    else if(b.type=='photo'){
       if(useCards){if(pi<pngs.length){pi++;out.push('📷 [사진'+pi+']');}else pi++;}
       else out.push('📷 [사진]');
     } else { b.text.split('\n\n').forEach(para=>{const tx=para.replace(/\*\*/g,'').trim();if(tx)out.push(tx);}); }
   });
   if(useCards){while(pi<pngs.length){pi++;out.push('📷 [사진'+pi+']');}}
-  copyClip(out.join('\n\n'),'② 본문 복사됨 · 네이버 본문에 붙여넣기 ([사진N] 자리에 카드 드래그)');}
+  copyClip(out.join('\n\n'),'② 본문 복사됨 · [사진N]자리에 카드, [표차트N]자리에 표·차트 이미지를 드래그');}
+function delChart(bi){const x=t();const b=x.post.blocks[bi];if(!b||b.type!='chart')return;
+  x.post.blocks.splice(bi,1);toast('표·차트 삭제됨','ok');render();}
+function addChart(){const x=t();const p=x.post;
+  if(!p||!p.cardnews_dir){toast('카드뉴스가 만들어진 뒤에 추가할 수 있어요','err');return;}
+  x.chartBusy=true;render();
+  fetch('/api/add-chart',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({post:p,brand:x.brand||BRAND,model:x.model||'opus'})})
+   .then(r=>r.json()).then(d=>{x.chartBusy=false;
+     if(d.ok){x.post=d.post;toast('📊 표·차트 추가됨','ok');}else toast(d.msg||'추가 실패','err');
+     render();
+   }).catch(()=>{x.chartBusy=false;toast('추가 실패(네트워크)','err');render();});}
 function saveDocx(){toast('📄 워드 저장 중…');fetch('/api/docx',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({post:t().post})})
   .then(r=>r.json()).then(d=>{if(d.ok)toast('📄 워드 저장됨 · 파일이 열립니다','ok');else toast(d.msg||'저장 실패','err');});}
 function openFile(p){fetch('/api/open',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:p})}).then(r=>r.json()).then(d=>{if(!d.ok)toast('파일을 열 수 없습니다','err');});}
