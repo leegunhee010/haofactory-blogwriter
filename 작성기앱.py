@@ -218,7 +218,52 @@ _CORE_RULES = ("[★★반드시 지킬 핵심 — 이 글의 품질을 좌우�
                "3. 매번 구조를 다르게: 지난 글과 같은 소제목 순서·같은 문장 틀·같은 예시·같은 비유를 재사용하지 말고, 이번 글만의 흐름으로 새로 짠다. 뻔한 '개요→절차→비용' 반복을 피한다.")
 
 
-def build_prompt(keyword, photo_files, project_hint="", brand=None, subkeyword="", title="", latest=""):
+def _portfolio_prompt(keyword, photo_files, photo_paths, project_hint, brand, title):
+    """포트폴리오 모드 — 실제 프로젝트 사례 글. 사진을 직접 열어보고(Read) 쓰고, 각 사진에 alt 텍스트를 붙인다."""
+    b = brand or {}
+    name = b.get("name", "")
+    identity = b.get("identity", "")
+    tone = b.get("tone", "")
+    cta = (b.get("cta", "") or "").replace("{name}", name)
+    fnames = ", ".join(photo_files or []) or "(없음)"
+    read_list = "\n".join(f"- {p}" for p in (photo_paths or [])[:7]) or "(사진 없음)"
+    hintblk = (f"\n[프로젝트 추가 정보 — 사진으로 알 수 없는 사실(고객·기관·요청·특이사항)]\n{project_hint.strip()}\n"
+               "- 이 정보와 사진에서 '실제로 확인되는 것'만 쓴다. 모르는 건 지어내지 말 것."
+               if (project_hint or "").strip() else
+               "\n[프로젝트 추가 정보 없음] — 사진에서 실제로 보이는 것과 메인키워드가 가리키는 분야·산출물에 근거해서만 쓰고, 없는 사실(고객명·수치 등)은 지어내지 말 것.")
+    titleblk = (f"\n[제목 — 이 제목을 그대로 사용]\n{title.strip()}" if (title or "").strip() else "")
+    head = (
+        f"너는 '{name}'의 블로그에 '실제 진행한 한 프로젝트'를 사례로 보여주는 포트폴리오 글을 쓰는 전문 카피라이터다.\n"
+        f"[회사 소개] {identity}\n"
+        f"[문체·톤] {tone}\n"
+        "[이 글의 목적] 이 프로젝트로 회사의 실력·서비스·강점을 '증명'하고, 그 분야(산업)의 실무 인사이트를 더해 딱 그 타겟 고객에게 노출·신뢰를 얻는다(AEO·GEO·SEO 최적화). "
+        "★소설·스토리텔링처럼 흐르지 말 것 — 그런 글엔 아무도 관심 없다. '과정·디자인 판단·분야 노하우'로 증명한다.\n\n"
+        "[★★사진을 실제로 열어보고 쓴다 — 가장 중요]\n"
+        "- 아래 사진 파일들을 Read 도구로 하나씩 실제로 열어, 무엇인지(산출물 종류=카탈로그/브로슈어/리플렛/패키지 등·색감·구성·언어·분위기)를 직접 확인한 뒤 그 내용에 근거해 쓴다. 사진과 동떨어진 상상 금지.\n"
+        f"{read_list}\n"
+        "- 각 사진은 어울리는 단락에 (사진N: 파일명) 으로 배치하고, ★바로 다음 줄에 [alt: 그 이미지 설명] 을 한 줄 넣는다(그 사진이 무엇인지 + 메인키워드/타겟 포함, 12~30자). 예: [alt: 삼성병원 내과 브로슈어 표지 디자인]\n"
+        f"- 파일명은 이 목록 그대로만: {fnames}\n\n"
+        "[제목] '기관/분야 + 대상 + 산출물' 형태의 구체적 타겟으로 짓는다(막연한 일반 키워드 금지). 예: '삼성병원 내과 브로슈어 제작 사례'. 메인키워드를 포함한다.\n\n"
+        "[구조 — 도입(요약) + 소제목 정확히 6개 + 마무리]\n"
+        "- 도입 = 요약: 이 프로젝트를 한눈에(어떤 분야의 어떤 고객이·무슨 산출물을·어떤 목적으로 맡겼는지) 두괄식 3~4문장. 인사말은 짧게.\n"
+        "- 소제목 6개는 이 프로젝트에 맞는 것으로 고른다(FAQ는 반드시 마지막 소제목). 후보:\n"
+        "  · 미팅에서 확인한 요구사항(고객 목적·타겟)\n"
+        "  · ★이 분야라서 기획부터 챙긴 점 — 왜 이 산업/분야(예: 병원 내과)는 디자인에서 무엇이 중요한가. 남들 안 다루는 구체적 분야 인사이트(되도록 포함, AEO 핵심)\n"
+        "  · 디자인 결정과 이유 — 컨셉·구성·톤앤매너·색·서체·여백을 왜 그렇게 했는가(사진에서 본 실제 디자인을 근거로 구체적으로)\n"
+        "  · (해당되면) 번역·다국어 대응 — 외국어판은 전문가가 번역까지 처리, 고객이 따로 번역해 보내지 않아도 됨\n"
+        "  · (해당되면) 내부 인쇄소 제작 — 디자인부터 인쇄까지 원스톱(품질·일정 관리)\n"
+        "  · 자주 묻는 질문(FAQ) — 이 주제의 진짜 실무 질문 3~4개와 답(마지막 소제목)\n"
+        "- ★'결과'로 매출·전환율 같은 경영 성과 수치를 지어내지 말 것. 처음 요구사항을 산출물이 어떻게 충족했는지, 어디에 쓰이는지(사실)까지만 쓴다.\n"
+        f"- 마무리: {cta}\n"
+        + hintblk + titleblk)
+    return (head + brands._guide_block(b) + "\n\n" + brands._output_format(b) +
+            "\n\n" + brands._NATURAL_TONE + "\n\n" + brands._SELFCHECK +
+            f"\n\n[메인키워드] {keyword}\n\n위 지침대로, 먼저 사진들을 열어보고 지금 포트폴리오 글을 작성하라.")
+
+
+def build_prompt(keyword, photo_files, project_hint="", brand=None, subkeyword="", title="", latest="", portfolio=False, photo_paths=None):
+    if portfolio:
+        return _portfolio_prompt(keyword, photo_files, photo_paths, project_hint, brand, title)
     photos = "\n".join(f"- {f}" for f in photo_files) if photo_files else "(없음 — (사진N) 자리표시만, 파일명은 비워둠)"
     project_hint = (project_hint or "").strip()
     hint = (f"\n[★실제 프로젝트·사례 정보 — 이 글은 이 '실제 건'을 다루는 사례(포트폴리오) 글이다]\n{project_hint}\n"
@@ -238,9 +283,9 @@ def build_prompt(keyword, photo_files, project_hint="", brand=None, subkeyword="
             _CORE_RULES + "\n\n위 규칙대로 지금 작성하라.")
 
 
-def run_claude(prompt, model="", acc_id=None, _tried=None, tools=""):
+def run_claude(prompt, model="", acc_id=None, _tried=None, tools="", timeout=240):
     """활성 계정으로 claude -p 실행. 사용 한도에 걸리면 로그인된 다른 계정으로 자동 전환.
-    tools 지정 시 해당 도구 허용(예: 'WebSearch' → 웹검색으로 최신 정보 확인)."""
+    tools 지정 시 해당 도구 허용(예: 'WebSearch' → 웹검색, 'Read' → 사진 파일 열어보기)."""
     if not CLAUDE:
         return None, "claude 실행파일을 찾지 못했습니다. Claude 데스크톱 앱 또는 CLI를 설치하세요."
     d = load_accounts()
@@ -255,7 +300,7 @@ def run_claude(prompt, model="", acc_id=None, _tried=None, tools=""):
         cmd += ["--allowedTools", tools]
     try:
         r = subprocess.run(cmd, input=prompt, capture_output=True, text=True,
-                           encoding="utf-8", errors="ignore", timeout=240, env=account_env(acc_id))
+                           encoding="utf-8", errors="ignore", timeout=timeout, env=account_env(acc_id))
         out = (r.stdout or "").strip()
         combined = out + "\n" + (r.stderr or "")
         if "Not logged in" in combined or "Please run /login" in combined:
@@ -266,7 +311,7 @@ def run_claude(prompt, model="", acc_id=None, _tried=None, tools=""):
                 if a["id"] in _tried:
                     continue
                 if auth_status_of(a["id"]).get("loggedIn"):
-                    o2, e2 = run_claude(prompt, model, a["id"], _tried, tools)
+                    o2, e2 = run_claude(prompt, model, a["id"], _tried, tools, timeout)
                     if o2 is not None and a["id"] != d["active"]:  # 작동한 계정으로 활성 고정
                         d["active"] = a["id"]; save_accounts(d)
                         _AUTH_CACHE["t"] = 0
@@ -314,8 +359,12 @@ def parse_manuscript(text, photo_files):
         m_title = re.match(r"^제목\s*[:：]\s*(.+)$", s)
         m_photo = re.match(r"^\(사진[^:：]*[:：]\s*(.*?)\)\s*$", s)
         m_chart = re.match(r"^\(\s*(표|차트)\s*(\d+)\s*\)\s*$", s)   # C6: (표1)/(차트1) 위치 표시
+        m_alt = re.match(r"^\[alt\s*[:：]\s*(.+?)\]\s*$", s, re.I)     # 포트폴리오: 사진 alt 텍스트
         if m_title and not title:
             title = m_title.group(1).strip()
+            continue
+        if m_alt and blocks and blocks[-1].get("type") == "photo" and not blocks[-1].get("alt"):
+            blocks[-1]["alt"] = m_alt.group(1).strip()
             continue
         if m_chart:
             flush()
@@ -1237,12 +1286,23 @@ def api_generate():
     random.shuffle(files)                               # ★매 생성마다 다른 순서(Claude도 매번 다르게 고름)
     files = files[:150]
     model = (b.get("model") or load_cfg().get("model") or "opus")
+    portfolio = bool(b.get("portfolio"))               # 포트폴리오 모드(사진 직접 열어보고 사례 글)
     # web_update 브랜드(레드트랜스·윈차이나)는 작성 전 웹검색으로 최신 '공개 정보'를 먼저 확인(회사 가격·절차는 기준서 유지)
-    latest = fetch_latest_info(keyword) if brand.get("web_update") else ""
-    prompt = build_prompt(keyword, files, hint, brand, subkeyword, title, latest)
-    out, err = run_claude(prompt, model)
+    latest = fetch_latest_info(keyword) if (brand.get("web_update") and not portfolio) else ""
+    if portfolio:
+        pf_files = files[:7]                            # 이 프로젝트 대표 사진 7장(읽고+배치)
+        pf_paths = [os.path.join(folder, f) for f in pf_files]
+        prompt = build_prompt(keyword, pf_files, hint, brand, subkeyword, title, latest,
+                              portfolio=True, photo_paths=pf_paths)
+        out, err = run_claude(prompt, model, tools="Read", timeout=480)   # 사진 읽기 → 시간 더 줌
+    else:
+        prompt = build_prompt(keyword, files, hint, brand, subkeyword, title, latest)
+        out, err = run_claude(prompt, model)
     if err:
         return jsonify(ok=False, msg=err)
+    mt = re.search(r"제목\s*[:：]", out)     # 앞에 붙는 머리말(포트폴리오: '사진 확인했습니다' 등) 제거
+    if mt and mt.start() > 0:
+        out = out[mt.start():]
     # 카드뉴스 헤드라인 분리
     parts = re.split(r"\n\s*카드뉴스\s*[:：]\s*\n?", out, maxsplit=1)
     cards, bodies = [], []
@@ -1914,6 +1974,12 @@ select:focus{border-color:var(--brand)}
 .chartdel{position:absolute;top:8px;right:8px;width:28px;height:28px;border:none;border-radius:50%;background:rgba(20,24,30,.55);color:#fff;font-size:14px;cursor:pointer;opacity:0;transition:.15s}
 .chartwrap:hover .chartdel{opacity:1}
 .chartpend{margin:14px 0;padding:18px;border:1px dashed var(--line);border-radius:12px;color:var(--brand);font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px;justify-content:center}
+.pfmode{display:flex;gap:9px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:12px;margin:2px 0 4px;cursor:pointer;background:#fafbfc;font-size:12.5px;color:var(--ink2);line-height:1.5}
+.pfmode.on{border-color:var(--brand);background:var(--brand-l)}
+.pfmode input{width:17px;height:17px;margin-top:1px;cursor:pointer;accent-color:var(--brand)}
+.pfmode b{color:var(--brand)}
+.pfhint{font-size:12px;color:var(--ink2);background:var(--brand-l);border-radius:10px;padding:10px 13px;margin:0 0 6px;line-height:1.55}
+.altcap{font-size:11.5px;color:var(--muted);margin:-6px 0 12px;padding:5px 10px;background:#f6f7f9;border-radius:8px;display:inline-block;font-weight:600}
 .cpick{border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin:2px 0 10px;background:#fff;box-shadow:var(--sh)}
 .cpick-h{font-size:12.5px;font-weight:800;color:var(--ink2);margin-bottom:10px}
 .cpick-sw{display:grid;grid-template-columns:repeat(13,1fr);gap:6px;margin-bottom:12px}
@@ -2164,6 +2230,10 @@ function render(){
     </div>
     <details class="opt" ${x.hint?'open':''}><summary>＋ 프로젝트 정보 (선택 — 실제 작업 건이면 현장·소재·특이사항)</summary>
       <textarea id="hint" oninput="t().hint=this.value" placeholder="예: 전남 광양, 황소 캐릭터, 벤치 포토존, FRP">${esc(x.hint)}</textarea></details>
+    <label class="pfmode ${x.portfolio?'on':''}">
+      <input type="checkbox" ${x.portfolio?'checked':''} onchange="t().portfolio=this.checked;render()">
+      <span><b>📁 포트폴리오 모드</b> — 폴더의 사진을 직접 열어보고 '이 프로젝트 사례'로 작성 (정보성 대신). 사진마다 alt 텍스트도 붙여줍니다</span></label>
+    ${x.portfolio?`<div class="pfhint">💡 이 프로젝트의 사진 폴더 + 키워드(예: <b>삼성병원 내과 브로슈어</b>)를 넣으세요. 사진으로 알 수 없는 정보(고객·요청)는 위 프로젝트 정보에 적어주면 더 정확합니다. (사진을 읽어서 조금 더 걸립니다)</div>`:''}
     ${(curBrand().card_templates||[]).length>1?`
     <div class="field"><label>카드 디자인 (클릭해서 선택)</label>
       <div class="tplrow">${(curBrand().card_templates).map(tp=>`<div class="tplopt ${(x.cardTpl||'1')==tp?'sel':''}" onclick="t().cardTpl='${tp}';render()" title="디자인 ${tp}">
@@ -2252,7 +2322,7 @@ function pollOrg(){const iv=setInterval(()=>{fetch('/api/organize-status').then(
 });},1500);}
 function generate(){const x=t();if(!x.keyword){toast('키워드를 입력하세요','err');return;}
   x.busy=true;render();
-  fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',title:x.title||'',folder:x.folder,hint:x.hint,model:x.model||'opus',brand:x.brand||BRAND,template:x.cardTpl||'1'})})
+  fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',title:x.title||'',folder:x.folder,hint:x.hint,model:x.model||'opus',brand:x.brand||BRAND,template:x.cardTpl||'1',portfolio:!!x.portfolio})})
    .then(r=>r.json()).then(d=>{x.busy=false;
      if(!d.ok){toast(d.msg||'생성 실패','err');render();return;}
      x.post=d.post;render();toast('✍ 원고 완성','ok');
@@ -2275,14 +2345,15 @@ function renderPost(p){
       return `<div class="chartpend"><span class="spin"></span> 📊 표·차트 만드는 중…</div>`;
     }
     if(b.type=='photo'){
+      const altcap=b.alt?`<div class="altcap">🏷 alt: ${esc(b.alt)}</div>`:'';
       if(useCards){
         if(pi<pngs.length){ const ci=pi; const nm=pngs[ci].split(/[\\\\/]/).pop(); pi++;
-          return `<div class="cardwrap"><img id="cardimg${ci}" src="/img?folder=${encodeURIComponent(cdir)}&name=${encodeURIComponent(nm)}&v=${Date.now()}">${cardCtl(ci)}</div>`; }
+          return `<div class="cardwrap"><img id="cardimg${ci}" src="/img?folder=${encodeURIComponent(cdir)}&name=${encodeURIComponent(nm)}&v=${Date.now()}">${cardCtl(ci)}</div>${altcap}`; }
         pi++; return '';        // 카드 다 씀 — 여분 자리 숨김(빈칸 X)
       }
       pi++;
-      if(b.file) return `<img src="/img?folder=${encodeURIComponent(folder)}&name=${encodeURIComponent(b.file)}">`;
-      return `<div class="pv-photo-missing">📷 사진 자리</div>`;
+      if(b.file) return `<img src="/img?folder=${encodeURIComponent(folder)}&name=${encodeURIComponent(b.file)}">${altcap}`;
+      return `<div class="pv-photo-missing">📷 사진 자리</div>${altcap}`;
     }
     return b.text.split('\n\n').map(para=>{
       const lines=para.split('\n').filter(x=>x.trim());
@@ -2413,8 +2484,9 @@ function copyBody(){const p=t().post;const pngs=p.cardnews_pngs||[],useCards=png
   p.blocks.forEach(b=>{
     if(b.type=='chart'){ if(b.img){ti++;out.push('📊 [표차트'+ti+']');} }
     else if(b.type=='photo'){
-      if(useCards){if(pi<pngs.length){pi++;out.push('📷 [사진'+pi+']');}else pi++;}
-      else out.push('📷 [사진]');
+      const altx=b.alt?'  (alt: '+b.alt+')':'';
+      if(useCards){if(pi<pngs.length){pi++;out.push('📷 [사진'+pi+']'+altx);}else pi++;}
+      else out.push('📷 [사진]'+altx);
     } else { b.text.split('\n\n').forEach(para=>{const tx=para.replace(/\*\*/g,'').trim();if(tx)out.push(tx);}); }
   });
   if(useCards){while(pi<pngs.length){pi++;out.push('📷 [사진'+pi+']');}}
