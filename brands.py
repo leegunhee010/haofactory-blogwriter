@@ -2,7 +2,7 @@
 """브랜드 설정 관리 — 한 앱으로 여러 브랜드 운영.
 brands/<id>/brand.json (설정) + brands/<id>/cards/ (카드 템플릿 에셋, 브랜드별).
 폰트는 assets/fonts 공용."""
-import os, json, re
+import os, json, re, random
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BRANDS_DIR = os.path.join(HERE, "brands")
@@ -138,7 +138,10 @@ def list_brands():
 
 
 def _output_format(b):
-    """앱이 파싱하려면 반드시 필요한 출력 형식(제목/사진슬롯7/카드헤드라인) — 어떤 문체든 끝에 부착."""
+    """앱이 파싱하려면 반드시 필요한 출력 형식(제목/사진슬롯7/카드헤드라인) — 어떤 문체든 끝에 부착.
+    brand.json card_note가 있으면 카드뉴스 규칙에 브랜드별 지시를 한 줄 추가."""
+    note = (b.get("card_note") or "").strip()
+    extra = ("\n- ★" + note) if note else ""
     return """[출력 형식 — 정확히 이 형식만, 다른 설명/머리말 금지]
 제목: (메인키워드 포함한 제목)
 (사진1: 파일명)
@@ -157,7 +160,7 @@ def _output_format(b):
 - 카드1 = 표지(메인키워드).
 - 카드2~7 = 본문의 첫째~여섯째 소제목을 '그 순서 그대로' 요약한다. 즉 카드N(2~7)의 주제 = 본문 (N-1)번째 소제목과 같아야 한다. (소제목이 '비용'이면 그 자리 카드도 반드시 '비용', 소제목이 '필요서류'면 카드도 '필요서류'. 다른 주제를 넣지 말 것.)
 - 헤드라인: 그 소제목의 핵심을 12자 내외로 짧고 강하게.
-- 본문설명: 그 카드 내용을 1문장으로 자연스럽게(35자 내외).
+- 본문설명: 그 카드 내용을 1문장으로 자연스럽게(35자 내외).""" + extra + """
 카드뉴스:
 1. (메인키워드 — 표지) | (한 줄 설명)
 2. (본문 첫째 소제목 요약) | (한 줄 설명)
@@ -260,6 +263,57 @@ def _guide_block(b):
             "매번 8개 언어 나열처럼 '똑같은 몇 개 주제로 도는' 글이 되면 안 된다. 키워드가 요구하는 그 한 주제를 남들이 안 다루는 각도까지 "
             "깊고 구체적으로 파고들어라(같은 키워드라도 매번 다른 하위 논점·사례·순서로).\n"
             "----- 기준서 시작 -----\n" + g + "\n----- 기준서 끝 -----")
+
+
+def _faq_questions(b):
+    """브랜드 폴더의 FAQ 질문 리스트 파일(brand.json faq_list). {분야: [질문,...]} 형식. 없으면 {}."""
+    fn = (b.get("faq_list") or "").strip()
+    if not fn:
+        return {}
+    try:
+        p = os.path.join(brand_dir(b.get("id", "")), fn)
+        if os.path.isfile(p):
+            return json.load(open(p, encoding="utf-8"))
+    except Exception:
+        pass
+    return {}
+
+
+def faq_block(b, keyword="", subkeyword="", title="", n=25):
+    """FAQ 질문 리스트가 있는 브랜드용 — 이번 글과 관련 있는 후보 질문을 골라
+    '마지막 소제목 = FAQ(리스트에서 5개 선택)' 지시 블록을 만든다. 리스트 없으면 빈 문자열."""
+    blocks = _faq_questions(b)
+    if not blocks:
+        return ""
+    q = f"{keyword} {subkeyword} {title}"
+    toks = [t for t in re.split(r"[\s,·/|+]+", q) if len(t) >= 2]
+    def score(s):
+        return sum(1 for t in toks if t in s)
+    allq = [(cat, s) for cat, lst in blocks.items() for s in lst if isinstance(s, str)]
+    matched = sorted([cs for cs in allq if score(cs[1]) > 0], key=lambda cs: -score(cs[1]))
+    cand = [s for _, s in matched[:n]]
+    if len(cand) < n:
+        # 매칭이 부족하면 키워드로 분야를 추정해 그 분야에서 무작위 보충
+        ql = q.lower()
+        if any(w in ql for w in ("홈페이지", "쇼핑몰", "웹", "랜딩", "사이트")):
+            cat = "홈페이지 제작"
+        elif any(w in ql for w in ("마케팅", "sns", "인스타", "릴스", "숏폼", "광고", "유튜브", "이커머스", "블로그")):
+            cat = "마케팅"
+        else:
+            cat = "홍보물 디자인"
+        pool = [s for s in blocks.get(cat, []) if s not in cand]
+        if pool:
+            cand += random.sample(pool, min(n - len(cand), len(pool)))
+    if not cand:
+        return ""
+    qlist = "\n".join(f"- {s}" for s in cand)
+    return ("\n\n[★FAQ — 마지막(여섯 번째) 소제목은 '자주 묻는 질문'으로 한다]\n"
+            "- 마지막 소제목은 FAQ로 하고, 아래 '실제 질문 리스트'에서 이 글의 제목·본문 내용과 가장 관련 있는 질문 5개를 골라 질문·답으로 구성한다.\n"
+            "- 고른 질문은 그대로 쓰거나 자연스럽게 다듬되 '업종+지원사업+실제 상황' 말투를 유지한다(타겟이 AI에 실제로 묻는 형태 그대로가 가장 잘 인용된다). "
+            "리스트에 이 글 주제와 맞는 질문이 없을 때만 '○○ 업종/수출기업인데, [상황]. [질문]?' 공식으로 새로 만든다.\n"
+            "- 답은 구체적으로(기준·기간·범위·선택 기준). 5개 중 브랜드 홍보로 귀결되는 답은 최대 2개까지만 — "
+            "나머지 3개 이상은 브랜드명 없이도 성립하는 순수 정보성 답으로 쓴다(정보성 답이 살아야 AI가 인용한다).\n"
+            "[실제 질문 리스트 — 후보]\n" + qlist)
 
 
 _NATURAL_TONE = """[자연스러운 말투 — 'AI가 쓴 티'를 지운다 ★모든 브랜드 공통]

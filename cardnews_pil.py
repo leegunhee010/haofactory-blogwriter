@@ -494,6 +494,9 @@ def render_card(slide_idx, photo_path, headline, theme, out_path, assets_dir,
             canvas = _draw_text(canvas, box, sub, _font_for(it.get("font"), _HEAD_FONT), it.get("size", 28), textcol(it), it.get("align", "center"), pt2px, oneline=bool(it.get("oneline")))
         elif role == "body":
             bod = body or ""
+            if it.get("phrase_break") and "/" in bod:
+                # ' / ' 구분자 = 의미 단위 줄바꿈(원고가 지정) — '디자인/인쇄' 같은 붙은 슬래시는 유지
+                bod = re.sub(r"\s+/\s+", "\n", bod)
             if it.get("lines") == 2 and bod and "\n" not in bod:
                 bod = _two_lines(bod)          # 내지 본문 2줄 고정(길이 균형 분할)
             canvas = _draw_text(canvas, box, bod, _font_for(it.get("font"), _BODY_FONT), it.get("size", 19), textcol(it), it.get("align", "center"), pt2px)

@@ -1,0 +1,600 @@
+{
+ "size": 1080,
+ "pt_height": 810.0,
+ "bg": "FFFFFF",
+ "slide_bg": [
+  "0D0D0D",
+  "0D0D0D",
+  "0D0D0D",
+  "0D0D0D",
+  "0D0D0D",
+  "0D0D0D"
+ ],
+ "theme_recolor": false,
+ "photo_round": 0.0,
+ "slides": [
+  [
+   {
+    "role": "deco",
+    "box": [
+     81,
+     80,
+     919,
+     920
+    ],
+    "asset": "s0_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     721,
+     763,
+     475,
+     475
+    ],
+    "asset": "s0_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     -145,
+     -225,
+     631,
+     631
+    ],
+    "asset": "s0_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     0,
+     1080,
+     1080
+    ],
+    "asset": "s0_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     472,
+     539,
+     852,
+     1
+    ],
+    "asset": "s0_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     159,
+     857,
+     123,
+     67
+    ],
+    "asset": "s0_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     159,
+     857,
+     123,
+     56
+    ],
+    "asset": "s0_6.png",
+    "recolor": false
+   },
+   {
+    "role": "label",
+    "box": [
+     852,
+     185,
+     179,
+     28
+    ],
+    "text": "하오커뮤니케이션",
+    "size": 15.0,
+    "color": "FFFFFF",
+    "font": "210 Hangueroo Regular",
+    "align": "left"
+   },
+   {
+    "role": "headline",
+    "box": [
+     159,
+     532,
+     751,
+     204
+    ],
+    "text": "",
+    "size": 60.0,
+    "color": "FFFFFF",
+    "font": "210 Hangueroo Regular",
+    "align": "left",
+    "lines": 2
+   },
+   {
+    "role": "label",
+    "box": [
+     159,
+     399,
+     729,
+     111
+    ],
+    "text": "정부사업 수행기관",
+    "size": 59.0,
+    "color": "FF7513",
+    "font": "210 Hangueroo Regular",
+    "align": "left"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     -179,
+     772,
+     513,
+     513
+    ],
+    "asset": "s1_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     767,
+     -129,
+     465,
+     419
+    ],
+    "asset": "s1_1.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     89,
+     89,
+     900,
+     900
+    ]
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     -179,
+     772,
+     513,
+     513
+    ],
+    "asset": "s1_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     767,
+     -129,
+     465,
+     419
+    ],
+    "asset": "s2_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     136,
+     143,
+     809,
+     796
+    ],
+    "asset": "s2_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     95,
+     224,
+     119,
+     119
+    ],
+    "asset": "s2_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     113,
+     247,
+     80,
+     72
+    ],
+    "asset": "s2_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     867,
+     753,
+     119,
+     119
+    ],
+    "asset": "s2_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     887,
+     777,
+     80,
+     72
+    ],
+    "asset": "s2_6.png",
+    "recolor": false
+   },
+   {
+    "role": "headline",
+    "box": [
+     225,
+     230,
+     630,
+     130
+    ],
+    "text": "",
+    "size": 44,
+    "color": "CC651C",
+    "font": null,
+    "align": "center"
+   },
+   {
+    "role": "body",
+    "box": [
+     253,
+     420,
+     575,
+     170
+    ],
+    "size": 30,
+    "color": "FFFFFF",
+    "font": null,
+    "align": "center",
+    "phrase_break": true
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     -179,
+     772,
+     513,
+     513
+    ],
+    "asset": "s1_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     767,
+     -129,
+     465,
+     419
+    ],
+    "asset": "s3_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     136,
+     143,
+     809,
+     796
+    ],
+    "asset": "s3_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     95,
+     224,
+     119,
+     119
+    ],
+    "asset": "s3_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     113,
+     247,
+     80,
+     72
+    ],
+    "asset": "s3_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     867,
+     753,
+     119,
+     119
+    ],
+    "asset": "s3_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     887,
+     777,
+     80,
+     72
+    ],
+    "asset": "s3_6.png",
+    "recolor": false
+   },
+   {
+    "role": "headline",
+    "box": [
+     225,
+     230,
+     630,
+     130
+    ],
+    "text": "",
+    "size": 44,
+    "color": "CC651C",
+    "font": null,
+    "align": "center"
+   },
+   {
+    "role": "body",
+    "box": [
+     253,
+     420,
+     575,
+     170
+    ],
+    "size": 30,
+    "color": "FFFFFF",
+    "font": null,
+    "align": "center",
+    "phrase_break": true
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     -179,
+     772,
+     513,
+     513
+    ],
+    "asset": "s1_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     767,
+     -129,
+     465,
+     419
+    ],
+    "asset": "s4_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     136,
+     143,
+     809,
+     796
+    ],
+    "asset": "s4_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     95,
+     224,
+     119,
+     119
+    ],
+    "asset": "s4_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     113,
+     247,
+     80,
+     72
+    ],
+    "asset": "s4_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     867,
+     753,
+     119,
+     119
+    ],
+    "asset": "s4_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     887,
+     777,
+     80,
+     72
+    ],
+    "asset": "s4_6.png",
+    "recolor": false
+   },
+   {
+    "role": "headline",
+    "box": [
+     225,
+     230,
+     630,
+     130
+    ],
+    "text": "",
+    "size": 44,
+    "color": "CC651C",
+    "font": null,
+    "align": "center"
+   },
+   {
+    "role": "body",
+    "box": [
+     253,
+     420,
+     575,
+     170
+    ],
+    "size": 30,
+    "color": "FFFFFF",
+    "font": null,
+    "align": "center",
+    "phrase_break": true
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     -179,
+     772,
+     513,
+     513
+    ],
+    "asset": "s1_0.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     767,
+     -129,
+     465,
+     419
+    ],
+    "asset": "s5_1.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     136,
+     143,
+     809,
+     796
+    ],
+    "asset": "s5_2.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     95,
+     224,
+     119,
+     119
+    ],
+    "asset": "s5_3.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     113,
+     247,
+     80,
+     72
+    ],
+    "asset": "s5_4.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     867,
+     753,
+     119,
+     119
+    ],
+    "asset": "s5_5.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     887,
+     777,
+     80,
+     72
+    ],
+    "asset": "s5_6.png",
+    "recolor": false
+   },
+   {
+    "role": "headline",
+    "box": [
+     225,
+     230,
+     630,
+     130
+    ],
+    "text": "",
+    "size": 44,
+    "color": "CC651C",
+    "font": null,
+    "align": "center"
+   },
+   {
+    "role": "body",
+    "box": [
+     253,
+     420,
+     575,
+     170
+    ],
+    "size": 30,
+    "color": "FFFFFF",
+    "font": null,
+    "align": "center",
+    "phrase_break": true
+   }
+  ]
+ ]
+}

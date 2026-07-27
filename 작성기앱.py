@@ -263,7 +263,8 @@ def _portfolio_prompt(keyword, photo_files, photo_paths, project_hint, brand, ti
         f"[마무리 — {name} 정리]\n"
         f"- 이 글 주제(이 업종·이 산출물)와 엮어 {name}이(가) 어떤 회사이고 왜 이런 일에 강한지 또렷이 정리한다: 기획→디자인→(다국어 번역)→인쇄까지 한 곳에서 하는 원스톱, 관련 경력·강점을 1~2문장으로(정형화된 나열 복붙 금지). 그런 다음 자연스럽게: {cta}\n"
         + hintblk + titleblk)
-    return (head + brands._guide_block(b) + "\n\n" + brands._output_format(b) +
+    return (head + brands._guide_block(b) + brands.faq_block(b, keyword, "", title) +
+            "\n\n" + brands._output_format(b) +
             "\n\n" + brands._NATURAL_TONE + "\n\n" + brands._SELFCHECK +
             f"\n\n[메인키워드] {keyword}\n\n위 지침대로, 먼저 사진들을 열어보고 지금 포트폴리오 글을 작성하라.")
 
@@ -285,7 +286,8 @@ def build_prompt(keyword, photo_files, project_hint="", brand=None, subkeyword="
                  f"회사(브랜드)의 가격·수수료·처리 절차는 절대 이걸로 바꾸지 말고 위 '사실 기준서'만 따른다. 확실하지 않은 건 쓰지 말 것]\n{latest}"
                  if latest else "")
     style = brands.build_style(brand) if brand else STYLE
-    return (style + "\n\n" + _variation_block() +
+    faqblk = brands.faq_block(brand, keyword, subkeyword, title) if brand else ""
+    return (style + faqblk + "\n\n" + _variation_block() +
             f"\n\n[메인키워드] {keyword}{hint}{subblk}{titleblk}{latestblk}\n\n[사용 사진] (순서대로 적절한 슬롯에 배치)\n{photos}\n\n" +
             _CORE_RULES + "\n\n위 규칙대로 지금 작성하라.")
 
