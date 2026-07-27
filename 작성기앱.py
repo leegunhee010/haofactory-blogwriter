@@ -1290,10 +1290,14 @@ def api_generate():
     if not keyword:
         return jsonify(ok=False, msg="키워드를 입력하세요.")
     brand = brands.load_brand(b.get("brand") or "haofactory")
-    files = list_images(folder, cap=20000)              # 전체 다 가져와서
-    files = filter_by_keyword(files, keyword, brand["type_words"])   # 키워드 매칭(브랜드 타입단어)
-    random.shuffle(files)                               # ★매 생성마다 다른 순서(Claude도 매번 다르게 고름)
-    files = files[:150]
+    picked = [f for f in (b.get("files") or []) if os.path.isfile(os.path.join(folder, f))]
+    if picked:                                          # 사용자가 특정 사진만 골랐으면 그것만, 고른 순서 그대로
+        files = picked[:150]
+    else:
+        files = list_images(folder, cap=20000)          # 전체 다 가져와서
+        files = filter_by_keyword(files, keyword, brand["type_words"])   # 키워드 매칭(브랜드 타입단어)
+        random.shuffle(files)                           # ★매 생성마다 다른 순서(Claude도 매번 다르게 고름)
+        files = files[:150]
     model = (b.get("model") or load_cfg().get("model") or "opus")
     portfolio = bool(b.get("portfolio"))               # 포트폴리오 모드(사진 직접 열어보고 사례 글)
     # web_update 브랜드(레드트랜스·윈차이나)는 작성 전 웹검색으로 최신 '공개 정보'를 먼저 확인(회사 가격·절차는 기준서 유지)
@@ -1728,18 +1732,25 @@ $owner.Add_Shown({ $owner.Activate(); $owner.BringToFront() })
 $owner.Show()
 [System.Windows.Forms.Application]::DoEvents()
 $dlg = New-Object System.Windows.Forms.OpenFileDialog
-$dlg.Title = '사진 폴더 선택 - 원하는 폴더 안으로 들어가서 [열기]를 누르세요'
+$dlg.Title = '사진 폴더 선택 - 폴더째 쓰려면 그 폴더 안에서 그냥 [열기], 특정 사진만 쓰려면 사진을 클릭(Ctrl로 여러 장)'
 $dlg.CheckFileExists = $false
 $dlg.CheckPathExists = $true
 $dlg.ValidateNames = $false
+$dlg.Multiselect = $true
 $dlg.FileName = '이 폴더 선택'
-$dlg.Filter = '폴더|*.__folder__'
+$dlg.Filter = '사진·폴더|*.jpg;*.jpeg;*.png;*.webp;*.gif'
 if ($env:PICKDIR -and (Test-Path -LiteralPath $env:PICKDIR)) { $dlg.InitialDirectory = $env:PICKDIR }
 $res = $dlg.ShowDialog($owner)
 $owner.Close()
 if ($res -eq [System.Windows.Forms.DialogResult]::OK) {
-    $p = [System.IO.Path]::GetDirectoryName($dlg.FileName)
-    if ($p -and (Test-Path -LiteralPath $p)) { [Console]::Out.Write($p) }
+    # 실제 존재하는 파일을 골랐으면 그 파일들, 자리표시 이름 그대로 [열기]면 폴더 선택
+    $files = @($dlg.FileNames | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf })
+    if ($files.Count -gt 0) {
+        [Console]::Out.Write(($files -join '|'))
+    } else {
+        $p = [System.IO.Path]::GetDirectoryName($dlg.FileName)
+        if ($p -and (Test-Path -LiteralPath $p)) { [Console]::Out.Write($p) }
+    }
 }
 """
 
@@ -1780,8 +1791,16 @@ def api_pick_folder():
         r = subprocess.run(
             ["powershell", "-NoProfile", "-STA", "-ExecutionPolicy", "Bypass", "-File", ps1],
             capture_output=True, timeout=300, env=env)
-        path = (r.stdout or b"").decode("utf-8", "ignore").strip()
-        return jsonify(ok=True, path=path)          # 취소하면 path="" → 프론트에서 조용히 무시
+        out = (r.stdout or b"").decode("utf-8", "ignore").strip()
+        if not out:
+            return jsonify(ok=True, path="")        # 취소 → 프론트에서 조용히 무시
+        parts = [p for p in out.split("|") if p]
+        if len(parts) == 1 and os.path.isdir(parts[0]):
+            return jsonify(ok=True, path=parts[0])  # 폴더째 선택
+        # 특정 사진들 선택 → 폴더 + 상대 파일명 목록(이 사진들만 사용)
+        fldr = os.path.dirname(parts[0])
+        names = [os.path.basename(p) for p in parts if os.path.isfile(p)]
+        return jsonify(ok=True, path="", folder=fldr, files=names)
     except Exception:
         return jsonify(ok=False)
 
@@ -2290,7 +2309,7 @@ function render(){
         <button class="btn" onclick="loadPhotos()">불러오기</button>
         ${x.folder&&x.files.length?`<button class="btn" onclick="organize()" title="파일명을 단계별(공정/완성 등)로 자동 정리">📷 사진 정리</button>`:''}</div>
       <div id="orgbar" style="margin-top:6px;font-size:12px;color:var(--brand);font-weight:700"></div>
-      ${x.folder?`<div class="hint ${x.files.length?'ok':'bad'}">${x.files.length?('📷 사진 '+x.files.length+'장 (하위 폴더 포함) · 생성 시 키워드에 맞춰 자동 선택'):'이 폴더에 사진이 없습니다'}</div>
+      ${x.folder?`<div class="hint ${x.files.length?'ok':'bad'}">${x.files.length?(x.picked?('📌 선택한 사진 '+x.files.length+'장만 사용 (폴더 전체를 쓰려면 다시 [폴더 선택])'):('📷 사진 '+x.files.length+'장 (하위 폴더 포함) · 생성 시 키워드에 맞춰 자동 선택')):'이 폴더에 사진이 없습니다'}</div>
       <div class="photos">${x.files.slice(0,6).map(f=>`<img src="/img?folder=${encodeURIComponent(x.folder)}&name=${encodeURIComponent(f)}" title="${esc(f)}">`).join('')}${x.files.length>6?`<div style="width:62px;height:62px;border-radius:7px;background:#eef1f4;display:flex;align-items:center;justify-content:center;font-size:12px;color:#889;font-weight:700">+${x.files.length-6}</div>`:''}</div>`:''}
     </div>
     <details class="opt" ${x.hint?'open':''}><summary>＋ 프로젝트 정보 (선택 — 실제 작업 건이면 현장·소재·특이사항)</summary>
@@ -2355,12 +2374,14 @@ function suggestTitle(mode){mode=mode||'geo';const x=t();if(!x.keyword){toast('�
 }
 function pickTitle(tt){t().title=tt;t().titleSug=null;render();}
 let BR={path:'',drive:true}, BRF=[], PLACES=[];
-function pickFolder(){  // 윈도우 탐색기 대화상자로 폴더 선택(실패 시에만 웹 브라우저 모달 폴백)
+function pickFolder(){  // 윈도우 탐색기 대화상자 — 폴더째([열기]) 또는 특정 사진만(클릭·Ctrl 다중) 선택. 실패 시에만 웹 모달 폴백
   fetch('/api/pick-folder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({folder:t().folder})})
    .then(r=>r.json()).then(d=>{
-     if(d.ok){if(d.path){const x=t();x.folder=d.path;
-       fetch('/api/photos?folder='+encodeURIComponent(d.path)).then(r=>r.json()).then(v=>{x.files=v.files;render();});}}
-     else{el('brmodal').style.display='block';browse('');}
+     if(!d.ok){el('brmodal').style.display='block';browse('');return;}
+     const x=t();
+     if(d.files&&d.files.length){x.folder=d.folder;x.files=d.files;x.picked=true;render();}
+     else if(d.path){x.folder=d.path;x.picked=false;
+       fetch('/api/photos?folder='+encodeURIComponent(d.path)).then(r=>r.json()).then(v=>{x.files=v.files;render();});}
    }).catch(()=>{el('brmodal').style.display='block';browse('');});}
 function closeBrowse(){el('brmodal').style.display='none';}
 function renderPlaces(){el('brplaces').innerHTML=PLACES.map((p,i)=>`<button class="btn" style="padding:6px 11px;font-size:12px" onclick="browse(PLACES[${i}].path)">${esc(p.name)}</button>`).join('')+`<button class="btn" style="padding:6px 11px;font-size:12px" onclick="browse('')">💽 드라이브</button>`;}
@@ -2378,10 +2399,10 @@ function browse(path){
     el('brlist').innerHTML=BRF.map((it,i)=>`<div class="br-item" onclick="browse(BRF[${i}].full)">${esc(it.label)}</div>`).join('')||'<div style="padding:14px;color:#889;font-size:12px">하위 폴더 없음</div>';
   });
 }
-function selectFolder(){const x=t();x.folder=BR.path;closeBrowse();
+function selectFolder(){const x=t();x.folder=BR.path;x.picked=false;closeBrowse();
   fetch('/api/photos?folder='+encodeURIComponent(BR.path)).then(r=>r.json()).then(d=>{x.files=d.files;render();});}
-function loadPhotos(){const f=el('folder').value;t().folder=f;
-  fetch('/api/photos?folder='+encodeURIComponent(f)).then(r=>r.json()).then(d=>{t().files=d.files;render();});}
+function loadPhotos(){const f=el('folder').value;const x=t();x.folder=f;x.picked=false;
+  fetch('/api/photos?folder='+encodeURIComponent(f)).then(r=>r.json()).then(d=>{x.files=d.files;render();});}
 function organize(){const x=t();
   if(!confirm('이 폴더(하위 포함) 사진을 [프로젝트]_[타입]_[단계]_[번호] 로 정리합니다.\\n· 타입=캐릭터/마스코트/글자/박스/FRP 등 (폴더명에 없으면 Claude 비전으로 폴더별 1회 판단)\\n· 단계=대표/공정/도장/설치/완성 (이름이 무의미하면 비전으로 판단)\\n타입이 파일명에 박혀 키워드 매칭이 정확해집니다.\\n원본 이름이 바뀝니다(구독 사용·시간 걸림). 진행할까요?'))return;
   fetch('/api/organize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({folder:x.folder,brand:BRAND})})
@@ -2393,7 +2414,7 @@ function pollOrg(){const iv=setInterval(()=>{fetch('/api/organize-status').then(
 });},1500);}
 function generate(){const x=t();if(!x.keyword){toast('키워드를 입력하세요','err');return;}
   x.busy=true;render();
-  fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',title:x.title||'',folder:x.folder,hint:x.hint,model:x.model||'opus',brand:x.brand||BRAND,template:x.cardTpl||'1',portfolio:!!x.portfolio})})
+  fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',title:x.title||'',folder:x.folder,files:(x.picked&&x.files&&x.files.length)?x.files:null,hint:x.hint,model:x.model||'opus',brand:x.brand||BRAND,template:x.cardTpl||'1',portfolio:!!x.portfolio})})
    .then(r=>r.json()).then(d=>{x.busy=false;
      if(!d.ok){toast(d.msg||'생성 실패','err');render();return;}
      x.post=d.post;render();toast('✍ 원고 완성','ok');
