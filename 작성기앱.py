@@ -1707,6 +1707,42 @@ $owner.Close()
 if ($res -eq [System.Windows.Forms.DialogResult]::OK) { [Console]::Out.Write($dlg.FileName) }
 """
 
+# 폴더 선택 — 윈도우 탐색기 스타일 대화상자(OpenFileDialog의 폴더 선택 트릭:
+# 파일명 검증을 끄고 가짜 파일명으로 [열기] → 그 폴더 경로를 얻는다. FolderBrowserDialog(구식 트리)보다 훨씬 편함)
+_PS_PICKFOLDER = r"""
+$ErrorActionPreference = 'Stop'
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$owner = New-Object System.Windows.Forms.Form
+$owner.FormBorderStyle = 'None'
+$owner.Opacity = 0
+$owner.ShowInTaskbar = $false
+$owner.TopMost = $true
+$owner.StartPosition = 'Manual'
+$owner.Size = New-Object System.Drawing.Size(2, 2)
+$cur = [System.Windows.Forms.Cursor]::Position
+$area = [System.Windows.Forms.Screen]::FromPoint($cur).WorkingArea
+$owner.Location = New-Object System.Drawing.Point([int]($area.X + $area.Width / 2), [int]($area.Y + $area.Height / 2))
+$owner.Add_Shown({ $owner.Activate(); $owner.BringToFront() })
+$owner.Show()
+[System.Windows.Forms.Application]::DoEvents()
+$dlg = New-Object System.Windows.Forms.OpenFileDialog
+$dlg.Title = '사진 폴더 선택 - 원하는 폴더 안으로 들어가서 [열기]를 누르세요'
+$dlg.CheckFileExists = $false
+$dlg.CheckPathExists = $true
+$dlg.ValidateNames = $false
+$dlg.FileName = '이 폴더 선택'
+$dlg.Filter = '폴더|*.__folder__'
+if ($env:PICKDIR -and (Test-Path -LiteralPath $env:PICKDIR)) { $dlg.InitialDirectory = $env:PICKDIR }
+$res = $dlg.ShowDialog($owner)
+$owner.Close()
+if ($res -eq [System.Windows.Forms.DialogResult]::OK) {
+    $p = [System.IO.Path]::GetDirectoryName($dlg.FileName)
+    if ($p -and (Test-Path -LiteralPath $p)) { [Console]::Out.Write($p) }
+}
+"""
+
 
 @app.route("/api/pick-file", methods=["POST"])
 def api_pick_file():
@@ -1728,6 +1764,26 @@ def api_pick_file():
         return jsonify(ok=True, path=path)          # 취소하면 path="" → 프론트에서 조용히 무시
     except Exception:
         return jsonify(ok=False, canceled=True)
+
+
+@app.route("/api/pick-folder", methods=["POST"])
+def api_pick_folder():
+    """PowerShell 탐색기 대화상자로 사진 폴더 선택 → 절대경로 반환(웹 폴더 브라우저 대체)."""
+    b = request.get_json(silent=True) or {}
+    initdir = b.get("folder") or os.path.join(os.path.expanduser("~"), "Downloads")
+    try:
+        ps1 = os.path.join(OUT_DIR, "_pickfolder.ps1")
+        with open(ps1, "w", encoding="utf-8-sig") as f:
+            f.write(_PS_PICKFOLDER)
+        env = dict(os.environ)
+        env["PICKDIR"] = initdir
+        r = subprocess.run(
+            ["powershell", "-NoProfile", "-STA", "-ExecutionPolicy", "Bypass", "-File", ps1],
+            capture_output=True, timeout=300, env=env)
+        path = (r.stdout or b"").decode("utf-8", "ignore").strip()
+        return jsonify(ok=True, path=path)          # 취소하면 path="" → 프론트에서 조용히 무시
+    except Exception:
+        return jsonify(ok=False)
 
 
 @app.route("/api/swap-card", methods=["POST"])
@@ -2299,7 +2355,13 @@ function suggestTitle(mode){mode=mode||'geo';const x=t();if(!x.keyword){toast('�
 }
 function pickTitle(tt){t().title=tt;t().titleSug=null;render();}
 let BR={path:'',drive:true}, BRF=[], PLACES=[];
-function pickFolder(){el('brmodal').style.display='block';browse('');}
+function pickFolder(){  // 윈도우 탐색기 대화상자로 폴더 선택(실패 시에만 웹 브라우저 모달 폴백)
+  fetch('/api/pick-folder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({folder:t().folder})})
+   .then(r=>r.json()).then(d=>{
+     if(d.ok){if(d.path){const x=t();x.folder=d.path;
+       fetch('/api/photos?folder='+encodeURIComponent(d.path)).then(r=>r.json()).then(v=>{x.files=v.files;render();});}}
+     else{el('brmodal').style.display='block';browse('');}
+   }).catch(()=>{el('brmodal').style.display='block';browse('');});}
 function closeBrowse(){el('brmodal').style.display='none';}
 function renderPlaces(){el('brplaces').innerHTML=PLACES.map((p,i)=>`<button class="btn" style="padding:6px 11px;font-size:12px" onclick="browse(PLACES[${i}].path)">${esc(p.name)}</button>`).join('')+`<button class="btn" style="padding:6px 11px;font-size:12px" onclick="browse('')">💽 드라이브</button>`;}
 function browse(path){
