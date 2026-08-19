@@ -27,7 +27,7 @@ CARD_JOBS = {}
 CARD_LOCK = threading.Lock()
 
 
-def _cardnews_job(jid, photo_paths, cards, keyword, assets_dir, subtitle="", bodies=None, title="", chart_specs=None):
+def _cardnews_job(jid, photo_paths, cards, keyword, assets_dir, subtitle="", bodies=None, title="", chart_specs=None, table_w=None):
     try:
         safe = re.sub(r'[\\/:*?"<>|]', "_", keyword)
         stamp = datetime.datetime.now().strftime("%H%M%S%f")[:9]
@@ -42,7 +42,7 @@ def _cardnews_job(jid, photo_paths, cards, keyword, assets_dir, subtitle="", bod
             for cid, spec in chart_specs.items():
                 try:
                     nm = "chart_%s.png" % cid
-                    charts_pil.render_spec(os.path.join(png_dir, nm), spec, col)
+                    charts_pil.render_spec(os.path.join(png_dir, nm), spec, col, W=table_w)
                     chart_imgs[cid] = nm
                 except Exception:
                     pass
@@ -198,8 +198,14 @@ _VAR_FORMAT = ["핵심을 단계별로 짚는 가이드형", "궁금증을 하�
                "하나의 개념을 깊이 파고드는 심층형", "경우·선택지를 비교해 보여주는 비교형"]
 
 
-def _variation_block():
+def _variation_block(brand=None):
     emph = random.sample(_VAR_EMPH, 2)
+    if brand and brands.custom_prompt(brand):
+        # 완전 커스텀 스크립트(prompt.md) 브랜드: 구조·도입·소제목 형식은 스크립트가 고정하므로 '표현·각도 새로 하기'만 지시
+        return ("[이번 글 변주 — 스크립트가 정한 구조(요약 블록·소제목 개수·Q&A·CTA 순서)는 그대로 지키되, 그 안의 표현·예시·비유·각도는 매번 새롭게 한다]\n"
+                f"- 이번 글은 특히 '{emph[0]}'·'{emph[1]}' 관점을 조금 더 살린다.\n"
+                "- ★가장 중요: 이전 글의 문장·소제목 문구·예시·비유·인사 변형·한계 인정 문구를 재활용해 '단어만 바꾸는' 식으로 쓰지 말 것. "
+                "같은 키워드·같은 정보라도 첫 문장·소제목·설명 순서·예시·비유를 전부 새로 짜서, 매번 완전히 다른 글처럼 읽히게 한다.")
     return ("[이번 글 변주 — '구성·표현·각도'를 매번 새롭게 하기 위한 지시다. "
             "블로그 뼈대(도입 인사 → 소제목 정확히 6개 → 마무리)·브랜드 톤·정체성·키워드 SEO 규칙은 지키되, "
             "그 안에서 쓰는 방식은 매번 확실히 다르게 한다.]\n"
@@ -265,7 +271,7 @@ def _portfolio_prompt(keyword, photo_files, photo_paths, project_hint, brand, ti
         + hintblk + titleblk)
     return (head + brands._guide_block(b) + brands.faq_block(b, keyword, "", title) +
             "\n\n" + brands._output_format(b) +
-            "\n\n" + brands._NATURAL_TONE + "\n\n" + brands._SELFCHECK +
+            "\n\n" + brands._NATURAL_TONE + "\n\n" + brands._selfcheck(b) +
             f"\n\n[메인키워드] {keyword}\n\n위 지침대로, 먼저 사진들을 열어보고 지금 포트폴리오 글을 작성하라.")
 
 
@@ -287,8 +293,13 @@ def build_prompt(keyword, photo_files, project_hint="", brand=None, subkeyword="
                  if latest else "")
     style = brands.build_style(brand) if brand else STYLE
     faqblk = brands.faq_block(brand, keyword, subkeyword, title) if brand else ""
-    return (style + faqblk + "\n\n" + _variation_block() +
-            f"\n\n[메인키워드] {keyword}{hint}{subblk}{titleblk}{latestblk}\n\n[사용 사진] (순서대로 적절한 슬롯에 배치)\n{photos}\n\n" +
+    readblk = ""
+    if photo_paths:   # read_photos 브랜드: 사진을 실제로 열어보고 니치·디테일을 잡는다
+        plist = "\n".join(f"- {os.path.abspath(pp)}" for pp in photo_paths)
+        readblk = ("\n\n[★사진 먼저 보기 — 아래 파일을 Read 도구로 한 장씩 실제로 열어 본 뒤 쓴다]\n" + plist +
+                   "\n- 사진에서 읽은 것(어떤 인쇄물인지·접지·용지 질감·인증마크·QR·색 구분·업종)이 이 글의 니치와 전문 디테일을 결정한다. 소감·확인 문구는 출력하지 말고 바로 '제목:'부터 원고만 출력한다.")
+    return (style + faqblk + "\n\n" + _variation_block(brand) +
+            f"\n\n[메인키워드] {keyword}{hint}{subblk}{titleblk}{latestblk}{readblk}\n\n[사용 사진] (순서대로 적절한 슬롯에 배치)\n{photos}\n\n" +
             _CORE_RULES + "\n\n위 규칙대로 지금 작성하라.")
 
 
@@ -1308,6 +1319,13 @@ def api_generate():
         prompt = build_prompt(keyword, pf_files, hint, brand, subkeyword, title, latest,
                               portfolio=True, photo_paths=pf_paths)
         out, err = run_claude(prompt, model, tools="Read", timeout=480)   # 사진 읽기 → 시간 더 줌
+    elif brand.get("read_photos") and files:
+        # 사진을 직접 열어보는 브랜드(퍼스트디자인 방식2): 슬롯 수만큼만 추려 실제로 읽게 한다
+        n_read = brands.photo_slots(brand)
+        rd_files = files[:n_read]
+        rd_paths = [os.path.join(folder, f) for f in rd_files]
+        prompt = build_prompt(keyword, rd_files, hint, brand, subkeyword, title, latest, photo_paths=rd_paths)
+        out, err = run_claude(prompt, model, tools="Read", timeout=600)
     else:
         prompt = build_prompt(keyword, files, hint, brand, subkeyword, title, latest)
         out, err = run_claude(prompt, model)
@@ -1344,6 +1362,7 @@ def api_generate():
     post["subtitle"] = sub
     post["raw"] = out
     post["brand"] = brand["id"]
+    post["len_min"], post["len_max"] = brands.length_range(brand)   # UI 분량 배지(브랜드별)
     post["sections"] = _section_list(parts[0])   # C3: 부분 수정용 구간 목록
     chart_specs = parse_charts(out)               # C6: (표N)/(차트N) 마커에 대응하는 표·차트 데이터
     chart_specs = {cid: sp for cid, sp in chart_specs.items()
@@ -1370,7 +1389,7 @@ def api_generate():
         CARD_JOBS[jid] = {"status": "rendering"}
         post["cardnews_job"] = jid
         photo_paths = [os.path.join(folder, f) for f in card_files]
-        threading.Thread(target=_cardnews_job, args=(jid, photo_paths, cards, keyword, adir, sub, bodies, post.get("title", ""), chart_specs), daemon=True).start()
+        threading.Thread(target=_cardnews_job, args=(jid, photo_paths, cards, keyword, adir, sub, bodies, post.get("title", ""), chart_specs, brand.get("table_width")), daemon=True).start()
     return jsonify(ok=True, post=post)
 
 
@@ -1436,7 +1455,7 @@ def _edit_whole(brand, keyword, ms, instruction, model):
          f"[사용자 요청] {instruction}\n"
          "[반드시 지킬 것]\n"
          "- '제목:' 줄, 소제목(정확히 6개), (사진N) 줄, (표N)/(차트N) 줄을 그대로 유지한다(개수·위치·순서 보존, 마커를 지우거나 옮기지 말 것).\n"
-         "- 브랜드 문체·톤·구조를 지키고, 요청한 부분만 바꾼다. 분량 요청이 없으면 공백 제외 1,500~2,000자.\n"
+         f"- 브랜드 문체·톤·구조를 지키고, 요청한 부분만 바꾼다. 분량 요청이 없으면 공백 제외 {brands._fmt_len(brand)}자.\n"
          "- 설명·머리말·따옴표·코드블록 없이 '제목:'부터 마지막 문단까지 다듬은 원고 전체만 출력한다(카드뉴스/표차트 섹션은 출력하지 말 것).\n\n"
          f"[원고]\n{ms}")
     out, err = run_claude(p, model)
@@ -1584,7 +1603,7 @@ def api_add_chart():
     cid = "수동%d" % n
     name = "chart_%s.png" % cid
     try:
-        charts_pil.render_spec(os.path.join(cdir, name), spec, article_color(cdir, brand))
+        charts_pil.render_spec(os.path.join(cdir, name), spec, article_color(cdir, brand), W=brand.get("table_width"))
     except Exception as e:
         return jsonify(ok=False, msg="렌더 실패: " + str(e)[:120])
     blk = {"type": "chart", "cid": cid, "img": name, "spec": spec}
@@ -2459,8 +2478,9 @@ function renderPost(p){
   if(!pngs.length && p.cardnews_err) extra=`<div style="font-size:11px;color:#d55;margin:8px 0">카드뉴스 오류: ${esc(p.cardnews_err)}</div>`;
   else if(!pngs.length && p.cardnews_png_err) extra=`<div style="font-size:11px;color:#d55;margin:8px 0">카드 렌더 실패: ${esc(p.cardnews_png_err)}</div>`;
   else if(!pngs.length && p.cardnews_job) extra=`<div style="font-size:12px;color:var(--brand);font-weight:700;margin:8px 0"><span class="spin" style="border-color:var(--brand);border-top-color:transparent"></span> 카드뉴스 만드는 중… (원고 먼저 확인하세요. 잠시 후 본문 이미지로 채워집니다)</div>`;
-  const cc=p.char_count||0, okLen=cc>=1500&&cc<=2000;
-  const lenmsg=cc<1500?' · 1500 미달':(cc>2000?' · 2000 초과':'');
+  const lmin=p.len_min||1500, lmax=p.len_max||2000;
+  const cc=p.char_count||0, okLen=cc>=lmin&&cc<=lmax;
+  const lenmsg=cc<lmin?(' · '+lmin+' 미달'):(cc>lmax?(' · '+lmax+' 초과'):'');
   return `<div class="pv-head"><div class="pv-title">${esc(p.title)}</div></div>
     <div class="badges">
       <span class="badge ${okLen?'ok':'warn'}">${okLen?'✓':'⚠'} 공백제외 ${cc}자${lenmsg}</span>

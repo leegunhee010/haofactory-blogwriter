@@ -51,8 +51,11 @@ def _wrap(draw, text, font, maxw):
 
 
 def render_table(out, title, headers, rows, color=(37, 99, 175), W=920):
-    pad = 28
-    tf = _F(_BOLD, 34); hf = _F(_BOLD, 23); cf = _F(_REG, 22)
+    k = max(0.5, W / 920.0)          # W가 커지면(예: 2000px) 글자·여백도 같은 비율로 키운다(가독성 유지)
+    S = lambda v: int(round(v * k))
+    pad = S(28)
+    tf = _F(_BOLD, S(34)); hf = _F(_BOLD, S(23)); cf = _F(_REG, S(22))
+    lh, tlh, header_h = S(30), S(44), S(56)
     ncol = max(1, len(headers))
     inner = W - pad * 2
     w0 = int(inner * (0.30 if ncol > 2 else 0.5))
@@ -65,22 +68,21 @@ def render_table(out, title, headers, rows, color=(37, 99, 175), W=920):
     def rowh(cells):
         h = 0
         for i, c in enumerate(cells[:ncol]):
-            ls = _wrap(d0, c, cf, colw[i] - 24)
-            h = max(h, len(ls) * 30 + 22)
-        return max(h, 52)
-    header_h = 56
+            ls = _wrap(d0, c, cf, colw[i] - S(24))
+            h = max(h, len(ls) * lh + S(22))
+        return max(h, S(52))
     rhs = [rowh(r) for r in rows]
     title_h = 0
     if title:
-        title_h = len(_wrap(d0, title, tf, inner)) * 44 + 16
+        title_h = len(_wrap(d0, title, tf, inner)) * tlh + S(16)
     H = pad + title_h + header_h + sum(rhs) + pad
     im = Image.new("RGB", (W, H), (255, 255, 255)); d = ImageDraw.Draw(im)
     y = pad
     if title:
         for ln in _wrap(d, title, tf, inner):
-            d.text((pad, y), ln, font=tf, fill=color); y += 44
-        y += 16
-    d.rounded_rectangle([pad, y, W - pad, y + header_h], radius=10, fill=color)
+            d.text((pad, y), ln, font=tf, fill=color); y += tlh
+        y += S(16)
+    d.rounded_rectangle([pad, y, W - pad, y + header_h], radius=S(10), fill=color)
     htc = _readable(color)
     for i, htxt in enumerate(headers[:ncol]):
         d.text((colx[i] + colw[i] / 2, y + header_h / 2), str(htxt), font=hf, fill=htc, anchor="mm")
@@ -91,17 +93,17 @@ def render_table(out, title, headers, rows, color=(37, 99, 175), W=920):
             d.rectangle([pad, y, W - pad, y + h], fill=_tint(color, 0.06))
         for ci in range(ncol):
             cell = r[ci] if ci < len(r) else ""
-            ls = _wrap(d, str(cell), cf, colw[ci] - 24)
-            ty = y + (h - len(ls) * 30) / 2
+            ls = _wrap(d, str(cell), cf, colw[ci] - S(24))
+            ty = y + (h - len(ls) * lh) / 2
             for ln in ls:
                 if ci > 0:
                     d.text((colx[ci] + colw[ci] / 2, ty), ln, font=cf, fill=INK, anchor="ma")
                 else:
-                    d.text((colx[ci] + 14, ty), ln, font=cf, fill=INK)
-                ty += 30
-        d.line([pad, y + h, W - pad, y + h], fill=LINE, width=1)
+                    d.text((colx[ci] + S(14), ty), ln, font=cf, fill=INK)
+                ty += lh
+        d.line([pad, y + h, W - pad, y + h], fill=LINE, width=max(1, S(1)))
         y += h
-    d.rounded_rectangle([pad, pad + title_h, W - pad, H - pad], radius=10, outline=LINE, width=1)
+    d.rounded_rectangle([pad, pad + title_h, W - pad, H - pad], radius=S(10), outline=LINE, width=max(1, S(1)))
     im.save(out); return out
 
 
@@ -193,11 +195,18 @@ _KIND = {"표": "table", "table": "table", "막대": "bar", "bar": "bar",
          "원": "pie", "pie": "pie", "선": "line", "line": "line"}
 
 
-def render_spec(out_path, spec, color=(37, 99, 175)):
-    """spec = {"kind","title","headers","rows"(표) | "data"[(label,value)](차트)} → 이미지."""
+def render_spec(out_path, spec, color=(37, 99, 175), W=None):
+    """spec = {"kind","title","headers","rows"(표) | "data"[(label,value)](차트)} → 이미지.
+    W: 표 가로 픽셀(브랜드 table_width, 예 2000). 없으면 기본 920. 차트는 기본 크기."""
     kind = _KIND.get(str(spec.get("kind", "")).strip(), "table")
     title = spec.get("title", "")
     if kind == "table":
+        try:
+            W = int(W) if W else 0
+        except Exception:
+            W = 0
+        if W >= 600:
+            return render_table(out_path, title, spec.get("headers", []), spec.get("rows", []), color, W=W)
         return render_table(out_path, title, spec.get("headers", []), spec.get("rows", []), color)
     data = [(str(l), _num(v)) for l, v in spec.get("data", []) if _num(v) is not None]
     if not data:
