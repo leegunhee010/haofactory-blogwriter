@@ -275,7 +275,24 @@ def _portfolio_prompt(keyword, photo_files, photo_paths, project_hint, brand, ti
             f"\n\n[메인키워드] {keyword}\n\n위 지침대로, 먼저 사진들을 열어보고 지금 포트폴리오 글을 작성하라.")
 
 
-def build_prompt(keyword, photo_files, project_hint="", brand=None, subkeyword="", title="", latest="", portfolio=False, photo_paths=None):
+def question_block(question, keyword="", subkeyword="", title=""):
+    """사용자가 넣은 '독자의 실제 질문' → 제목·글 전체가 그 질문에 답하도록 지시하는 블록.
+    제목을 직접 지정했으면(title) 제목 지시는 빼고 '본문이 답할 질문'으로만 쓴다."""
+    q = (question or "").strip()
+    if not q:
+        return ""
+    sub = (subkeyword or "").strip()
+    tline = ("" if (title or "").strip() else
+             "- ★제목: 이 질문의 핵심 궁금증(업종·상황·조건 = 니치 수식어)을 메인키워드"
+             + (f"(그리고 서브키워드 '{sub}' 중 어울리는 것)" if sub else "") +
+             "와 결합해, 이 브랜드의 제목 규칙(글자 수·브랜드명 금지·질문형/방법·기준형·메인키워드+니치)에 맞는 제목 하나로 만든다. "
+             "질문 문장을 그대로 베끼지 말고, 사람이 실제로 검색창에 치는 형태로 다듬되 메인키워드는 반드시 들어가야 한다.\n")
+    return ("\n[★독자의 실제 질문 — 이 글이 답해야 하는 질문]\n" + q + "\n" + tline +
+            "- 글의 첫 줄(요약 답), 소제목, Q&A, CTA까지 글 전체가 이 질문에 대한 답이 되게 쓴다. 질문에 담긴 업종·상황·조건을 글의 니치로 삼고, 질문에서 벗어난 일반론으로 흐르지 않는다.\n"
+            "- 질문에 나온 표현(고객이 쓰는 말)을 본문에 1~2회 자연스럽게 되살린다(AI가 같은 질문을 받았을 때 그대로 인용하기 쉽게).")
+
+
+def build_prompt(keyword, photo_files, project_hint="", brand=None, subkeyword="", title="", latest="", portfolio=False, photo_paths=None, question=""):
     if portfolio:
         return _portfolio_prompt(keyword, photo_files, photo_paths, project_hint, brand, title)
     photos = "\n".join(f"- {f}" for f in photo_files) if photo_files else "(없음 — (사진N) 자리표시만, 파일명은 비워둠)"
@@ -298,8 +315,9 @@ def build_prompt(keyword, photo_files, project_hint="", brand=None, subkeyword="
         plist = "\n".join(f"- {os.path.abspath(pp)}" for pp in photo_paths)
         readblk = ("\n\n[★사진 먼저 보기 — 아래 파일을 Read 도구로 한 장씩 실제로 열어 본 뒤 쓴다]\n" + plist +
                    "\n- 사진에서 읽은 것(어떤 인쇄물인지·접지·용지 질감·인증마크·QR·색 구분·업종)이 이 글의 니치와 전문 디테일을 결정한다. 소감·확인 문구는 출력하지 말고 바로 '제목:'부터 원고만 출력한다.")
+    qblk = question_block(question, keyword, subkeyword, title)
     return (style + faqblk + "\n\n" + _variation_block(brand) +
-            f"\n\n[메인키워드] {keyword}{hint}{subblk}{titleblk}{latestblk}{readblk}\n\n[사용 사진] (순서대로 적절한 슬롯에 배치)\n{photos}\n\n" +
+            f"\n\n[메인키워드] {keyword}{qblk}{hint}{subblk}{titleblk}{latestblk}{readblk}\n\n[사용 사진] (순서대로 적절한 슬롯에 배치)\n{photos}\n\n" +
             _CORE_RULES + "\n\n위 규칙대로 지금 작성하라.")
 
 
@@ -1297,6 +1315,7 @@ def api_generate():
     hint = (b.get("hint") or "").strip()
     subkeyword = (b.get("subkeyword") or "").strip()   # b는 아래 루프에서 덮어써지므로 먼저 읽음
     title = (b.get("title") or "").strip()
+    question = (b.get("question") or "").strip()      # 독자의 실제 질문(선택) → 제목·글이 이 질문에 답함
     tpl = str(b.get("template") or "1")   # 카드 디자인 슬롯(b는 아래 루프에서 덮어써지므로 먼저 읽음)
     if not keyword:
         return jsonify(ok=False, msg="키워드를 입력하세요.")
@@ -1316,7 +1335,7 @@ def api_generate():
     if portfolio:
         pf_files = files[:7]                            # 이 프로젝트 대표 사진 7장(읽고+배치)
         pf_paths = [os.path.join(folder, f) for f in pf_files]
-        prompt = build_prompt(keyword, pf_files, hint, brand, subkeyword, title, latest,
+        prompt = build_prompt(keyword, pf_files, hint + (("\n[독자의 질문] " + question) if question else ""), brand, subkeyword, title, latest,
                               portfolio=True, photo_paths=pf_paths)
         out, err = run_claude(prompt, model, tools="Read", timeout=480)   # 사진 읽기 → 시간 더 줌
     elif brand.get("read_photos") and files:
@@ -1324,10 +1343,10 @@ def api_generate():
         n_read = brands.photo_slots(brand)
         rd_files = files[:n_read]
         rd_paths = [os.path.join(folder, f) for f in rd_files]
-        prompt = build_prompt(keyword, rd_files, hint, brand, subkeyword, title, latest, photo_paths=rd_paths)
+        prompt = build_prompt(keyword, rd_files, hint, brand, subkeyword, title, latest, photo_paths=rd_paths, question=question)
         out, err = run_claude(prompt, model, tools="Read", timeout=600)
     else:
-        prompt = build_prompt(keyword, files, hint, brand, subkeyword, title, latest)
+        prompt = build_prompt(keyword, files, hint, brand, subkeyword, title, latest, question=question)
         out, err = run_claude(prompt, model)
     if err:
         return jsonify(ok=False, msg=err)
@@ -1357,6 +1376,7 @@ def api_generate():
         post["title"] = title                 # 사용자가 정한 제목을 그대로 사용(C2)
     post["folder"] = folder
     post["keyword"] = keyword
+    post["question"] = question
     post["cards"] = cards[:7]
     post["card_bodies"] = bodies[:7]
     post["subtitle"] = sub
@@ -1644,13 +1664,17 @@ def api_title_suggest():
     b = request.get_json(force=True) or {}
     keyword = (b.get("keyword") or "").strip()
     subkeyword = (b.get("subkeyword") or "").strip()
+    question = (b.get("question") or "").strip()
     mode = (b.get("mode") or "geo").strip()
     if not keyword:
         return jsonify(ok=False, msg="메인키워드를 먼저 입력하세요.")
     brand = brands.load_brand(b.get("brand") or "haofactory")
     subrule = (f"- 서브키워드 '{subkeyword}'가 있다. 메인키워드와 겹치는 부분은 빼고, 나머지 핵심어만 제목에 자연스럽게 녹인다.\n"
                if subkeyword else "")
-    kwline = f"[메인키워드] {keyword}\n" + (f"[서브키워드] {subkeyword}\n" if subkeyword else "")
+    if question:
+        subrule += (f"- ★독자의 실제 질문이 있다: \"{question}\" — 5개 모두 이 질문의 핵심 궁금증(업종·상황·조건)을 메인키워드와 결합한 제목으로 짓는다. "
+                    "질문 문장을 베끼지 말고 검색창에 치는 형태로 다듬되 메인키워드는 반드시 넣는다.\n")
+    kwline = f"[메인키워드] {keyword}\n" + (f"[서브키워드] {subkeyword}\n" if subkeyword else "") + (f"[독자의 질문] {question}\n" if question else "")
     used_geo = False
     if mode == "geo":
         qs = geo_questions(brand["id"])
@@ -1681,6 +1705,11 @@ def api_title_suggest():
                   "- 클릭하고 싶게, 검색에도 강하게. 질문형·단정형·숫자형·호기심형 등 서로 확실히 다른 스타일로 5개. 과장·낚시성은 금지.\n" + subrule +
                   "- 각 제목은 한 줄, 25자 내외.\n"
                   "오직 제목 5개만 출력한다(형식: 1. 제목 / 2. 제목 ... 다른 설명·머리말·따옴표 금지).")
+    # 브랜드 스크립트(prompt.md)에 [제목] 규칙이 있으면 그 규칙이 위 일반 규칙(25자 내외·키워드 없는 유형 등)보다 우선
+    trule = brands.title_rules(brand)
+    if trule:
+        prompt += ("\n\n[★이 브랜드의 제목 규칙 — 위 일반 규칙과 충돌하면 이쪽이 우선. 글자 수·키워드 포함 여부·형태 모두 이 규칙대로]\n" + trule +
+                   "\n- 5개 모두 이 규칙을 만족해야 한다(메인키워드 없는 제목 금지, 글자 수 범위 준수).")
     out, err = run_claude(prompt, b.get("model") or "sonnet")   # 제목은 빠른 모델로 충분
     if err:
         return jsonify(ok=False, msg=err)
@@ -2207,7 +2236,7 @@ select:focus{border-color:var(--brand)}
 <script>
 let TABS=[], CUR=0, REC=null, seq=1, BRAND='haofactory', BRANDS=[], BFORM=null;
 const el=id=>document.getElementById(id), esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-function newTab(){return {id:seq++, brand:((typeof BRAND!=='undefined'&&BRAND)||'haofactory'), keyword:'', subkeyword:'', title:'', titleSug:null, folder:'', files:[], hint:'', post:null, busy:false, model:'opus'};}
+function newTab(){return {id:seq++, brand:((typeof BRAND!=='undefined'&&BRAND)||'haofactory'), keyword:'', subkeyword:'', question:'', title:'', titleSug:null, folder:'', files:[], hint:'', post:null, busy:false, model:'opus'};}
 // ── 브랜드 ──
 function hexMix(hex,amt){hex=(hex||'#FD6F22').replace('#','');if(hex.length<6)hex='FD6F22';
   const r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16),m=v=>Math.round(v+(255-v)*amt);
@@ -2316,7 +2345,10 @@ function render(){
         <button class="btn" onclick="toggleRecSub()">📝 추천</button></div>
       <div class="recbox" id="recboxsub"></div>
     </div>
-    <div class="field"><label>제목 <span style="font-weight:600;color:#b4bcc8">(직접 입력하거나 제목 추천 후 수정 가능 · 비우면 AI가 제목 생성)</span></label>
+    <div class="field"><label>질문 <span style="font-weight:600;color:#b4bcc8">(선택 — 고객·독자가 실제로 묻는 질문. 넣으면 이 질문 + 메인·서브키워드로 제목을 짓고, 글 전체가 이 질문에 답합니다)</span></label>
+      <div class="row"><input type="text" id="question" value="${esc(x.question||'')}" placeholder="예: 병원 리플렛인데 2단이 나아요 3단이 나아요?" oninput="t().question=this.value"></div>
+    </div>
+    <div class="field"><label>제목 <span style="font-weight:600;color:#b4bcc8">(직접 입력하거나 제목 추천 후 수정 가능 · 비우면 AI가 제목 생성 — 질문이 있으면 질문 기반)</span></label>
       <div class="row"><input type="text" id="title" value="${esc(x.title||'')}" placeholder="제목 추천으로 뽑아 쓰거나 직접 입력하세요" oninput="t().title=this.value">
         <button class="btn pri" onclick="suggestTitle('geo')" title="geo-tracker 고객 질문 기반 AEO/GEO 제목">✨ AEO/GEO 추천</button>
         <button class="btn" onclick="suggestTitle('ai')" title="메인·서브키워드로 AI가 창의적 제목 제안">🤖 AI 추천</button></div>
@@ -2385,7 +2417,7 @@ function titleBoxHtml(x){const s=x.titleSug;if(!s)return '';
 }
 function suggestTitle(mode){mode=mode||'geo';const x=t();if(!x.keyword){toast('메인키워드를 먼저 입력하세요','err');return;}
   x.titleSug={loading:true,mode:mode};render();                       // 상태를 탭에 저장 → 다른 작업(불러오기 등) 해도 안 끊김
-  fetch('/api/title-suggest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',brand:x.brand||BRAND,mode:mode})})
+  fetch('/api/title-suggest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',question:x.question||'',brand:x.brand||BRAND,mode:mode})})
    .then(r=>r.json()).then(d=>{
      x.titleSug = d.ok ? {items:d.titles||[],geo:d.geo,mode:d.mode||mode} : {err:d.msg||'실패',mode:mode};
      if(t()===x)render(); else {renderTabs();toast('📝 글 '+(TABS.indexOf(x)+1)+' 제목 추천 완료','ok');}   // 다른 탭이어도 완료 알림
@@ -2433,7 +2465,7 @@ function pollOrg(){const iv=setInterval(()=>{fetch('/api/organize-status').then(
 });},1500);}
 function generate(){const x=t();if(!x.keyword){toast('키워드를 입력하세요','err');return;}
   x.busy=true;render();
-  fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',title:x.title||'',folder:x.folder,files:(x.picked&&x.files&&x.files.length)?x.files:null,hint:x.hint,model:x.model||'opus',brand:x.brand||BRAND,template:x.cardTpl||'1',portfolio:!!x.portfolio})})
+  fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',question:x.question||'',title:x.title||'',folder:x.folder,files:(x.picked&&x.files&&x.files.length)?x.files:null,hint:x.hint,model:x.model||'opus',brand:x.brand||BRAND,template:x.cardTpl||'1',portfolio:!!x.portfolio})})
    .then(r=>r.json()).then(d=>{x.busy=false;
      if(!d.ok){toast(d.msg||'생성 실패','err');render();return;}
      x.post=d.post;render();toast('✍ 원고 완성','ok');

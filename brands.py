@@ -315,6 +315,16 @@ def custom_prompt(b):
     return (b.get("prompt") or "").strip() or prompt_file_text(b.get("id", ""))
 
 
+def title_rules(b):
+    """커스텀 스크립트(prompt.md / prompt 필드)의 [제목] 섹션 본문. 없으면 빈 문자열.
+    제목 추천 등 '제목만 따로 뽑는' 기능이 브랜드 제목 규칙을 그대로 따르게 하기 위함."""
+    txt = custom_prompt(b)
+    if not txt:
+        return ""
+    m = re.search(r"^\[제목[^\]]*\]\s*\n(.*?)(?=^\[|\Z)", txt, re.S | re.M)
+    return m.group(1).strip() if m else ""
+
+
 def links_block(b):
     """brands/<id>/links.txt(한 줄에 '제목 | URL' 또는 '제목') → 내부 링크 후보 블록. 없으면 빈 문자열."""
     try:
