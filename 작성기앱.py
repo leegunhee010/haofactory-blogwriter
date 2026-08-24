@@ -103,6 +103,11 @@ _LIMIT_PAT = re.compile(
     r"(spend limit|usage limit|rate limit|monthly .{0,20}limit|hit your .{0,20}limit|"
     r"limit.{0,40}claude\.ai|reached your|out of .{0,15}usage|사용 한도|한도에 도달|한도를 초과)", re.I)
 
+# 인증 실패 패턴(토큰 만료·철회 등) — 이 경우도 다른 로그인 계정으로 자동 전환, 안 되면 재로그인 안내
+_AUTH_FAIL_PAT = re.compile(
+    r"(Failed to authenticate|OAuth[^\n]{0,40}(expired|revoked|invalid)|invalid_grant|"
+    r"authentication[_ ]error|could not be refreshed|re-?authenticat|token[^\n]{0,20}expired)", re.I)
+
 
 def load_accounts():
     d = jload(ACCOUNTS_FILE, {})
@@ -341,10 +346,10 @@ def run_claude(prompt, model="", acc_id=None, _tried=None, tools="", timeout=240
                            encoding="utf-8", errors="ignore", timeout=timeout, env=account_env(acc_id))
         out = (r.stdout or "").strip()
         combined = out + "\n" + (r.stderr or "")
-        if "Not logged in" in combined or "Please run /login" in combined:
-            return None, "이 계정은 Claude 로그인이 필요합니다. 상단 👤계정에서 로그인하세요."
-        if _LIMIT_PAT.search(combined):
-            # 한도 도달 → 로그인된 다른 계정으로 자동 전환
+        auth_fail = ("Not logged in" in combined or "Please run /login" in combined
+                     or _AUTH_FAIL_PAT.search(combined))
+        if auth_fail or _LIMIT_PAT.search(combined):
+            # 한도 도달/인증 만료 → 로그인된 다른 계정으로 자동 전환
             for a in d["accounts"]:
                 if a["id"] in _tried:
                     continue
@@ -354,6 +359,9 @@ def run_claude(prompt, model="", acc_id=None, _tried=None, tools="", timeout=240
                         d["active"] = a["id"]; save_accounts(d)
                         _AUTH_CACHE["t"] = 0
                     return o2, e2
+            if auth_fail:
+                return None, ("이 계정의 Claude 로그인(토큰)이 만료되었습니다. "
+                              "상단 👤계정에서 이 계정을 다시 로그인해 주세요.")
             return None, ("모든 계정이 사용 한도에 도달했습니다. "
                           "상단 👤계정에서 다른 Claude 계정을 추가하거나, claude.ai에서 한도를 올려주세요.")
         if not out:
