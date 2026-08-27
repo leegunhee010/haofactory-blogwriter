@@ -8,6 +8,7 @@ __pycache__/
 *.spec.bak
 
 # 사용자/생성 데이터
+brands/*/links_cache.json
 출력/
 작성기_설정.json
 # Claude 계정 자격증명(절대 커밋 금지)

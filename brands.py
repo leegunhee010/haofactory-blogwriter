@@ -2,7 +2,7 @@
 """브랜드 설정 관리 — 한 앱으로 여러 브랜드 운영.
 brands/<id>/brand.json (설정) + brands/<id>/cards/ (카드 템플릿 에셋, 브랜드별).
 폰트는 assets/fonts 공용."""
-import os, json, re, random
+import os, json, re, random, time, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BRANDS_DIR = os.path.join(HERE, "brands")
@@ -325,19 +325,78 @@ def title_rules(b):
     return m.group(1).strip() if m else ""
 
 
+_RSS_TTL = 6 * 3600           # 네이버 RSS 캐시 유지 시간(초) — 매일 새 글이 올라와도 하루 안에 반영됨
+_RSS_PER_BLOG = 25            # 블로그당 내부링크 후보 최대 개수(프롬프트 길이 관리)
+
+
+def _fetch_blog_rss(blog_id):
+    """rss.blog.naver.com/<id>.xml → ['제목 | URL', ...] (최신순). 실패 시 예외."""
+    url = "https://rss.blog.naver.com/%s.xml" % blog_id
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    xml = urllib.request.urlopen(req, timeout=10).read().decode("utf-8", "ignore")
+    rows = []
+    for it in re.findall(r"<item>(.*?)</item>", xml, re.S)[:_RSS_PER_BLOG]:
+        t = re.search(r"<title><!\[CDATA\[(.*?)\]\]></title>", it, re.S) or re.search(r"<title>(.*?)</title>", it, re.S)
+        l = re.search(r"<link><!\[CDATA\[(.*?)\]\]></link>", it, re.S) or re.search(r"<link>(.*?)</link>", it, re.S)
+        if not (t and l):
+            continue
+        u = l.group(1).split("?")[0].replace("http://", "https://").strip()
+        rows.append("%s | %s" % (t.group(1).strip(), u))
+    return rows
+
+
+def _rss_link_rows(b):
+    """brand.json link_blogs(네이버 블로그 id 목록) → RSS로 최신 글 목록. 캐시(links_cache.json, TTL 6h),
+    네트워크 실패 시 만료된 캐시라도 사용. 빈 목록이면 []."""
+    blogs = (b or {}).get("link_blogs") or []
+    if not blogs:
+        return []
+    cache_p = os.path.join(brand_dir(b.get("id", "")), "links_cache.json")
+    cache = {}
+    try:
+        cache = json.load(open(cache_p, encoding="utf-8"))
+    except Exception:
+        pass
+    now = time.time()
+    changed = False
+    for bid in blogs:
+        ent = cache.get(bid) or {}
+        if ent.get("rows") and now - ent.get("t", 0) < _RSS_TTL:
+            continue
+        try:
+            rows = _fetch_blog_rss(bid)
+            if rows:
+                cache[bid] = {"t": now, "rows": rows}
+                changed = True
+        except Exception:
+            pass                      # 실패 → 있는 캐시 그대로(만료돼도) 사용
+    if changed:
+        try:
+            json.dump(cache, open(cache_p, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
+        except Exception:
+            pass
+    out = []
+    for bid in blogs:
+        out += (cache.get(bid) or {}).get("rows") or []
+    return out
+
+
 def links_block(b):
-    """brands/<id>/links.txt(한 줄에 '제목 | URL' 또는 '제목') → 내부 링크 후보 블록. 없으면 빈 문자열."""
+    """내부 링크 후보 블록. brand.json link_blogs(RSS 자동 갱신) + brands/<id>/links.txt(수동 추가) 합침."""
+    rows = _rss_link_rows(b)
     try:
         p = os.path.join(brand_dir((b or {}).get("id", "")), "links.txt")
-        if not os.path.isfile(p):
-            return ""
-        rows = [ln.strip() for ln in open(p, encoding="utf-8").read().splitlines()]
-        rows = [r for r in rows if r and not r.startswith("#")]
+        if os.path.isfile(p):
+            manual = [ln.strip() for ln in open(p, encoding="utf-8").read().splitlines()]
+            urls = {r.split("|")[-1].strip() for r in rows}
+            for r in manual:
+                if r and not r.startswith("#") and r.split("|")[-1].strip() not in urls:
+                    rows.append(r)
     except Exception:
-        return ""
+        pass
     if not rows:
         return ""
-    return ("\n\n[내부링크 후보 — 같은 블로그의 기존 글. 본문 중간 내부 링크와 마지막 '함께 보면 좋은 글'은 반드시 이 목록에서만 고른다"
+    return ("\n\n[내부링크 후보 — 운영 중인 블로그들의 기존 글. 본문 중간 내부 링크와 마지막 '함께 보면 좋은 글'은 반드시 이 목록에서만 고른다"
             "(제목은 그대로, URL이 있으면 제목 뒤에 붙인다). 이 글 주제와 가장 관련 있는 것을 고르고, 목록에 없는 제목을 지어내지 않는다]\n"
             + "\n".join("- " + r for r in rows))
 

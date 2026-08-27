@@ -27,7 +27,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 INCLUDE_FILES = ["작성기앱.py", "cardnews_pil.py", "brands.py", "charts_pil.py", "version.json"]
 INCLUDE_DIRS = ["brands", "assets"]          # 브랜드 설정·카드 템플릿·폰트
 SKIP_EXT = (".pyc",)
-SKIP_NAMES = {"__pycache__", "cards.json"}    # cards.json은 생성물(브랜드 cards 폴더엔 없음)
+SKIP_NAMES = {"__pycache__", "cards.json", "links_cache.json"}    # cards.json·links_cache.json은 생성물
 
 
 def _add_dir(z, d):
