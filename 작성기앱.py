@@ -9,8 +9,17 @@
 엔진: claude.exe -p (각자 자기 구독으로 인증, API 종량제 아님)
 실행: 작성기_실행.bat → http://127.0.0.1:5002
 """
-import os, sys, json, glob, shutil, subprocess, threading, time, webbrowser, re, datetime, random
+import os, sys, json, glob, shutil, subprocess, threading, time, webbrowser, re, datetime, random, hashlib
 from flask import Flask, request, jsonify, send_file
+
+
+# ── CRM 성과추적: 제목 기반 추적키(CRM 피드/포스터와 동일 공식: 엔티티6종복원+공백정리+md5앞16) ──
+def crm_track_key(title):
+    s = title or ""
+    for a, b in (("&amp;", "&"), ("&lt;", "<"), ("&gt;", ">"), ("&quot;", '"'), ("&#39;", "'"), ("&#039;", "'"), ("&nbsp;", " ")):
+        s = s.replace(a, b)
+    s = re.sub(r"\s+", " ", s).strip()
+    return "fd" + hashlib.md5(s.encode("utf-8")).hexdigest()[:16]
 
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
@@ -436,7 +445,7 @@ def parse_manuscript(text, photo_files):
     # 글자수
     body = "".join(b["text"] for b in blocks if b["type"] == "text")
     nospace = re.sub(r"\s", "", body)
-    return {"title": title, "blocks": blocks, "char_count": len(nospace)}
+    return {"title": title, "blocks": blocks, "char_count": len(nospace), "track_key": crm_track_key(title)}
 
 
 # ── C6: 표·차트 (내용 기반 이미지) ────────────────────────
@@ -2642,6 +2651,7 @@ function copyBody(){const p=t().post;const pngs=p.cardnews_pngs||[],useCards=png
     } else { b.text.split('\n\n').forEach(para=>{const tx=para.replace(/\*\*/g,'').trim();if(tx)out.push(tx);}); }
   });
   if(useCards){while(pi<pngs.length){pi++;out.push('📷 [사진'+pi+']');}}
+  try{ var _bid=(t().brand||BRAND||''); if(_bid==='firstdesign' && p.track_key){ out.push('▶ 홍보물 디자인·인쇄 문의: http://mail-crm-mvp.vigo.co.kr/go/'+p.track_key); } }catch(e){}
   copyClip(out.join('\n\n'),'② 본문 복사됨 · [사진N]자리에 카드, [표차트N]자리에 표·차트 이미지를 드래그');}
 function delChart(bi){const x=t();const b=x.post.blocks[bi];if(!b||b.type!='chart')return;
   x.post.blocks.splice(bi,1);toast('표·차트 삭제됨','ok');render();}
