@@ -33,6 +33,42 @@ def crm_line(brand, title):
     label = (b.get("crm_label") or "문의").strip()
     return "▶ %s: %s%s" % (label, CRM_GO, crm_track_key(title, b["crm_prefix"].strip()))
 
+
+def _crm_notify_cfg():
+    """CRM 게시 보고용 url/token. 우선순위: 앱 폴더 crm-notify.config.json → C:/firstd-control/crm-notify.config.json."""
+    for cp in (os.path.join(HERE, "crm-notify.config.json"), r"C:\firstd-control\crm-notify.config.json"):
+        try:
+            if os.path.isfile(cp):
+                c = json.load(open(cp, encoding="utf-8"))
+                if c.get("url") and c.get("token"):
+                    return c
+        except Exception:
+            pass
+    return None
+
+
+def crm_report_post(brand, title, keyword, url):
+    """게시 완료를 CRM '게시 현황'으로 보고(firstd-control crm-notify와 같은 ingest·payload).
+    네이버 수동 게시용 — 실패해도 예외 없이 (ok, msg)만 반환."""
+    import urllib.request as _ur
+    cfg = _crm_notify_cfg()
+    if not cfg:
+        return False, "CRM 설정 파일(crm-notify.config.json)을 찾지 못했습니다."
+    m = re.search(r"blog\.naver\.com/([A-Za-z0-9_-]+)", url or "")
+    account = m.group(1) if m else "naver"
+    payload = {"platform": "naver", "blog_no": 0, "account": account,
+               "category": "", "keyword": keyword or "", "title": title or "",
+               "url": (url or "").strip(), "score": None,
+               "status": "posted", "posted_at": datetime.datetime.now().isoformat()}
+    try:
+        req = _ur.Request(cfg["url"], data=json.dumps(payload).encode("utf-8"),
+                          headers={"Content-Type": "application/json", "X-CRM-Token": cfg["token"]}, method="POST")
+        with _ur.urlopen(req, timeout=10) as r:
+            ok = r.status == 200
+            return ok, (r.read().decode("utf-8", "ignore")[:200] if not ok else "보고 완료")
+    except Exception as e:
+        return False, str(e)[:200]
+
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
 OUT_DIR = os.path.join(HERE, "출력")
@@ -1754,6 +1790,21 @@ def api_title_suggest():
     return jsonify(ok=True, titles=titles[:5], geo=used_geo, mode=mode)
 
 
+@app.route("/api/crm-post", methods=["POST"])
+def api_crm_post():
+    """네이버에 수동 게시한 글을 CRM 게시 현황에 보고. body: {brand, title, keyword, url}"""
+    b = request.get_json(force=True) or {}
+    brand = brands.load_brand(b.get("brand") or "firstdesign")
+    url = (b.get("url") or "").strip()
+    title = (b.get("title") or "").strip()
+    if not title:
+        return jsonify(ok=False, msg="제목이 없습니다.")
+    if url and "blog.naver.com" not in url:
+        return jsonify(ok=False, msg="네이버 블로그 글 URL을 붙여넣어 주세요.")
+    ok, msg = crm_report_post(brand, title, (b.get("keyword") or "").strip(), url)
+    return jsonify(ok=ok, msg=msg)
+
+
 @app.route("/api/cardnews-status")
 def api_cardnews_status():
     j = CARD_JOBS.get(request.args.get("id", ""), {"status": "unknown"})
@@ -2554,7 +2605,8 @@ function renderPost(p){
         <button class="btn pri" onclick="copyTitle()">① 제목 복사</button>
         <button class="btn pri" onclick="copyBody()">② 본문 복사</button>
         ${useCards?`<button class="btn" onclick="openFile(t().post.cardnews_dir)">③ 카드 이미지 폴더 열기</button>`:''}</div>
-      <div class="naver-steps">네이버 글쓰기 열기 → <b>①</b> 제목칸에 붙여넣기 → <b>②</b> 본문에 붙여넣기 → <b>③</b> 폴더 열고 <b>${useCards?'[사진N] 자리에 card 1~'+pngs.length+'을 순서대로':'사진을'}</b> 드래그</div>
+      <div class="naver-steps">네이버 글쓰기 열기 → <b>①</b> 제목칸에 붙여넣기 → <b>②</b> 본문에 붙여넣기 → <b>③</b> 폴더 열고 <b>${useCards?'[사진N] 자리에 card 1~'+pngs.length+'을 순서대로':'사진을'}</b> 드래그${p.crm_line?` → <b>④</b> 게시 후 아래 [게시 완료] 클릭`:''}</div>
+      ${p.crm_line?`<div class="row" style="margin-top:8px"><button class="btn" onclick="crmConfirm()">📊 ④ 네이버 게시 완료 — CRM 보고</button></div>`:''}
     </div>
     <div class="row" style="margin:10px 0;flex-wrap:wrap">
       <button class="btn" onclick="saveDocx()">📄 워드로 저장</button>
@@ -2654,6 +2706,12 @@ function copyClip(text,msg){const done=()=>toast(msg,'ok');
   else fallbackCopy(text,done);}
 function fallbackCopy(text,done){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done();}catch(e){toast('복사 실패','err');}document.body.removeChild(ta);}
 function copyTitle(){copyClip(t().post.title||'','① 제목 복사됨 · 네이버 제목칸에 붙여넣기');}
+function crmConfirm(){const x=t();const p=x.post;if(!p)return;
+  const u=prompt('게시한 네이버 글 URL을 붙여넣어 주세요 (예: https://blog.naver.com/gnsl0091/224…)','');
+  if(u===null)return;
+  fetch('/api/crm-post',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({brand:x.brand||BRAND,title:p.title||'',keyword:p.keyword||x.keyword||'',url:(u||'').trim()})})
+   .then(r=>r.json()).then(d=>toast(d.ok?'📊 CRM 게시 현황에 보고됐어요':'CRM 보고 실패: '+(d.msg||'?'),d.ok?'ok':'err'))
+   .catch(e=>toast('CRM 보고 실패: '+e,'err'));}
 function copyBody(){const p=t().post;const pngs=p.cardnews_pngs||[],useCards=pngs.length>0;let pi=0;const out=[];
   let ti=0;
   p.blocks.forEach(b=>{
