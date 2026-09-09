@@ -54,9 +54,10 @@ def crm_report_post(brand, title, keyword, url):
     cfg = _crm_notify_cfg()
     if not cfg:
         return False, "CRM 설정 파일(crm-notify.config.json)을 찾지 못했습니다."
-    m = re.search(r"blog\.naver\.com/([A-Za-z0-9_-]+)", url or "")
+    m = re.search(r"blog\.naver\.com/([A-Za-z0-9_-]+)(?:/(\d+))?", url or "")
     account = m.group(1) if m else "naver"
-    payload = {"platform": "naver", "blog_no": 0, "account": account,
+    log_no = int(m.group(2)) if (m and m.group(2)) else 0   # 글 고유 logNo → 게시물별 키(0이면 서로 덮어씀)
+    payload = {"platform": "naver", "blog_no": log_no, "account": account,
                "category": "", "keyword": keyword or "", "title": title or "",
                "url": (url or "").strip(), "score": None,
                "status": "posted", "posted_at": datetime.datetime.now().isoformat()}
