@@ -14,12 +14,24 @@ from flask import Flask, request, jsonify, send_file
 
 
 # ── CRM 성과추적: 제목 기반 추적키(CRM 피드/포스터와 동일 공식: 엔티티6종복원+공백정리+md5앞16) ──
-def crm_track_key(title):
+CRM_GO = "http://mail-crm-mvp.vigo.co.kr/go/"
+
+
+def crm_track_key(title, prefix="fd"):
     s = title or ""
     for a, b in (("&amp;", "&"), ("&lt;", "<"), ("&gt;", ">"), ("&quot;", '"'), ("&#39;", "'"), ("&#039;", "'"), ("&nbsp;", " ")):
         s = s.replace(a, b)
     s = re.sub(r"\s+", " ", s).strip()
-    return "fd" + hashlib.md5(s.encode("utf-8")).hexdigest()[:16]
+    return (prefix or "fd") + hashlib.md5(s.encode("utf-8")).hexdigest()[:16]
+
+
+def crm_line(brand, title):
+    """브랜드별 CRM 추적링크 줄. crm_on=True + crm_prefix 있는 브랜드만(서버가 그 접두어를 받을 때 켠다). 아니면 ''."""
+    b = brand or {}
+    if not (b.get("crm_on") and (b.get("crm_prefix") or "").strip() and (title or "").strip()):
+        return ""
+    label = (b.get("crm_label") or "문의").strip()
+    return "▶ %s: %s%s" % (label, CRM_GO, crm_track_key(title, b["crm_prefix"].strip()))
 
 FROZEN = getattr(sys, "frozen", False)
 HERE = os.path.dirname(sys.executable) if FROZEN else os.path.dirname(os.path.abspath(__file__))
@@ -445,7 +457,7 @@ def parse_manuscript(text, photo_files):
     # 글자수
     body = "".join(b["text"] for b in blocks if b["type"] == "text")
     nospace = re.sub(r"\s", "", body)
-    return {"title": title, "blocks": blocks, "char_count": len(nospace), "track_key": crm_track_key(title)}
+    return {"title": title, "blocks": blocks, "char_count": len(nospace)}
 
 
 # ── C6: 표·차트 (내용 기반 이미지) ────────────────────────
@@ -1399,6 +1411,7 @@ def api_generate():
     post["subtitle"] = sub
     post["raw"] = out
     post["brand"] = brand["id"]
+    post["crm_line"] = crm_line(brand, post.get("title", ""))   # CRM 추적링크(브랜드별 설정, 없으면 '')
     post["len_min"], post["len_max"] = brands.length_range(brand)   # UI 분량 배지(브랜드별)
     post["sections"] = _section_list(parts[0])   # C3: 부분 수정용 구간 목록
     chart_specs = parse_charts(out)               # C6: (표N)/(차트N) 마커에 대응하는 표·차트 데이터
@@ -1567,6 +1580,7 @@ def api_edit_section():
             blk["img"] = ob.get("img", ""); blk["spec"] = ob.get("spec")
     out = dict(post)                                          # 카드뉴스 등 기존 필드 보존
     out["title"] = newpost["title"] or post.get("title", "")
+    out["crm_line"] = crm_line(brand, out["title"])
     out["blocks"] = newpost["blocks"]
     out["char_count"] = newpost["char_count"]
     out["raw"] = new_ms + tail
@@ -2651,7 +2665,7 @@ function copyBody(){const p=t().post;const pngs=p.cardnews_pngs||[],useCards=png
     } else { b.text.split('\n\n').forEach(para=>{const tx=para.replace(/\*\*/g,'').trim();if(tx)out.push(tx);}); }
   });
   if(useCards){while(pi<pngs.length){pi++;out.push('📷 [사진'+pi+']');}}
-  try{ var _bid=(t().brand||BRAND||''); if(_bid==='firstdesign' && p.track_key){ out.push('▶ 홍보물 디자인·인쇄 문의: http://mail-crm-mvp.vigo.co.kr/go/'+p.track_key); } }catch(e){}
+  try{ if(p.crm_line){ out.push(p.crm_line); } }catch(e){}
   copyClip(out.join('\n\n'),'② 본문 복사됨 · [사진N]자리에 카드, [표차트N]자리에 표·차트 이미지를 드래그');}
 function delChart(bi){const x=t();const b=x.post.blocks[bi];if(!b||b.type!='chart')return;
   x.post.blocks.splice(bi,1);toast('표·차트 삭제됨','ok');render();}
