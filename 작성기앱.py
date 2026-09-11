@@ -1050,6 +1050,10 @@ def api_organize_status():
 @app.route("/img")
 def img():
     folder = request.args.get("folder", ""); name = request.args.get("name", "")
+    if os.path.isabs(name) and os.path.isfile(name):    # 카드 사진 교체 등으로 폴더 밖 절대경로가 올 수 있음
+        r = send_file(name)
+        r.headers["Cache-Control"] = "no-store, max-age=0"
+        return r
     p = os.path.join(folder, name)
     if folder and os.path.isfile(p) and os.path.abspath(p).startswith(os.path.abspath(folder)):
         r = send_file(p)
@@ -1386,9 +1390,22 @@ def api_generate():
     if not keyword:
         return jsonify(ok=False, msg="키워드를 입력하세요.")
     brand = brands.load_brand(b.get("brand") or "haofactory")
-    picked = [f for f in (b.get("files") or []) if os.path.isfile(os.path.join(folder, f))]
-    if picked:                                          # 사용자가 특정 사진만 골랐으면 그것만, 고른 순서 그대로
-        files = picked[:150]
+    card_dir = (b.get("card_dir") or "").strip()
+    if b.get("use_card_photos") and card_dir and os.path.isdir(card_dir):
+        # 현재 카드뉴스에 들어 있는 사진(교체 반영된 cards.json src)을 입력 사진으로 사용 — 카드 순서 그대로
+        st_c = jload(os.path.join(card_dir, "cards.json"), {})
+        seen, files = set(), []
+        for c in (st_c.get("cards") or []):
+            sp = (c.get("src") or "").strip()
+            if sp and os.path.isfile(sp) and sp.lower() not in seen:
+                seen.add(sp.lower()); files.append(sp)
+        if not files:
+            return jsonify(ok=False, msg="카드뉴스 사진을 찾지 못했습니다. 카드 폴더가 이동/삭제됐는지 확인하세요.")
+    else:
+        picked = [f for f in (b.get("files") or []) if os.path.isfile(os.path.join(folder, f))]
+        files = picked[:150] if picked else None
+    if files:                                           # 특정 사진 지정(카드 사진 or 사용자가 고른 사진), 순서 그대로
+        pass
     else:
         files = list_images(folder, cap=20000)          # 전체 다 가져와서
         files = filter_by_keyword(files, keyword, brand["type_words"])   # 키워드 매칭(브랜드 타입단어)
@@ -2546,9 +2563,10 @@ function pollOrg(){const iv=setInterval(()=>{fetch('/api/organize-status').then(
   if(el('orgbar'))el('orgbar').textContent='📷 정리 중… '+s.done+'/'+s.total+' · '+s.renamed+'장 변경 '+(last?('· '+last):'');
   if(!s.running&&s.finished){clearInterval(iv);if(el('orgbar'))el('orgbar').textContent='✓ 정리 완료 · '+s.renamed+'장 이름변경';loadPhotos();}
 });},1500);}
-function generate(){const x=t();if(!x.keyword){toast('키워드를 입력하세요','err');return;}
+function generate(extra){const x=t();if(!x.keyword){toast('키워드를 입력하세요','err');return;}
   x.busy=true;render();
-  fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',question:x.question||'',title:x.title||'',folder:x.folder,files:(x.picked&&x.files&&x.files.length)?x.files:null,hint:x.hint,model:x.model||'opus',brand:x.brand||BRAND,template:x.cardTpl||'1',portfolio:!!x.portfolio})})
+  const pay=Object.assign({keyword:x.keyword,subkeyword:x.subkeyword||'',question:x.question||'',title:x.title||'',folder:x.folder,files:(x.picked&&x.files&&x.files.length)?x.files:null,hint:x.hint,model:x.model||'opus',brand:x.brand||BRAND,template:x.cardTpl||'1',portfolio:!!x.portfolio},extra||{});
+  fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pay)})
    .then(r=>r.json()).then(d=>{x.busy=false;
      if(!d.ok){toast(d.msg||'생성 실패','err');render();return;}
      x.post=d.post;render();toast('✍ 원고 완성','ok');
@@ -2612,6 +2630,7 @@ function renderPost(p){
     <div class="row" style="margin:10px 0;flex-wrap:wrap">
       <button class="btn" onclick="saveDocx()">📄 워드로 저장</button>
       <button class="btn" onclick="generate()">↻ 다시 생성</button>
+      ${(p.cardnews_dir&&(p.cardnews_pngs||[]).length)?`<button class="btn" onclick="generate({use_card_photos:true,card_dir:t().post.cardnews_dir})" title="사진 교체로 바꾼 카드 사진들을 입력 사진으로 삼아 글을 새로 씁니다">🖼 카드 사진으로 다시 생성</button>`:''}
       ${useCards?`<button class="btn" onclick="openColorPicker(event)">🎨 카드 색상 바꾸기</button>`:''}
       ${useCards?`<button class="btn" onclick="addChart()" ${t().chartBusy?'disabled':''}>${t().chartBusy?'<span class=spin></span> 표·차트 만드는 중…':'📊 표·차트 추가'}</button>`:''}</div>
     ${useCards?colorPicker(p):''}
