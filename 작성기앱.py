@@ -491,8 +491,9 @@ def parse_manuscript(text, photo_files):
         for b in blocks:
             if b["type"] == "text":
                 title = b["text"].split("\n")[0][:60]; break
-    # 글자수
+    # 글자수 — URL(내부 링크·함께 보면 좋은 글 주소)은 분량에 세지 않는다
     body = "".join(b["text"] for b in blocks if b["type"] == "text")
+    body = re.sub(r"https?://\S+", "", body)
     nospace = re.sub(r"\s", "", body)
     return {"title": title, "blocks": blocks, "char_count": len(nospace)}
 
