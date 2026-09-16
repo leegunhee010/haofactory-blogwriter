@@ -355,6 +355,56 @@ def question_block(question, keyword="", subkeyword="", title=""):
             "- 질문에 나온 표현(고객이 쓰는 말)을 본문에 1~2회 자연스럽게 되살린다(AI가 같은 질문을 받았을 때 그대로 인용하기 쉽게).")
 
 
+def _len_no_space(t):
+    """배지·프롬프트와 같은 기준의 글자수(공백 제외, URL 제외)."""
+    return len(re.sub(r"\s", "", re.sub(r"https?://\S+", "", t or "")))
+
+
+def _section_counts(ms):
+    """원고 → [(구간 라벨, 글자수)]. 사진줄·표마커·제목줄은 빼고 센다(parse_manuscript와 동일 기준)."""
+    lines = ms.split("\n")
+    out = []
+    for sec in _sections(lines):
+        seg = [l for l in lines[sec["start"]:sec["end"]]
+               if not _PHOTO_LINE_RE.match(l) and not re.match(r"^\s*\(\s*(표|차트)\s*\d+\s*\)\s*$", l)]
+        out.append((sec["label"], _len_no_space("".join(seg))))
+    return out
+
+
+def trim_manuscript(brand, keyword, ms, cur, lo, hi, model):
+    """상한을 넘은 원고를 '구조·숫자 그대로, 문장만 압축'으로 줄인다. 실패하면 ''.
+    모델은 글자수를 정확히 세지 못하므로, 앱이 구간별로 재서 '어디서 몇 자를 줄일지'까지 지정해 준다."""
+    target = max(lo + 60, hi - 200)          # 모델은 목표보다 길게 쓰므로, 넘겨도 상한 안에 떨어지게 낮게 잡는다
+    counts = _section_counts(ms)
+    tot = sum(c for _, c in counts) or 1
+    ratio = float(target) / tot
+    plan = []
+    for label, c in counts:
+        t = int(round(c * ratio))
+        cut = c - t
+        plan.append("· %s: 지금 %d자 → %d자 (%s)"
+                    % (label[:30], c, t, ("%d자 줄이기" % cut) if cut > 0 else "그대로 두기"))
+    style = brands.build_style(brand) if brand else STYLE
+    p = (style + "\n\n[분량 줄이기 — 구조는 그대로, 문장만 압축한다]\n"
+         f"이 원고는 공백 제외 {cur}자로 상한 {hi}자를 {cur - hi}자 초과했다. 전체를 {target}자 안팎으로 줄여라.\n"
+         "아래는 앱이 실제로 센 구간별 글자수와 이번에 줄일 양이다. 구간마다 지정된 만큼 줄여라(한 곳에 몰아서 줄이지 말 것):\n"
+         + "\n".join(plan) + "\n"
+         "[반드시 지킬 것]\n"
+         "- '제목:' 줄, 소제목 개수, (사진N) 줄, (표N)/(차트N) 줄, Q&A, 마무리 CTA, '함께 보면 좋은 글'과 URL 줄을 모두 그대로 유지한다(지우거나 합치지 말 것).\n"
+         "- 숫자·규격·사실은 바꾸지 않는다. 항목을 통째로 빼기보다 설명 문장·중복 표현·군더더기 수식어를 덜어내고, 이어 쓸 수 있는 두 문장은 한 문장으로 합쳐 압축한다.\n"
+         "- 브랜드 문체·톤·문장 리듬 규칙을 그대로 지킨다.\n"
+         "- 설명·머리말·따옴표·코드블록 없이 '제목:'부터 마지막 줄까지 줄인 원고 전체만 출력한다(카드뉴스·표차트 섹션은 출력하지 말 것).\n\n"
+         f"[원고]\n{ms}")
+    out, err = run_claude(p, model, timeout=300)
+    if err or not (out or "").strip():
+        return ""
+    out = out.strip()
+    mt = re.search(r"제목\s*[:：]", out)
+    if mt and mt.start() > 0:
+        out = out[mt.start():]
+    return re.split(r"\n\s*카드뉴스\s*[:：]", out)[0].strip()   # 카드 섹션을 뱉으면 잘라낸다
+
+
 def build_prompt(keyword, photo_files, project_hint="", brand=None, subkeyword="", title="", latest="", portfolio=False, photo_paths=None, question=""):
     if portfolio:
         return _portfolio_prompt(keyword, photo_files, photo_paths, project_hint, brand, title)
@@ -1456,6 +1506,22 @@ def api_generate():
     if ms:
         sub = re.sub(r"\([^)]*\)", "", ms.group(1)).strip() or ms.group(1).strip()
     post = parse_manuscript(parts[0], files)
+    # ★분량 자동 보정 — 상한을 넘으면 앱이 직접 재요청해 압축(최대 2회). 모델은 글자수를 정확히 못 세서 자주 넘친다.
+    _lo, _hi = brands.length_range(brand)
+    _tail = ("\n\n카드뉴스:\n" + parts[1]) if len(parts) > 1 else ""
+    _ms, _trims = parts[0], 0
+    for _ in range(3):
+        if post.get("char_count", 0) <= _hi:
+            break
+        _new = trim_manuscript(brand, keyword, _ms, post["char_count"], _lo, _hi, model)
+        if not _new:
+            break
+        _np = parse_manuscript(_new, files)
+        if not _np.get("char_count") or _np["char_count"] >= post["char_count"]:
+            break                                   # 줄지 않으면 원본 유지
+        _ms, post, _trims = _new, _np, _trims + 1
+        out = _ms + _tail
+    post["trimmed"] = _trims
     if title:
         post["title"] = title                 # 사용자가 정한 제목을 그대로 사용(C2)
     post["folder"] = folder
@@ -2614,7 +2680,7 @@ function renderPost(p){
   else if(!pngs.length && p.cardnews_job) extra=`<div style="font-size:12px;color:var(--brand);font-weight:700;margin:8px 0"><span class="spin" style="border-color:var(--brand);border-top-color:transparent"></span> 카드뉴스 만드는 중… (원고 먼저 확인하세요. 잠시 후 본문 이미지로 채워집니다)</div>`;
   const lmin=p.len_min||1500, lmax=p.len_max||2000;
   const cc=p.char_count||0, okLen=cc>=lmin&&cc<=lmax;
-  const lenmsg=cc<lmin?(' · '+lmin+' 미달'):(cc>lmax?(' · '+lmax+' 초과'):'');
+  const lenmsg=(cc<lmin?(' · '+lmin+' 미달'):(cc>lmax?(' · '+lmax+' 초과'):''))+(p.trimmed?(' · 자동 축약 '+p.trimmed+'회'):'');
   return `<div class="pv-head"><div class="pv-title">${esc(p.title)}</div></div>
     <div class="badges">
       <span class="badge ${okLen?'ok':'warn'}">${okLen?'✓':'⚠'} 공백제외 ${cc}자${lenmsg}</span>
