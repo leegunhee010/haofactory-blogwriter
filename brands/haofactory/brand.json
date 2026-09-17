@@ -96,7 +96,8 @@
  "label": "하오팩토리",
  "prompt": "",
  "id": "haofactory",
- "crm_on": false,
+ "crm_on": true,
  "crm_prefix": "hf",
- "crm_label": "조형물 제작 문의"
+ "crm_label": "조형물 제작 문의",
+ "crm_mode": "utm"
 }

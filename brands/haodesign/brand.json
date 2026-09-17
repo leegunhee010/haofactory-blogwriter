@@ -97,7 +97,8 @@
  "label": "하오디자인",
  "prompt": "",
  "id": "haodesign",
- "crm_on": false,
+ "crm_on": true,
  "crm_prefix": "hd",
- "crm_label": "디자인·인쇄 문의"
+ "crm_label": "디자인·인쇄 문의",
+ "crm_mode": "utm"
 }

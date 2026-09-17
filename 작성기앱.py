@@ -26,12 +26,23 @@ def crm_track_key(title, prefix="fd"):
 
 
 def crm_line(brand, title):
-    """브랜드별 CRM 추적링크 줄. crm_on=True + crm_prefix 있는 브랜드만(서버가 그 접두어를 받을 때 켠다). 아니면 ''."""
+    """브랜드별 CRM 추적링크 줄. crm_on=True + crm_prefix 있는 브랜드만. 아니면 ''.
+    crm_mode='go'  → CRM 서버 경유(/go/키) — 홈페이지에 분석 도구가 없어 서버가 직접 클릭을 세는 브랜드(dfirst).
+    crm_mode='utm' → 브랜드 홈페이지로 바로(UTM + content_키) — 홈페이지 GA4/GTM이 유입을 기록하는 브랜드."""
     b = brand or {}
-    if not (b.get("crm_on") and (b.get("crm_prefix") or "").strip() and (title or "").strip()):
+    prefix = (b.get("crm_prefix") or "").strip()
+    if not (b.get("crm_on") and prefix and (title or "").strip()):
         return ""
     label = (b.get("crm_label") or "문의").strip()
-    return "▶ %s: %s%s" % (label, CRM_GO, crm_track_key(title, b["crm_prefix"].strip()))
+    key = crm_track_key(title, prefix)
+    if (b.get("crm_mode") or "go").strip() == "utm":
+        home = (b.get("homepage") or "").strip().rstrip("/")
+        if not home:
+            return ""
+        url = "%s/?utm_source=naver&utm_medium=post&utm_campaign=content_%s" % (home, key)
+    else:
+        url = CRM_GO + key
+    return "▶ %s: %s" % (label, url)
 
 
 def _crm_notify_cfg():

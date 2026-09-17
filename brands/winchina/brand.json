@@ -95,7 +95,8 @@
  "brand_placement": "end",
  "web_update": true,
  "id": "winchina",
- "crm_on": false,
+ "crm_on": true,
  "crm_prefix": "wc",
- "crm_label": "중국 비즈니스 문의"
+ "crm_label": "중국 비즈니스 문의",
+ "crm_mode": "utm"
 }

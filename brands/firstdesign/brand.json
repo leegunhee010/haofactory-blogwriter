@@ -113,5 +113,6 @@
  ],
  "crm_on": true,
  "crm_prefix": "fd",
- "crm_label": "홍보물 디자인·인쇄 문의"
+ "crm_label": "홍보물 디자인·인쇄 문의",
+ "crm_mode": "go"
 }

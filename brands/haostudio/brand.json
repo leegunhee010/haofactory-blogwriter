@@ -95,7 +95,8 @@
  "label": "하오스튜디오",
  "prompt": "",
  "id": "haostudio",
- "crm_on": false,
+ "crm_on": true,
  "crm_prefix": "hs",
- "crm_label": "촬영 문의"
+ "crm_label": "촬영 문의",
+ "crm_mode": "utm"
 }

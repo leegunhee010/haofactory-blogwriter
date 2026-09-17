@@ -93,7 +93,8 @@
  "brand_placement": "end",
  "web_update": true,
  "id": "redtrans",
- "crm_on": false,
+ "crm_on": true,
  "crm_prefix": "rt",
- "crm_label": "번역·공증 문의"
+ "crm_label": "번역·공증 문의",
+ "crm_mode": "utm"
 }

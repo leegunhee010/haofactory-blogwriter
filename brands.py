@@ -49,6 +49,7 @@ DEFAULTS = {
     "crm_on": False,             # CRM 성과추적 링크 부착 여부(브랜드별 — CRM 서버가 그 브랜드를 받을 준비가 됐을 때만 켠다)
     "crm_prefix": "",            # 추적키 접두어(예: firstdesign=fd). CRM 게시현황과 약속된 값
     "crm_label": "문의",         # 추적링크 앞 문구(예: 홍보물 디자인·인쇄 문의)
+    "crm_mode": "go",            # go=CRM 서버 경유(/go/) · utm=홈페이지로 바로(UTM, 홈페이지 분석 도구가 유입 기록)
     "web_update": False,         # True면 작성 전 웹검색으로 최신 공개 정보 확인(레드트랜스·윈차이나). 회사 가격·절차는 기준서 유지
 }
 
