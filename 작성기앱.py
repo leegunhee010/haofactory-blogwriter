@@ -1516,11 +1516,18 @@ def api_generate():
     ms = re.search(r"표지\s*부제\s*[:：]\s*(.+)", out)
     if ms:
         sub = re.sub(r"\([^)]*\)", "", ms.group(1)).strip() or ms.group(1).strip()
-    post = parse_manuscript(parts[0], files)
+    # ★'표차트:' 데이터 섹션이 카드뉴스보다 앞(본문 쪽)에 오는 경우가 있다.
+    #   그대로 두면 (1) 글자수에 잡혀 분량이 부풀고 (2) 축약 재작성 때 통째로 지워져 표를 못 그린다.
+    #   → 본문에서 떼어내 꼬리에 보관하고, 축약이 끝난 뒤 다시 붙인다.
+    _body0, _tc = parts[0], ""
+    _m_tc = re.search(r"\n\s*표\s*차트\s*[:：].*$", parts[0], re.S)
+    if _m_tc:
+        _body0, _tc = parts[0][:_m_tc.start()].rstrip() + "\n", _m_tc.group(0).strip()
+    post = parse_manuscript(_body0, files)
     # ★분량 자동 보정 — 상한을 넘으면 앱이 직접 재요청해 압축(최대 2회). 모델은 글자수를 정확히 못 세서 자주 넘친다.
     _lo, _hi = brands.length_range(brand)
-    _tail = ("\n\n카드뉴스:\n" + parts[1]) if len(parts) > 1 else ""
-    _ms, _trims = parts[0], 0
+    _tail = (("\n\n" + _tc) if _tc else "") + (("\n\n카드뉴스:\n" + parts[1]) if len(parts) > 1 else "")
+    _ms, _trims = _body0, 0
     for _ in range(3):
         if post.get("char_count", 0) <= _hi:
             break
@@ -1545,7 +1552,7 @@ def api_generate():
     post["brand"] = brand["id"]
     post["crm_line"] = crm_line(brand, post.get("title", ""))   # CRM 추적링크(브랜드별 설정, 없으면 '')
     post["len_min"], post["len_max"] = brands.length_range(brand)   # UI 분량 배지(브랜드별)
-    post["sections"] = _section_list(parts[0])   # C3: 부분 수정용 구간 목록
+    post["sections"] = _section_list(_ms)        # C3: 부분 수정용 구간 목록(축약 후 본문 기준)
     chart_specs = parse_charts(out)               # C6: (표N)/(차트N) 마커에 대응하는 표·차트 데이터
     chart_specs = {cid: sp for cid, sp in chart_specs.items()
                    if any(b.get("cid") == cid for b in post["blocks"] if b.get("type") == "chart")}
@@ -1761,7 +1768,7 @@ def api_add_chart():
         return jsonify(ok=False, msg="카드뉴스가 만들어진 뒤에 표·차트를 추가할 수 있어요.")
     model = (b.get("model") or load_cfg().get("model") or "opus")
     ms = _split_manuscript(raw)[0]
-    existing = [blk.get("spec", {}).get("title", "") for blk in post.get("blocks", []) if blk.get("type") == "chart"]
+    existing = [(blk.get("spec") or {}).get("title", "") for blk in post.get("blocks", []) if blk.get("type") == "chart"]
     prompt = (
         "아래 블로그 글 내용에서 독자에게 실제로 도움이 되는 '표' 또는 '차트'를 딱 1개만 만들어라.\n"
         "글에 담긴(또는 자연스럽게 유추되는) 정보를 바탕으로 비교·단계·비율·추이 중 가장 잘 맞는 형식을 고른다.\n"
@@ -2664,7 +2671,7 @@ function renderPost(p){
   let body=p.blocks.map((b,bi)=>{
     if(b.type=='chart'){       // C6: 표·차트 이미지
       if(b.img) return `<div class="chartwrap"><img src="/img?folder=${encodeURIComponent(cdir)}&name=${encodeURIComponent(b.img)}&v=${Date.now()}"><button class="chartdel" onclick="delChart(${bi})" title="이 표/차트 삭제">✕</button></div>`;
-      return `<div class="chartpend"><span class="spin"></span> 📊 표·차트 만드는 중…</div>`;
+      return `<div class="chartpend"><span class="spin"></span> 📊 표·차트 만드는 중…<button class="chartdel" style="position:static;margin-left:10px" onclick="delChart(${bi})" title="이 표 자리 삭제">✕</button></div>`;
     }
     if(b.type=='photo'){
       const altcap=b.alt?`<div class="altcap">🏷 alt: ${esc(b.alt)}</div>`:'';
