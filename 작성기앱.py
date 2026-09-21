@@ -96,6 +96,38 @@ CARD_JOBS = {}
 CARD_LOCK = threading.Lock()
 
 
+CARD_SRC_DIR = "원본사진"
+
+
+def sync_card_sources(cdir):
+    """카드뉴스 폴더 안 '원본사진/'에 지금 카드에 들어간 원본 사진을 파일째 복사해 둔다(카드N_원본파일명).
+    cards.json의 src 기준 = 사용자가 사진 교체한 결과가 그대로 반영된다. 폴더를 옮겨도 사진이 함께 따라간다.
+    앱이 만든 '카드N_' 파일만 정리하고, 사용자가 넣은 다른 파일은 건드리지 않는다. 실패해도 조용히 넘어감."""
+    try:
+        st = jload(os.path.join(cdir, "cards.json"), {})
+        want = {}
+        for i, c in enumerate(st.get("cards") or [], 1):
+            src = (c.get("src") or "").strip()
+            if src and os.path.isfile(src):
+                want["카드%d_%s" % (i, os.path.basename(src))] = src
+        if not want:
+            return
+        out = os.path.join(cdir, CARD_SRC_DIR)
+        os.makedirs(out, exist_ok=True)
+        for f in os.listdir(out):
+            if re.match(r"^카드\d+_", f) and f not in want:
+                try:
+                    os.remove(os.path.join(out, f))      # 교체 전 사진 정리
+                except Exception:
+                    pass
+        for name, src in want.items():
+            dst = os.path.join(out, name)
+            if not os.path.isfile(dst):
+                shutil.copy2(src, dst)
+    except Exception:
+        pass
+
+
 def _cardnews_job(jid, photo_paths, cards, keyword, assets_dir, subtitle="", bodies=None, title="", chart_specs=None, table_w=None):
     try:
         safe = re.sub(r'[\\/:*?"<>|]', "_", keyword)
@@ -104,6 +136,7 @@ def _cardnews_job(jid, photo_paths, cards, keyword, assets_dir, subtitle="", bod
         res = cardnews_pil.make_cards(photo_paths, cards[:7], png_dir, assets_dir,
                                       subtitle=subtitle, bodies=bodies, title=title)   # 순수 PIL, 즉시
         srcs = [c["src"] for c in res["cards"]]
+        sync_card_sources(png_dir)                    # 원본사진/ 에 카드 원본 복사
         # C6: 표·차트를 카드뉴스 색으로 렌더(cards.json accent 사용) → cid별 파일명 반환
         chart_imgs = {}
         if chart_specs:
@@ -2054,6 +2087,7 @@ def api_swap_card():
         return jsonify(ok=False, msg="파일을 찾을 수 없습니다.")
     try:
         png = cardnews_pil.edit_card(cdir, idx, src=photo)
+        sync_card_sources(cdir)                       # 교체한 사진으로 원본사진/ 갱신
         return jsonify(ok=True, png=png, name=os.path.basename(png), src=photo)
     except Exception as e:
         return jsonify(ok=False, msg=str(e)[:200])
