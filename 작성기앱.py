@@ -1509,6 +1509,7 @@ def api_generate():
         return jsonify(ok=False, msg="키워드를 입력하세요.")
     brand = brands.load_brand(b.get("brand") or "haofactory")
     card_dir = (b.get("card_dir") or "").strip()
+    card_lock = []                                      # ★카드 N번에 고정할 사진(사용자가 교체·배치한 그대로)
     if b.get("use_card_photos") and card_dir and os.path.isdir(card_dir):
         # 현재 카드뉴스에 들어 있는 사진(교체 반영된 cards.json src)을 입력 사진으로 사용 — 카드 순서 그대로
         st_c = jload(os.path.join(card_dir, "cards.json"), {})
@@ -1519,6 +1520,7 @@ def api_generate():
                 seen.add(sp.lower()); files.append(sp)
         if not files:
             return jsonify(ok=False, msg="카드뉴스 사진을 찾지 못했습니다. 카드 폴더가 이동/삭제됐는지 확인하세요.")
+        card_lock = list(files)                         # 표지(1번) 포함 순서 고정 — 다시 섞지 않는다
     else:
         picked = [f for f in (b.get("files") or []) if os.path.isfile(os.path.join(folder, f))]
         files = picked[:150] if picked else None
@@ -1625,7 +1627,13 @@ def api_generate():
             n_cards = len(jload(os.path.join(adir, "layout.json"), {}).get("slides", [])) or 7
         except Exception:
             n_cards = 7
-    card_files = pick_diverse(files, claude_picks, n_cards)
+    if card_lock:                                       # ★사용자가 정한 카드 순서 유지(표지 = 1번 그대로)
+        card_files = card_lock[:n_cards]
+        if len(card_files) < n_cards:                   # 카드 수보다 사진이 적으면 나머지만 보충
+            rest = pick_diverse([f for f in files if f not in card_files], claude_picks, n_cards - len(card_files))
+            card_files += [f for f in rest if f not in card_files]
+    else:
+        card_files = pick_diverse(files, claude_picks, n_cards)
     post["cardnews_pngs"] = []
     post["cardnews_job"] = ""
     if card_files and len(cards) >= 6 and has_tpl:
