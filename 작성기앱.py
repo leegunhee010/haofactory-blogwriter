@@ -180,16 +180,25 @@ def find_claude():
     if p:
         return p
     pats = [
+        # 데스크톱 앱 번들 — 2026-10 업데이트로 버전 폴더 아래 해시 폴더가 하나 더 생겼다(둘 다 찾는다)
+        os.path.expanduser(r"~/AppData/Local/Packages/Claude_*/LocalCache/Roaming/Claude/claude-code/*/*/claude.exe"),
         os.path.expanduser(r"~/AppData/Local/Packages/Claude_*/LocalCache/Roaming/Claude/claude-code/*/claude.exe"),
+        os.path.expanduser(r"~/AppData/Roaming/Claude/claude-code/*/*/claude.exe"),
+        os.path.expanduser(r"~/AppData/Roaming/Claude/claude-code/*/claude.exe"),
         os.path.expanduser(r"~/.local/bin/claude.exe"),
         os.path.expanduser(r"~/AppData/Roaming/npm/claude.cmd"),
     ]
     hits = []
     for g in pats:
         hits += glob.glob(g)
-    # 버전 숫자 큰 것(최신) 우선
-    hits.sort()
-    return hits[-1] if hits else None
+    if not hits:
+        return None
+    # 최근에 설치된 것(수정 시각 최신) 우선 — 버전 폴더 이름 정렬보다 안전
+    try:
+        hits.sort(key=lambda f: os.path.getmtime(f))
+    except Exception:
+        hits.sort()
+    return hits[-1]
 
 
 CLAUDE = find_claude()
