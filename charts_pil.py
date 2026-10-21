@@ -50,6 +50,113 @@ def _wrap(draw, text, font, maxw):
     return lines or [""]
 
 
+# 이 어미·기호로 끝나는 어절 뒤는 '의미 단위 경계' → 여기서 끊으면 자연스럽다(무겁고 / 기초 공사 필요)
+_BREAK_ENDS = ("고", "며", "면", "서", "나", "지만", "는데", "도", ",", "·", ")", "및", "또는")
+# 조사로 끝나는 어절 뒤 = 약한 경계(기초 공사와 / 앵커 고정이 …), 그 외(명사+명사 사이)는 가급적 끊지 않음
+_SOFT_ENDS = ("와", "과", "에", "로", "을", "를", "이", "가", "은", "는", "의", "까지", "부터", "보다")
+
+def _split_long(draw, word, font, maxw):
+    """칸보다 긴 한 어절 → '·' '/' 우선, 안 되면 글자 단위로 쪼갠다(칸 밖으로 넘치지 않게)."""
+    if draw.textlength(word, font=font) <= maxw:
+        return [word]
+    for sep in ("·", "/"):
+        if sep in word:
+            parts = word.split(sep)
+            toks = [p + sep for p in parts[:-1]] + [parts[-1]]
+            out, cur = [], ""
+            for t in toks:
+                if cur and draw.textlength(cur + t, font=font) > maxw:
+                    out.append(cur); cur = t
+                else:
+                    cur += t
+            if cur:
+                out.append(cur)
+            if all(draw.textlength(o, font=font) <= maxw for o in out):
+                return out
+    out, cur = [], ""
+    for ch in word:
+        if cur and draw.textlength(cur + ch, font=font) > maxw:
+            out.append(cur); cur = ch
+        else:
+            cur += ch
+    return out + ([cur] if cur else [])
+
+def _wrap_cell(draw, text, font, maxw):
+    """표 칸 줄바꿈 — 최소 줄 수를 유지하면서, 한 단어만 다음 줄로 떨어지는 '외톨이 줄'을 피하고
+    의미 단위(…고 / …며 / ·)에서 끊으며 줄 길이를 고르게 맞춘다. 예) '무겁고 기초 공사 필요'
+    → '무겁고 / 기초 공사 필요'(X '무겁고 기초 공사 / 필요'), '자외선 대비 / 도장 필요'."""
+    from itertools import combinations
+    words = []
+    for w in str(text).split():
+        words += _split_long(draw, w, font, maxw)
+    if not words:
+        return [""]
+    full = " ".join(words)
+    if draw.textlength(full, font=font) <= maxw:
+        return [full]
+    n = len(_wrap(draw, full, font, maxw))          # 최소 줄 수(순차 채우기 기준)
+    m = len(words)
+    if n >= m:
+        return words
+    W = lambda a, b: draw.textlength(" ".join(words[a:b]), font=font)
+    best, best_cost = None, None
+    tried = 0
+    for k in (n, n + 1):                             # 같은 줄 수가 안 되면 한 줄 더까지만 허용
+        if k > m:
+            break
+        for cuts in combinations(range(1, m), k - 1):
+            tried += 1
+            if tried > 6000:
+                break
+            b = (0,) + cuts + (m,)
+            ws = [W(b[i], b[i + 1]) for i in range(k)]
+            if max(ws) > maxw:
+                continue
+            cost = sum(((maxw - x) / maxw) ** 2 for x in ws)          # 줄 길이 고르게
+            for c in cuts:                                             # 의미 경계에서 끊기면 가점, 명사 사이는 감점
+                if words[c - 1].endswith(_BREAK_ENDS) or words[c] in ("및", "또는"):
+                    cost -= 0.3
+                elif words[c - 1].endswith(_SOFT_ENDS):
+                    cost -= 0.15
+                else:
+                    cost += 0.15
+            last = words[b[-2]:]
+            if len(last) == 1 and len(last[0]) <= 3 and m > 1:        # '필요' 같은 외톨이 마지막 줄 강한 감점
+                cost += 1.5
+            cost += (k - n) * 2.0                                      # 줄 수 늘리기는 최후 수단
+            if best_cost is None or cost < best_cost:
+                best_cost, best = cost, b
+        if best is not None:
+            break
+    if best is None:
+        return _wrap(draw, full, font, maxw)
+    return [" ".join(words[best[i]:best[i + 1]]) for i in range(len(best) - 1)]
+
+def _col_widths(draw, headers, rows, hf, cf, inner, P, ncol, minw_floor):
+    """열 너비를 내용 길이에 맞춰 배분 — 긴 문장이 든 열은 넓게, 짧은 열은 좁게(불필요한 줄바꿈 감소)."""
+    nat, mn = [], []
+    for i in range(ncol):
+        cells = [str(r[i]) if i < len(r) else "" for r in rows]
+        hw = draw.textlength(str(headers[i]) if i < len(headers) else "", font=hf)
+        cw = max([draw.textlength(c, font=cf) for c in cells] + [0])
+        lw = max([draw.textlength(w, font=cf) for c in cells for w in c.split()] + [0])
+        nat.append(max(hw, cw) + P)
+        mn.append(max(hw + P, lw + P, minw_floor))
+    if sum(nat) <= inner:                       # 다 한 줄에 들어감 → 남는 폭을 고르게 나눔
+        extra = (inner - sum(nat)) / ncol
+        ws = [x + extra for x in nat]
+    elif sum(mn) >= inner:                      # 최소폭도 안 들어감 → 비율 축소(긴 어절은 _split_long이 처리)
+        ws = [x * inner / sum(mn) for x in mn]
+    else:                                       # 최소폭 보장 후, 남는 폭을 '더 필요한 만큼' 비율로 배분
+        rest = inner - sum(mn)
+        need = [nat[i] - mn[i] for i in range(ncol)]
+        tn = sum(need) or 1
+        ws = [mn[i] + rest * need[i] / tn for i in range(ncol)]
+    ws = [int(x) for x in ws]
+    ws[-1] += inner - sum(ws)
+    return ws
+
+
 def render_table(out, title, headers, rows, color=(37, 99, 175), W=920):
     k = max(0.5, W / 920.0)          # W가 커지면(예: 2000px) 글자·여백도 같은 비율로 키운다(가독성 유지)
     S = lambda v: int(round(v * k))
@@ -58,17 +165,15 @@ def render_table(out, title, headers, rows, color=(37, 99, 175), W=920):
     lh, tlh, header_h = S(30), S(44), S(56)
     ncol = max(1, len(headers))
     inner = W - pad * 2
-    w0 = int(inner * (0.30 if ncol > 2 else 0.5))
-    wr = (inner - w0) // (ncol - 1) if ncol > 1 else inner
-    colw = [w0] + [wr] * (ncol - 1)
+    tmp = Image.new("RGB", (10, 10)); d0 = ImageDraw.Draw(tmp)
+    colw = _col_widths(d0, headers, rows, hf, cf, inner, S(24), ncol, S(90))
     colx = [pad]
     for w in colw[:-1]:
         colx.append(colx[-1] + w)
-    tmp = Image.new("RGB", (10, 10)); d0 = ImageDraw.Draw(tmp)
     def rowh(cells):
         h = 0
         for i, c in enumerate(cells[:ncol]):
-            ls = _wrap(d0, c, cf, colw[i] - S(24))
+            ls = _wrap_cell(d0, c, cf, colw[i] - S(24))
             h = max(h, len(ls) * lh + S(22))
         return max(h, S(52))
     rhs = [rowh(r) for r in rows]
@@ -93,7 +198,7 @@ def render_table(out, title, headers, rows, color=(37, 99, 175), W=920):
             d.rectangle([pad, y, W - pad, y + h], fill=_tint(color, 0.06))
         for ci in range(ncol):
             cell = r[ci] if ci < len(r) else ""
-            ls = _wrap(d, str(cell), cf, colw[ci] - S(24))
+            ls = _wrap_cell(d, str(cell), cf, colw[ci] - S(24))
             ty = y + (h - len(ls) * lh) / 2
             for ln in ls:
                 if ci > 0:

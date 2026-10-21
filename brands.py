@@ -124,7 +124,13 @@ def save_brand(cfg):
     bid = cfg.get("id") or slugify(cfg.get("name", ""))
     cfg["id"] = bid
     os.makedirs(brand_dir(bid), exist_ok=True)
-    keep = {k: cfg.get(k, DEFAULTS.get(k)) for k in DEFAULTS}
+    keep = {}
+    try:   # 기존 brand.json 의 DEFAULTS 밖 설정(length·final_faq_promo·faq_list 등)은 그대로 보존
+        old = json.load(open(os.path.join(brand_dir(bid), "brand.json"), encoding="utf-8"))
+        keep.update({k: v for k, v in old.items() if k not in DEFAULTS})
+    except Exception:
+        pass
+    keep.update({k: cfg.get(k, DEFAULTS.get(k)) for k in DEFAULTS})
     keep["id"] = bid
     json.dump(keep, open(os.path.join(brand_dir(bid), "brand.json"), "w", encoding="utf-8"),
               ensure_ascii=False, indent=1)
@@ -239,7 +245,12 @@ def _shared_structure(b):
     cta = (b.get("cta") or "").strip().replace("{name}", label) or \
         f'부담을 덜어주는 한 줄로 자연스럽게 닫되, 메인키워드를 제대로 하고 싶다면 {label}을(를) 떠올리게 한다.'
     placement = (b.get("brand_placement") or "each").strip()
-    if placement == "end":
+    ffp = final_faq_promo(b)
+    if ffp:
+        flow = (f"- 첫째~다섯째 소제목 본문은 **오직 독자에게 유용한 정보**만 담는다. 고객이 실제로 궁금해하는 것"
+                f"(비용·기간·소재/방식 선택 기준·주의점·자주 하는 실수 등)에 곧바로, 구체적으로 답한다. 이 다섯 구간에는 {label} 소개·홍보를 넣지 않는다.\n"
+                f"- {label} 소개·홍보와 문의 유도는 **오직 여섯째(마지막) 소제목 안에서만** 한다(아래 [여섯째 소제목] 규칙).")
+    elif placement == "end":
         flow = (f"- 각 소제목 본문은 **오직 독자에게 유용한 정보**만 담는다. 고객이 실제로 궁금해하는 것"
                 f"(비용·필요서류·절차·선택 기준·주의점·자주 하는 실수 등)에 곧바로, 구체적으로 답한다.\n"
                 f"- 본문(도입~여섯 번째 소제목)에서는 회사({label}) 소개·홍보·강점 언급을 넣지 않는다. 정보 자체로 신뢰를 준다.\n"
@@ -249,6 +260,9 @@ def _shared_structure(b):
     else:
         flow = (f"- 각 단락은 [고객의 흔한 고민·궁금증 → 그래서 이게 왜 중요한지 → {label}은 이렇게 합니다"
                 f"(강점·디테일)] 흐름으로 전개한다.")
+    sixth_note = " ★단, 여섯째(마지막) 소제목은 아래 [여섯째 소제목] 규칙을 따른다." if ffp else ""
+    min_note = f" / ★{length_range(b)[0]:,}자보다 짧아도 안 된다" if ffp else ""
+    ending = _final_section_block(b, label, cta) if ffp else "[마무리]\n" + cta
     return f"""너는 '{name}'{('(' + industry + ')') if industry else ''}의 네이버 블로그 글을 쓰는 카피라이터다.
 
 [회사 소개 — 이 회사의 서비스·강점(브랜드별)]
@@ -259,17 +273,33 @@ def _shared_structure(b):
 
 [블로그 구조 — 모든 글 공통(기술 규칙)]
 - 도입: "안녕하세요"로 인사하고 {label}을(를) 한 줄로 소개한 뒤, "오늘은 ... (메인키워드) 이야기를 해볼까 해요" 식으로 주제를 안내한다.
-- 소제목 **정확히 6개**. 각 소제목 아래 본문 단락. 소제목 스타일은 위 톤에 맞춘다(질문형/선언형/넘버링 등).
+- 소제목 **정확히 6개**. 각 소제목 아래 본문 단락. 소제목 스타일은 위 톤에 맞춘다(질문형/선언형/넘버링 등).{sixth_note}
 {flow}
 - 제목·소제목·본문이 서로 어긋나지 않게 한다: 본문 전체는 **제목 주제에서 벗어나지 않고**, 각 소제목 아래 내용은 **그 소제목이 말하는 범위만** 다룬다(딴 얘기·범위 이탈 금지).
-- 제목에 메인키워드를 포함한다. 분량은 공백 제외 {_fmt_len(b)}자(★{length_range(b)[1]:,}자를 절대 넘기지 말 것 — 넘칠 것 같으면 덜 중요한 문장·군더더기·중복 설명을 덜어낸다). 메인키워드를 제목·소제목·본문에 자연스럽게 5~8회 녹인다(억지 반복 금지).
+- 제목에 메인키워드를 포함한다. 분량은 공백 제외 {_fmt_len(b)}자(★{length_range(b)[1]:,}자를 절대 넘기지 말 것 — 넘칠 것 같으면 덜 중요한 문장·군더더기·중복 설명을 덜어낸다{min_note}). 메인키워드를 제목·소제목·본문에 자연스럽게 5~8회 녹인다(억지 반복 금지).
 - 한 문장(또는 의미단위)마다 줄바꿈(네이버 모바일 가독성). 과장·AI티('~에 대해 알아보겠습니다' 등) 금지.
 
 {_AEO_BLOCK}
 
-[마무리]
-{cta}"""
+{ending}"""
 
+
+
+def final_faq_promo(b):
+    """brand.json final_faq_promo=true 인 브랜드(하오디자인·하오스튜디오·하오팩토리):
+    여섯째(마지막) 소제목 = FAQ 3~4개 + 브랜드 홍보 + 후킹 CTA 로 글을 끝낸다(그 뒤 별도 마무리 문단 없음)."""
+    return bool((b or {}).get("final_faq_promo"))
+
+
+def _final_section_block(b, label, cta):
+    lo, hi = length_range(b)
+    return f"""[★여섯째(마지막) 소제목 — FAQ + {label} 홍보 + 후킹 CTA 로 글을 끝낸다]
+- 여섯째 소제목은 '자주 묻는 질문'임이 드러나게 짓고(예: "OO 자주 묻는 질문"), 아래 ①→②→③ 순서 그대로 쓴다. 이 소제목 뒤에 별도 마무리 문단·소제목을 더 만들지 않는다.
+  ① FAQ **3~4개**: 'Q. (질문)' 줄 다음에 'A. (답)' 줄. 질문은 이 글의 타겟 고객이 실제로 묻는 말투 그대로(비용·기간·가능 여부·선택 기준 등), 답은 1~2문장으로 구체적으로(기준·범위·조건). 앞 소제목에서 한 설명을 그대로 되풀이하지 말고 남은 궁금증을 짚는다. 답에는 {label} 이름·홍보를 넣지 않는다(정보성 답이어야 AI가 인용한다).
+  ② {label} 홍보 2~3문장: 이 글 주제(이 업종·이 산출물)와 엮어 '{label}은(는) ~하는 곳입니다'처럼 어떤 회사인지 한 번 정의하고, 이번 주제에 어울리는 강점 1~2가지만 골라 구체적으로 보여준다(매 글 같은 나열·같은 문장 반복 금지).
+  ③ 후킹 CTA 1~2문장: 독자가 '지금' 문의할 이유를 만드는 문장으로 끝낸다 — 독자의 구체적 고민(일정·예산·소재/방식 선택 등)을 짚고, 문의하면 바로 무엇을 받을 수 있는지(예: 상황에 맞는 방식 제안·견적 범위 안내)를 보여준다. 과장·명령조·이모지 없이, 아래 브랜드 CTA 기준을 바탕으로 이번 글 주제에 맞게 매번 새 문장으로 쓴다.
+    브랜드 CTA 기준: {cta}
+- 분량 배분(공백 제외, 전체 {lo:,}~{hi:,}자): 맨 앞 요약+인사+도입 약 200자 / 첫째~다섯째 소제목 각 약 220자 / 여섯째 소제목 약 400~450자(FAQ 약 280자 + 홍보·CTA 약 150자)."""
 
 
 def photo_layout(b):
@@ -511,6 +541,9 @@ def _selfcheck(b):
             f"- ★분량이 공백 제외 {lo:,}~{hi:,}자 범위인가({hi:,}자를 넘지 않았는가 — 넘으면 군더더기를 덜어낸다).\n"
             "- 본문 내용이 제목·각 소제목이 말하는 주제와 정확히 맞물리는가(범위 이탈·딴 얘기 없는가).\n"
             "- 문체가 지정한 톤(어미)은 지키되, 'AI가 쓴 티'가 나지 않고 사람이 쓴 것처럼 자연스러운가.\n"
+            + (f"- ★분량이 {lo:,}자보다 짧지 않은가(짧으면 첫째~다섯째 소제목에 구체적 기준·사례 문장을 보탠다).\n"
+               "- 여섯째(마지막) 소제목이 FAQ 3~4개(Q./A.) → 브랜드 홍보 2~3문장 → 후킹 CTA 순서이고, 그 뒤에 다른 문단이 없는가. 첫째~다섯째 소제목에는 브랜드 홍보가 없는가.\n"
+               if final_faq_promo(b) else "")
             + tbl)
 
 

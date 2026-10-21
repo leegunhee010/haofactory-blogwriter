@@ -100,5 +100,11 @@
  "crm_on": true,
  "crm_prefix": "hd",
  "crm_label": "디자인·인쇄 문의",
- "crm_mode": "utm"
+ "crm_mode": "utm",
+ "length": [
+  1600,
+  1900
+ ],
+ "final_faq_promo": true,
+ "length_fill": true
 }

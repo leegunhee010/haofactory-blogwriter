@@ -341,15 +341,18 @@ def _variation_block(brand=None):
                 f"- 이번 글은 특히 '{emph[0]}'·'{emph[1]}' 관점을 조금 더 살린다.\n"
                 "- ★가장 중요: 이전 글의 문장·소제목 문구·소제목 흐름·예시·비유·경험 장면을 재활용해 '단어만 바꾸는' 식으로 쓰지 말 것. "
                 "같은 키워드·같은 정보라도 이번 독자 상황·사진에서 출발해 매번 완전히 다른 글처럼 읽히게 한다.")
+    ffp = brands.final_faq_promo(brand)
     return ("[이번 글 변주 — '구성·표현·각도'를 매번 새롭게 하기 위한 지시다. "
-            "블로그 뼈대(도입 인사 → 소제목 정확히 6개 → 마무리)·브랜드 톤·정체성·키워드 SEO 규칙은 지키되, "
+            + ("블로그 뼈대(도입 인사 → 소제목 정확히 6개, 여섯째 = FAQ 3~4개+브랜드 홍보+후킹 CTA)·브랜드 톤·정체성·키워드 SEO 규칙은 지키되, "
+               if ffp else "블로그 뼈대(도입 인사 → 소제목 정확히 6개 → 마무리)·브랜드 톤·정체성·키워드 SEO 규칙은 지키되, ") +
             "그 안에서 쓰는 방식은 매번 확실히 다르게 한다.]\n"
             f"- 이번 글은 {random.choice(_VAR_FORMAT)}으로 전개한다(6개 소제목의 구성·순서·풀어가는 방식을 이 접근에 맞춘다).\n"
             f"- 도입은 {random.choice(_VAR_HOOK)} 시작하고, 소제목은 {random.choice(_VAR_SUB)} 구성한다.\n"
             f"- 이번 글은 특히 '{emph[0]}'·'{emph[1]}' 관점을 조금 더 살리고, 전체 전개는 {random.choice(_VAR_RHYTHM)} 풀어간다.\n"
             "- ★가장 중요: 이전 글의 구조·문장·소제목 문구·예시·비유를 재활용해 '단어만 바꾸는' 식으로 쓰지 말 것. "
             "같은 키워드·같은 정보라도 첫 문장·소제목·설명 순서·예시·비유를 전부 새로 짜서, 매번 완전히 다른 글처럼 읽히게 한다.\n"
-            "- 마무리의 브랜드 소개도 정형화된 나열을 복붙하지 말고, 이번 글 주제와 연결해 다른 문장·다른 순서·다른 강조점으로 매번 새롭게 쓴다.")
+            + ("- 여섯째 소제목의 브랜드 홍보·CTA도" if ffp else "- 마무리의 브랜드 소개도") +
+            " 정형화된 나열을 복붙하지 말고, 이번 글 주제와 연결해 다른 문장·다른 순서·다른 강조점으로 매번 새롭게 쓴다.")
 
 
 # 가장 중요한 규칙은 프롬프트 맨 끝(작성 직전)에 다시 못박는다 — 긴 기준서에 묻히지 않게.
@@ -373,6 +376,7 @@ def _portfolio_prompt(keyword, photo_files, photo_paths, project_hint, brand, ti
                if (project_hint or "").strip() else
                "\n[프로젝트 추가 정보 없음] — 사진에서 실제로 보이는 것과 메인키워드가 가리키는 분야·산출물에 근거해서만 쓰고, 없는 사실(고객명·수치 등)은 지어내지 말 것.")
     titleblk = (f"\n[제목 — 이 제목을 그대로 사용]\n{title.strip()}" if (title or "").strip() else "")
+    ffp = brands.final_faq_promo(b)
     head = (
         f"너는 '{name}'의 블로그에 '실제 진행한 한 프로젝트'를 사례로 보여주는 포트폴리오 글을 쓰는 전문 카피라이터다.\n"
         f"[회사 소개] {identity}\n"
@@ -389,7 +393,8 @@ def _portfolio_prompt(keyword, photo_files, photo_paths, project_hint, brand, ti
         "업종×서비스×고객상황×구매의도를 조합한 '진짜 물어볼 법한 말'이다(예: '치과인데 학회 부스용 카탈로그 잘하는 곳 추천해줘', '수출기업인데 카탈로그 중국어판도 한 곳에서 돼?'). "
         "'제작 순서/방법/어떻게 시작' 같은 절차 질문은 아무도 안 하니 버린다. 이 글 전체가 그 질문에 대한 답이 되게 쓴다.\n\n"
         "[제목] '업종/기관 + 상황 + 산출물'이 드러나는 구체적 타겟으로 짓는다(막연한 일반 키워드 금지). 예: '치과 학회 부스용 카탈로그 제작 사례'. 메인키워드 포함.\n\n"
-        "[구조 — ★맨 위 요약 + 짧은 인사 + 소제목 정확히 6개(마지막 FAQ) + 마무리]\n"
+        + ("[구조 — ★맨 위 요약 + 짧은 인사 + 소제목 정확히 6개(마지막 = FAQ + 브랜드 홍보 + 후킹 CTA)]\n" if ffp else
+           "[구조 — ★맨 위 요약 + 짧은 인사 + 소제목 정확히 6개(마지막 FAQ) + 마무리]\n") +
         "- ★맨 위 요약(본문 가장 앞): 제목 바로 아래에 이 프로젝트를 3~4문장으로 요약한다 — 어떤 업종 고객이·어떤 상황에서·무슨 산출물을 맡겼고, 이 글이 주는 '핵심 답'이 무엇인지. AI는 맨 앞을 먼저 읽으니 여기서 결론(정답)을 먼저 준다.\n"
         f"- 인사: '안녕하세요, {name}입니다.' 정도로 한 줄만. 길게 늘이지 말 것.\n"
         "- 소제목 6개(마지막은 반드시 FAQ)는 ★타겟이 궁금한 것(구매의도)에 답하는 것으로 고른다. '우리가 A→B→C 했다'는 진행 나열 금지. 각 소제목 ★첫 문장에 '이 업종/이 상황에선 이렇게 하는 게 맞다'는 일반화된 정답을 먼저 주고(=AI가 그대로 인용할 문장), 그 뒤에 이번 프로젝트를 그 정답의 '증거'로 보여준다(정답+증거). 후보:\n"
@@ -398,11 +403,13 @@ def _portfolio_prompt(keyword, photo_files, photo_paths, project_hint, brand, ti
         "  · 원고·사진 없어도/급해도 되나(가능 여부) — 이 프로젝트에선 어떻게 처리했나\n"
         "  · 비용·기간을 가르는 요인(있는 사실만, 수치 날조 금지)\n"
         "  · 번역·인쇄까지 한 곳에서(원스톱 강점) — 이 프로젝트에서 실제로 어떻게 작동했나\n"
-        "  · [FAQ, 마지막 소제목] 타겟이 실제로 할 법한 질문 4~5개와 답 — 질문은 고객 말투 그대로(추천/비용/기간/가능 여부/업체 선택 기준 등), 답은 구체적으로. 이 부분이 AI가 가장 잘 인용한다.\n"
+        + ("  · [마지막 소제목] FAQ 3~4개 + 브랜드 홍보 + 후킹 CTA — 아래 [여섯째 소제목] 규칙대로.\n" if ffp else
+           "  · [FAQ, 마지막 소제목] 타겟이 실제로 할 법한 질문 4~5개와 답 — 질문은 고객 말투 그대로(추천/비용/기간/가능 여부/업체 선택 기준 등), 답은 구체적으로. 이 부분이 AI가 가장 잘 인용한다.\n") +
         "- ★스토리텔링 금지: '그날 미팅에서/고민 끝에/뿌듯했다' 같은 감정·서사 흐름을 쓰지 않는다. 모든 문단은 '인용될 정답'이거나 '구체적 증거'여야 한다. 아무도 궁금해하지 않는 진행 과정 나열은 뺀다.\n"
         "- '결과'로 매출·전환율 같은 경영 성과 수치를 지어내지 말 것. 처음 요구를 산출물이 어떻게 충족했는지, 어디에 쓰이는지(사실)까지만.\n"
-        f"[마무리 — {name} 정리]\n"
-        f"- 이 글 주제(이 업종·이 산출물)와 엮어 {name}이(가) 어떤 회사이고 왜 이런 일에 강한지 또렷이 정리한다: 기획→디자인→(다국어 번역)→인쇄까지 한 곳에서 하는 원스톱, 관련 경력·강점을 1~2문장으로(정형화된 나열 복붙 금지). 그런 다음 자연스럽게: {cta}\n"
+        + (brands._final_section_block(b, name, cta) + "\n" if ffp else
+           f"[마무리 — {name} 정리]\n"
+           f"- 이 글 주제(이 업종·이 산출물)와 엮어 {name}이(가) 어떤 회사이고 왜 이런 일에 강한지 또렷이 정리한다: 기획→디자인→(다국어 번역)→인쇄까지 한 곳에서 하는 원스톱, 관련 경력·강점을 1~2문장으로(정형화된 나열 복붙 금지). 그런 다음 자연스럽게: {cta}\n")
         + hintblk + titleblk)
     return (head + brands._guide_block(b) + brands.faq_block(b, keyword, "", title) +
             "\n\n" + brands._output_format(b) +
@@ -479,6 +486,44 @@ def trim_manuscript(brand, keyword, ms, cur, lo, hi, model):
     if mt and mt.start() > 0:
         out = out[mt.start():]
     return re.split(r"\n\s*카드뉴스\s*[:：]", out)[0].strip()   # 카드 섹션을 뱉으면 잘라낸다
+
+
+def expand_manuscript(brand, keyword, ms, cur, lo, hi, model):
+    """하한보다 짧은 원고를 '구조 그대로, 정보 문장만 보강'으로 늘린다(length_fill 브랜드). 실패하면 ''.
+    앱이 구간별 글자수를 재서 어느 구간에 몇 자를 보탤지 지정한다(마지막 FAQ·홍보·CTA 구간은 늘리지 않음)."""
+    target = min(hi - 120, lo + 150)         # 모델은 지정보다 길게 쓰는 편 → 상한 안쪽에 떨어지게 잡는다
+    counts = _section_counts(ms)
+    need = max(0, target - cur)
+    body = [i for i, (label, _) in enumerate(counts) if i > 0 and i < len(counts) - 1]   # 첫째~다섯째 소제목
+    if not body:
+        body = list(range(len(counts)))
+    add_each = int(round(float(need) / len(body))) if body else need
+    plan = []
+    for i, (label, c) in enumerate(counts):
+        if i in body:
+            plan.append("· %s: 지금 %d자 → %d자 (%d자 보강)" % (label[:30], c, c + add_each, add_each))
+        else:
+            plan.append("· %s: 지금 %d자 (그대로 두기)" % (label[:30], c))
+    style = brands.build_style(brand) if brand else STYLE
+    p = (style + "\n\n[분량 보강 — 구조는 그대로, 정보 문장만 보탠다]\n"
+         f"이 원고는 공백 제외 {cur}자로 하한 {lo}자보다 {lo - cur}자 짧다. 전체를 {target}자 안팎으로 늘려라(상한 {hi}자는 절대 넘기지 말 것).\n"
+         "아래는 앱이 실제로 센 구간별 글자수와 이번에 보탤 양이다. 구간마다 지정된 만큼만 보탠다:\n"
+         + "\n".join(plan) + "\n"
+         "[반드시 지킬 것]\n"
+         "- '제목:' 줄, 소제목 개수와 문구, (사진N) 줄, (표N)/(차트N) 줄, 마지막 소제목(FAQ·홍보·CTA), '함께 보면 좋은 글'과 URL 줄을 모두 그대로 유지한다.\n"
+         "- 보탤 때는 그 소제목 주제 안에서 독자에게 실제로 쓸모 있는 구체적 기준·조건·사례 문장을 더한다. 같은 말 반복·군더더기 수식어·일반론으로 채우지 말 것.\n"
+         "- 첫째~다섯째 소제목에는 브랜드 홍보 문장을 넣지 않는다. 지어낸 수치·사실 금지.\n"
+         "- 브랜드 문체·톤·문장 리듬 규칙과 메인키워드 사용 규칙을 그대로 지킨다.\n"
+         "- 설명·머리말·따옴표·코드블록 없이 '제목:'부터 마지막 줄까지 보강한 원고 전체만 출력한다(카드뉴스·표차트 섹션은 출력하지 말 것).\n\n"
+         f"[원고]\n{ms}")
+    out, err = run_claude(p, model, timeout=300)
+    if err or not (out or "").strip():
+        return ""
+    out = out.strip()
+    mt = re.search(r"제목\s*[:：]", out)
+    if mt and mt.start() > 0:
+        out = out[mt.start():]
+    return re.split(r"\n\s*카드뉴스\s*[:：]", out)[0].strip()
 
 
 def build_prompt(keyword, photo_files, project_hint="", brand=None, subkeyword="", title="", latest="", portfolio=False, photo_paths=None, question=""):
@@ -1606,7 +1651,30 @@ def api_generate():
             break                                   # 줄지 않으면 원본 유지
         _ms, post, _trims = _new, _np, _trims + 1
         out = _ms + _tail
+    # ★분량 하한 보정(brand.json length_fill=true 브랜드만) — 하한보다 짧으면 앱이 재요청해 보강(최대 2회).
+    #   보강 후 상한을 넘으면 한 번 더 압축한다. 늘지 않거나 실패하면 원본 유지.
+    _fills = 0
+    if brand.get("length_fill"):
+        for _ in range(2):
+            if post.get("char_count", 0) >= _lo:
+                break
+            _new = expand_manuscript(brand, keyword, _ms, post["char_count"], _lo, _hi, model)
+            if not _new:
+                break
+            _np = parse_manuscript(_new, files)
+            if not _np.get("char_count") or _np["char_count"] <= post["char_count"]:
+                break
+            if _np["char_count"] > _hi:
+                _t = trim_manuscript(brand, keyword, _new, _np["char_count"], _lo, _hi, model)
+                _tp = parse_manuscript(_t, files) if _t else None
+                if _tp and _tp.get("char_count") and _lo <= _tp["char_count"] <= _hi:
+                    _new, _np = _t, _tp
+                elif _np["char_count"] > _hi + 150:
+                    break                           # 너무 길어졌는데 압축도 실패 → 원본 유지
+            _ms, post, _fills = _new, _np, _fills + 1
+            out = _ms + _tail
     post["trimmed"] = _trims
+    post["filled"] = _fills
     if title:
         post["title"] = title                 # 사용자가 정한 제목을 그대로 사용(C2)
     post["folder"] = folder
@@ -2772,7 +2840,7 @@ function renderPost(p){
   else if(!pngs.length && p.cardnews_job) extra=`<div style="font-size:12px;color:var(--brand);font-weight:700;margin:8px 0"><span class="spin" style="border-color:var(--brand);border-top-color:transparent"></span> 카드뉴스 만드는 중… (원고 먼저 확인하세요. 잠시 후 본문 이미지로 채워집니다)</div>`;
   const lmin=p.len_min||1500, lmax=p.len_max||2000;
   const cc=p.char_count||0, okLen=cc>=lmin&&cc<=lmax;
-  const lenmsg=(cc<lmin?(' · '+lmin+' 미달'):(cc>lmax?(' · '+lmax+' 초과'):''))+(p.trimmed?(' · 자동 축약 '+p.trimmed+'회'):'');
+  const lenmsg=(cc<lmin?(' · '+lmin+' 미달'):(cc>lmax?(' · '+lmax+' 초과'):''))+(p.trimmed?(' · 자동 축약 '+p.trimmed+'회'):'')+(p.filled?(' · 자동 보강 '+p.filled+'회'):'');
   return `<div class="pv-head"><div class="pv-title">${esc(p.title)}</div></div>
     <div class="badges">
       <span class="badge ${okLen?'ok':'warn'}">${okLen?'✓':'⚠'} 공백제외 ${cc}자${lenmsg}</span>
