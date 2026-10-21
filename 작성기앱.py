@@ -1892,7 +1892,20 @@ def api_recolor_cards():
         note = "하오스튜디오는 흰 로고와 겹쳐서 너무 밝은 색은 살짝 진하게 조정했어요."
     try:
         pngs = cardnews_pil.recolor_cards(cdir, tuple(col))
-        return jsonify(ok=True, pngs=pngs, color="%02X%02X%02X" % tuple(col), msg=note)
+        # 표·차트도 같은 색으로 다시 렌더(카드뉴스와 색 통일) — 프론트가 글의 chart 블록(cid·img·spec)을 보낸다
+        tw = brands.load_brand(brand).get("table_width") if brand else None
+        charts = 0
+        for ch in (b.get("charts") or []):
+            name = os.path.basename(str(ch.get("img") or ""))
+            spec = ch.get("spec")
+            if not (spec and re.match(r"^chart_.+\.png$", name)):
+                continue
+            try:
+                charts_pil.render_spec(os.path.join(cdir, name), spec, tuple(col), W=tw)
+                charts += 1
+            except Exception:
+                pass
+        return jsonify(ok=True, pngs=pngs, charts=charts, color="%02X%02X%02X" % tuple(col), msg=note)
     except Exception as e:
         return jsonify(ok=False, msg=str(e)[:200])
 
@@ -2939,9 +2952,11 @@ function pickColor(hex){hex=(hex||'').trim();if(hex[0]!=='#')hex='#'+hex;
 function applyCardColor(hex){const x=t();const p=x.post;
   if(!p||!p.cardnews_dir){toast('먼저 카드뉴스를 만들어 주세요','err');return;}
   x.cardColor=hex;x.colorBusy=true;render();
-  fetch('/api/recolor-cards',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cardnews_dir:p.cardnews_dir,color:hex,brand:x.brand||p.brand||BRAND})})
+  const cs=p.chart_specs||{};   // 표·차트도 같은 색으로 다시 그리도록 함께 보냄
+  const charts=(p.blocks||[]).filter(b=>b.type=='chart'&&b.img).map(b=>({cid:b.cid,img:b.img,spec:b.spec||cs[b.cid]||null})).filter(c=>c.spec);
+  fetch('/api/recolor-cards',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cardnews_dir:p.cardnews_dir,color:hex,brand:x.brand||p.brand||BRAND,charts})})
    .then(r=>r.json()).then(d=>{x.colorBusy=false;
-     if(d.ok){p.cardnews_pngs=(d.pngs||[]).slice();x.cardColor='#'+d.color;toast(d.msg||'🎨 카드 색이 바뀌었어요','ok');}
+     if(d.ok){p.cardnews_pngs=(d.pngs||[]).slice();x.cardColor='#'+d.color;toast(d.msg||(d.charts?'🎨 카드·표 색이 바뀌었어요':'🎨 카드 색이 바뀌었어요'),'ok');}
      else toast(d.msg||'색 변경 실패','err');
      render();
    }).catch(()=>{x.colorBusy=false;toast('색 변경 실패(네트워크)','err');render();});
