@@ -55,7 +55,8 @@
     "title_size": 54,
     "title_max": 22,
     "gap": 22,
-    "dy": 30
+    "dy": 30,
+    "comma_split": true
    }
   ],
   [

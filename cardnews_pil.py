@@ -356,7 +356,31 @@ def _two_lines(text):
     return " ".join(words[:best_i]) + "\n" + " ".join(words[best_i:])
 
 
-def _draw_kw_title(canvas, box, keyword, title, font_path, kw_size, title_size, color, pt2px, align="right", gap=0, dy=0):
+def _balanced_lines(d, text, fnt, w):
+    """폭 w에 맞는 최소 줄 수로, 줄 길이가 고르게 어절 단위 분할(한 단어만 다음 줄로 떨어지는 것 방지)."""
+    words = str(text).split()
+    if not words:
+        return []
+    if d.textlength(" ".join(words), font=fnt) <= w or len(words) == 1:
+        return [" ".join(words)]
+    from itertools import combinations
+    for n in range(2, len(words) + 1):
+        best, best_cost = None, None
+        for cuts in combinations(range(1, len(words)), n - 1):
+            b = (0,) + cuts + (len(words),)
+            ls = [" ".join(words[b[i]:b[i + 1]]) for i in range(n)]
+            ws = [d.textlength(l, font=fnt) for l in ls]
+            if max(ws) > w:
+                continue
+            cost = max(ws) - min(ws) + (w if len(words[b[-2]:]) == 1 and len(words[-1]) <= 3 else 0)
+            if best_cost is None or cost < best_cost:
+                best, best_cost = ls, cost
+        if best:
+            return best
+    return words
+
+
+def _draw_kw_title(canvas, box, keyword, title, font_path, kw_size, title_size, color, pt2px, align="right", gap=0, dy=0, wrap_title=False):
     """키워드(큰글씨) + 제목(작은글씨)을 각자 원본 사이즈로, 정렬·세로가운데 그대로 렌더."""
     x, y, w, h = box
     col = (color[0], color[1], color[2], 255)
@@ -387,7 +411,9 @@ def _draw_kw_title(canvas, box, keyword, title, font_path, kw_size, title_size, 
     klines = wrap(keyword, kf) if keyword else []
     # 제목은 무조건 한 줄. 폭을 넘으면 끝 어절부터 떼어 축약, 그래도 길면 글자 단위로 컷
     tlines = []
-    if title:
+    if title and wrap_title:                            # comma_split: 쉼표 뒤 문장은 자르지 않고 고르게 줄바꿈
+        tlines = _balanced_lines(d, title, tf, w)
+    elif title:
         one = " ".join(str(title).split())
         while d.textlength(one, font=tf) > w and " " in one:
             one = one.rsplit(" ", 1)[0]
@@ -474,14 +500,18 @@ def render_card(slide_idx, photo_path, headline, theme, out_path, assets_dir,
             if it.get("kw_title"):                       # 표지: 키워드(큰)+제목(작게, 무조건 한 줄) 원본 사이즈·정렬 유지
                 kw = (headline or "").strip().rstrip(",")
                 ti = " ".join((title or "").split())
-                if kw and ti.startswith(kw):             # 제목이 키워드로 시작하면 중복 제거
+                wrap_ti = False
+                if it.get("comma_split") and "," in ti:  # 제목의 쉼표 앞 = 위(큰 글씨), 쉼표 뒤 = 아래(작은 글씨, 길면 줄바꿈)
+                    kw, ti = (s.strip() for s in ti.split(",", 1))
+                    wrap_ti = True
+                elif kw and ti.startswith(kw):           # 제목이 키워드로 시작하면 중복 제거
                     ti = ti[len(kw):].lstrip(" ,·")
                 if kw and not kw.endswith((",", ".", "!", "?")):
                     kw += ","
                 canvas = _draw_kw_title(canvas, box, kw, ti, fp,
                                         it.get("kw_size", it.get("size", 80)), it.get("title_size", 54),
                                         col, pt2px, it.get("align", "right"),
-                                        it.get("gap", 0), it.get("dy", 0))
+                                        it.get("gap", 0), it.get("dy", 0), wrap_title=wrap_ti)
             else:
                 txt = (title or "") if it.get("source") == "title" else (headline or "")
                 if it.get("lines") == 2:
