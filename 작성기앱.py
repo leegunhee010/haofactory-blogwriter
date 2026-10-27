@@ -130,11 +130,15 @@ def sync_card_sources(cdir):
         pass
 
 
-def _cardnews_job(jid, photo_paths, cards, keyword, assets_dir, subtitle="", bodies=None, title="", chart_specs=None, table_w=None):
+def _card_dir_for(keyword):
+    safe = re.sub(r'[\\/:*?"<>|]', "_", keyword)
+    stamp = datetime.datetime.now().strftime("%H%M%S%f")[:9]
+    return os.path.join(OUT_DIR, f"{safe}_카드뉴스_{stamp}")
+
+
+def _cardnews_job(jid, photo_paths, cards, keyword, assets_dir, subtitle="", bodies=None, title="", chart_specs=None, table_w=None, png_dir=None):
     try:
-        safe = re.sub(r'[\\/:*?"<>|]', "_", keyword)
-        stamp = datetime.datetime.now().strftime("%H%M%S%f")[:9]
-        png_dir = os.path.join(OUT_DIR, f"{safe}_카드뉴스_{stamp}")
+        png_dir = png_dir or _card_dir_for(keyword)
         res = cardnews_pil.make_cards(photo_paths, cards[:7], png_dir, assets_dir,
                                       subtitle=subtitle, bodies=bodies, title=title)   # 순수 PIL, 즉시
         srcs = [c["src"] for c in res["cards"]]
@@ -1139,6 +1143,178 @@ def api_drive_status():
     return jsonify(DRIVE_JOBS.get(request.args.get("job", ""), {"status": "error", "msg": "작업을 찾을 수 없습니다."}))
 
 
+# ── 본문 합성 이미지(Drive 사진 2장 → 1장) 3장: 글 내용에 맞는 사진을 Claude가 직접 보고 골라 소제목 사이에 끼운다 ──
+COMBO_JOBS = {}
+COMBO_N = 3                     # 합성 이미지 개수(카드 7 + 합성 3 = 본문 이미지 10장)
+COMBO_SIZE = (1600, 600)        # 가로로 2장 나란히(각 800×600, 가운데 기준 꽉 채워 자름)
+
+
+def _crop_fill(im, W, H, cx=0.5, cy=0.5, zoom=1.0):
+    """칸(W×H)을 꽉 채우게 자르기. cx·cy = 보여줄 중심(사진 기준 0~1), zoom ≥1 이면 확대."""
+    from PIL import Image
+    iw, ih = im.size
+    if iw / ih > W / H:
+        ch = ih; cw = ih * W / H
+    else:
+        cw = iw; ch = iw * H / W
+    z = max(1.0, min(3.0, float(zoom or 1)))
+    cw, ch = cw / z, ch / z
+    x0 = min(max(0, cx * iw - cw / 2), iw - cw)
+    y0 = min(max(0, cy * ih - ch / 2), ih - ch)
+    return im.crop((int(x0), int(y0), int(x0 + cw), int(y0 + ch))).resize((W, H), Image.LANCZOS)
+
+
+def _combo_image(halves, out):
+    """halves = [{src, cx, cy, zoom}, …] → 가로로 나란히 합성(각 칸 꽉 채움)."""
+    from PIL import Image, ImageOps
+    W, H = COMBO_SIZE
+    canvas = Image.new("RGB", (W, H), (255, 255, 255))
+    half = W // len(halves)
+    for i, h in enumerate(halves):
+        im = ImageOps.exif_transpose(Image.open(h["src"])).convert("RGB")
+        canvas.paste(_crop_fill(im, half, H, h.get("cx", .5), h.get("cy", .5), h.get("zoom", 1)), (i * half, 0))
+    canvas.save(out, quality=92)
+    return out
+
+
+def _combo_state_path(d):
+    return os.path.join(d, "combos.json")
+
+
+def _combo_candidates(folder, files, cap=24):
+    """후보 사진 — 하위 폴더(프로젝트)별로 돌아가며 골고루 최대 cap장."""
+    groups = {}
+    for f in files:
+        groups.setdefault(os.path.dirname(f), []).append(f)
+    for g in groups.values():
+        random.shuffle(g)
+    keys = list(groups); random.shuffle(keys)
+    out = []
+    while len(out) < cap and any(groups[k] for k in keys):
+        for k in keys:
+            if groups[k] and len(out) < cap:
+                out.append(groups[k].pop())
+    return out
+
+
+def _combo_sections(ms):
+    """원고 → [(소제목 번호, 소제목, 본문 앞부분)] (첫째~다섯째만 — 여섯째 FAQ·CTA 뒤에는 넣지 않는다)."""
+    lines = ms.split("\n")
+    out = []
+    for k, sec in enumerate([s for s in _sections(lines) if s["id"] != "intro"][:5]):
+        body = " ".join(l.strip() for l in lines[sec["start"] + 1:sec["end"]]
+                        if l.strip() and not _PHOTO_LINE_RE.match(l) and not l.strip().startswith(("(표", "(차트", "[alt")))
+        out.append((k + 1, re.sub(r"\*", "", sec["label"]), body[:260]))
+    return out
+
+
+def _combo_job(jid, drive_folder, ms, keyword, out_dir, model):
+    job = COMBO_JOBS[jid]
+    try:
+        from PIL import Image, ImageOps
+        files = list_images(drive_folder)
+        secs = _combo_sections(ms)
+        if len(files) < 2 or not secs:
+            job.update(status="error", msg="합성할 Drive 사진이 부족합니다(2장 이상 필요).")
+            return
+        cand = _combo_candidates(drive_folder, files)
+        tdir = os.path.join(out_dir, "_합성후보")
+        os.makedirs(tdir, exist_ok=True)
+        tmap = {}
+        for i, f in enumerate(cand):                     # Claude가 읽기 쉽게 작은 사본(긴 변 640px)
+            nm = "p%02d.jpg" % (i + 1)
+            try:
+                im = ImageOps.exif_transpose(Image.open(os.path.join(drive_folder, f))).convert("RGB")
+                im.thumbnail((640, 640)); im.save(os.path.join(tdir, nm), quality=85)
+                tmap[nm] = f
+            except Exception:
+                pass
+        n = min(COMBO_N, len(tmap) // 2, len(secs))
+        picks = []
+        if n:
+            plist = "\n".join("- %s" % os.path.join(tdir, nm) for nm in tmap)
+            slist = "\n".join("%d. %s — %s" % s for s in secs)
+            prompt = (
+                f"블로그 글 '{keyword}'의 본문 사이에 넣을 '2장 합성 이미지' {n}장을 만들 사진을 고른다.\n"
+                "아래 사진 파일을 Read 도구로 모두 열어 보고, 각 소제목 내용과 가장 잘 맞는 사진을 고른다.\n"
+                f"[소제목(번호. 소제목 — 본문 앞부분)]\n{slist}\n\n[사진 후보]\n{plist}\n\n"
+                f"[규칙]\n- 서로 다른 소제목 {n}곳을 고르고, 소제목마다 사진 2장(한 쌍)을 고른다. 총 {n * 2}장은 모두 서로 달라야 한다.\n"
+                "- 한 쌍의 두 사진은 그 소제목 내용을 함께 보여줄 수 있는 같은 성격의 사진으로 고른다(비슷한 산출물·장면). 흐리거나 내용과 동떨어진 사진은 고르지 않는다.\n"
+                "- 출력은 JSON 배열 한 줄만(설명 금지): "
+                '[{"sec":1,"photos":["p03.jpg","p11.jpg"]},{"sec":3,"photos":["p05.jpg","p08.jpg"]}]')
+            out, err = run_claude(prompt, model, tools="Read", timeout=420)
+            used, seen_sec = set(), set()
+            try:
+                arr = json.loads(re.search(r"\[.*\]", out or "", re.S).group(0))
+                for it in arr:
+                    sec = int(it.get("sec", 0)); ph = [os.path.basename(str(x)) for x in (it.get("photos") or [])][:2]
+                    if 1 <= sec <= len(secs) and sec not in seen_sec and len(ph) == 2 \
+                            and all(p in tmap and p not in used for p in ph) and ph[0] != ph[1]:
+                        picks.append((sec, [tmap[p] for p in ph])); used.update(ph); seen_sec.add(sec)
+            except Exception:
+                pass
+            # Claude 응답이 모자라면 남은 사진·소제목으로 채움(서로 겹치지 않게)
+            rest = [nm for nm in tmap if nm not in used]
+            free = [s[0] for s in secs if s[0] not in seen_sec]
+            random.shuffle(rest)
+            while len(picks) < n and len(rest) >= 2 and free:
+                a, b2 = rest.pop(), rest.pop()
+                sec = free.pop(len(free) // 2)
+                picks.append((sec, [tmap[a], tmap[b2]]))
+        picks.sort()
+        combos = []
+        for i, (sec, pair) in enumerate(picks):
+            nm = "합성%d.jpg" % (i + 1)
+            halves = [{"src": os.path.join(drive_folder, p), "cx": .5, "cy": .5, "zoom": 1.0} for p in pair]
+            _combo_image(halves, os.path.join(out_dir, nm))
+            combos.append({"sec": sec, "img": nm, "src": pair, "halves": halves})
+        shutil.rmtree(tdir, ignore_errors=True)
+        with open(_combo_state_path(out_dir), "w", encoding="utf-8") as f:   # 사진 교체·위치·확대 상태
+            json.dump({"drive_folder": drive_folder, "combos": combos}, f, ensure_ascii=False, indent=1)
+        job.update(status="done", combos=combos, dir=out_dir)
+    except Exception as e:
+        job.update(status="error", msg=str(e)[:200])
+
+
+@app.route("/api/combo-edit", methods=["POST"])
+def api_combo_edit():
+    """합성 이미지 한 칸(왼쪽 0 / 오른쪽 1) 사진 교체·위치·확대 → 그 합성만 다시 렌더."""
+    b = request.get_json(force=True) or {}
+    d = b.get("dir") or ""
+    img = os.path.basename(str(b.get("img") or ""))
+    sp = _combo_state_path(d)
+    if not (d and os.path.isfile(sp) and re.match(r"^합성\d+\.jpg$", img)):
+        return jsonify(ok=False, msg="합성 이미지를 찾을 수 없습니다.")
+    st = jload(sp, {})
+    c = next((x for x in st.get("combos", []) if x.get("img") == img), None)
+    side = int(b.get("side", 0))
+    if not c or not (0 <= side < len(c.get("halves", []))):
+        return jsonify(ok=False, msg="합성 이미지 정보가 없습니다.")
+    h = c["halves"][side]
+    if b.get("src"):
+        src = str(b["src"])
+        if not (os.path.isfile(src) and src.lower().endswith(_DRIVE_IMG_EXT)):
+            return jsonify(ok=False, msg="사진 파일을 찾을 수 없습니다.")
+        h.update(src=src, cx=.5, cy=.5, zoom=1.0)          # 새 사진은 가운데·원래 크기부터
+    for k in ("cx", "cy"):
+        if k in b and b[k] is not None:
+            h[k] = max(0.0, min(1.0, float(b[k])))
+    if b.get("zoom") is not None:
+        h["zoom"] = max(1.0, min(3.0, float(b["zoom"])))
+    try:
+        _combo_image(c["halves"], os.path.join(d, img))
+    except Exception as e:
+        return jsonify(ok=False, msg="렌더 실패: " + str(e)[:120])
+    with open(sp, "w", encoding="utf-8") as f:
+        json.dump(st, f, ensure_ascii=False, indent=1)
+    return jsonify(ok=True, img=img, halves=c["halves"])
+
+
+@app.route("/api/combo-status")
+def api_combo_status():
+    return jsonify(COMBO_JOBS.get(request.args.get("id", ""), {"status": "unknown"}))
+
+
 # ── 사진 정리 (폴더명·파일명·비전으로 분류 → 원본 이름변경) ──────────
 ORG = {"running": False, "total": 0, "done": 0, "renamed": 0, "log": [], "finished": False}
 _STAGE_HINTS = [("대표", "대표"), ("콘셉트", "대표"), ("조각", "공정"), ("몰드", "공정"),
@@ -1688,6 +1864,7 @@ def api_generate():
     title = (b.get("title") or "").strip()
     question = (b.get("question") or "").strip()      # 독자의 실제 질문(선택) → 제목·글이 이 질문에 답함
     tpl = str(b.get("template") or "1")   # 카드 디자인 슬롯(b는 아래 루프에서 덮어써지므로 먼저 읽음)
+    drive_folder = (b.get("drive_folder") or "").strip()   # Drive 링크로 받은 사진 폴더 → 본문 합성 이미지용
     if not keyword:
         return jsonify(ok=False, msg="키워드를 입력하세요.")
     brand = brands.load_brand(b.get("brand") or "haofactory")
@@ -1842,13 +2019,23 @@ def api_generate():
         card_files = pick_diverse(files, claude_picks, n_cards)
     post["cardnews_pngs"] = []
     post["cardnews_job"] = ""
+    png_dir = _card_dir_for(keyword)                    # 카드·표·합성 이미지를 한 폴더에(네이버로 옮길 때 폴더 하나만 열면 됨)
     if card_files and len(cards) >= 6 and has_tpl:
-        import uuid
         jid = uuid.uuid4().hex[:10]
         CARD_JOBS[jid] = {"status": "rendering"}
         post["cardnews_job"] = jid
         photo_paths = [os.path.join(folder, f) for f in card_files]
-        threading.Thread(target=_cardnews_job, args=(jid, photo_paths, cards, keyword, adir, sub, bodies, post.get("title", ""), chart_specs, brand.get("table_width")), daemon=True).start()
+        threading.Thread(target=_cardnews_job, args=(jid, photo_paths, cards, keyword, adir, sub, bodies, post.get("title", ""), chart_specs, brand.get("table_width"), png_dir), daemon=True).start()
+    # ★Drive 사진 → 본문 합성 이미지 3장(drive_link 브랜드). 카드와 별도로 백그라운드에서 사진을 보고 골라 만든다.
+    post["combo_job"] = ""
+    post["combos"] = []
+    if brand.get("drive_link") and drive_folder and os.path.isdir(drive_folder):
+        os.makedirs(png_dir, exist_ok=True)
+        cj = uuid.uuid4().hex[:10]
+        COMBO_JOBS[cj] = {"status": "running"}
+        post["combo_job"] = cj
+        post["combo_dir"] = png_dir
+        threading.Thread(target=_combo_job, args=(cj, drive_folder, _ms, keyword, png_dir, model), daemon=True).start()
     return jsonify(ok=True, post=post)
 
 
@@ -2418,6 +2605,16 @@ def api_docx():
                 except Exception:
                     pass
             continue
+        if blk["type"] == "combo":                       # Drive 사진 2장 합성 이미지
+            img = os.path.join(post.get("combo_dir") or cdir, blk.get("img", "")) if blk.get("img") else None
+            if img and os.path.isfile(img):
+                pp = doc.add_paragraph(); pp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                pp.paragraph_format.space_before = Pt(6); pp.paragraph_format.space_after = Pt(12)
+                try:
+                    pp.add_run().add_picture(img, width=Cm(15))
+                except Exception:
+                    pass
+            continue
         if blk["type"] == "photo":
             img = None
             if use_cards:
@@ -2572,6 +2769,12 @@ select:focus{border-color:var(--brand)}
 .editq{font-size:12px;font-weight:700;color:var(--brand);display:flex;align-items:center;gap:6px}
 .chartwrap{position:relative;display:block;margin:14px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--sh)}
 .chartwrap img{display:block;width:100%}
+.combowrap{border:none;box-shadow:none;border-radius:0;overflow:visible}.combowrap img{width:100%!important;max-width:100%!important;height:auto!important;border-radius:8px;margin:0!important}
+.combobox{position:relative}
+.combohalf{position:absolute;top:0;bottom:0;width:50%}
+.combohalf .cardbar{white-space:nowrap}
+.combohalf:hover .cardbar{opacity:1;transform:translateX(-50%) translateY(0)}
+.combohalf:hover{box-shadow:inset 0 0 0 3px var(--brand);border-radius:8px}
 .chartdel{position:absolute;top:8px;right:8px;width:28px;height:28px;border:none;border-radius:50%;background:rgba(20,24,30,.55);color:#fff;font-size:14px;cursor:pointer;opacity:0;transition:.15s}
 .chartwrap:hover .chartdel{opacity:1}
 .chartpend{margin:14px 0;padding:18px;border:1px dashed var(--line);border-radius:12px;color:var(--brand);font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px;justify-content:center}
@@ -2828,9 +3031,11 @@ function render(){
         <button class="btn" onclick="pickFolder()">폴더 선택</button>
         <button class="btn" onclick="loadPhotos()">불러오기</button>
         ${x.folder&&x.files.length?`<button class="btn" onclick="organize()" title="파일명을 단계별(공정/완성 등)로 자동 정리">📷 사진 정리</button>`:''}</div>
-      ${curBrand().drive_link?`<div class="row" style="margin-top:6px"><input type="text" id="drivelink" value="${esc(x.driveUrl||'')}" placeholder="또는 Google Drive 폴더 링크 붙여넣기 (공유: 링크가 있는 모든 사용자)" oninput="t().driveUrl=this.value">
-        <button class="btn" onclick="driveFetch()" ${x.driveBusy?'disabled':''}>☁ Drive에서 가져오기</button></div>
-      ${x.driveMsg?`<div class="hint ${x.driveErr?'bad':'ok'}">${esc(x.driveMsg)}</div>`:''}`:''}
+      ${curBrand().drive_link?`<div class="row" style="margin-top:6px"><input type="text" id="drivelink" value="${esc(x.driveUrl||'')}" placeholder="본문 합성 이미지용 Google Drive 폴더 링크 (공유: 링크가 있는 모든 사용자)" oninput="t().driveUrl=this.value">
+        <button class="btn" onclick="driveFetch()" ${x.driveBusy?'disabled':''}>☁ Drive에서 가져오기</button>
+        ${x.driveFolder?`<button class="btn" onclick="driveClear()" title="합성 이미지 없이 쓰기">✕</button>`:''}</div>
+      ${x.driveMsg?`<div class="hint ${x.driveErr?'bad':'ok'}">${esc(x.driveMsg)}</div>`:''}
+      ${x.driveFolder&&(x.driveFiles||[]).length?`<div class="photos">${x.driveFiles.slice(0,6).map(f=>`<img src="/img?folder=${encodeURIComponent(x.driveFolder)}&name=${encodeURIComponent(f)}" title="${esc(f)}">`).join('')}${x.driveFiles.length>6?`<div style="width:62px;height:62px;border-radius:7px;background:#eef1f4;display:flex;align-items:center;justify-content:center;font-size:12px;color:#889;font-weight:700">+${x.driveFiles.length-6}</div>`:''}</div>`:''}`:''}
       <div id="orgbar" style="margin-top:6px;font-size:12px;color:var(--brand);font-weight:700"></div>
       ${x.folder?`<div class="hint ${x.files.length?'ok':'bad'}">${x.files.length?(x.picked?('📌 선택한 사진 '+x.files.length+'장만 사용 (폴더 전체를 쓰려면 다시 [폴더 선택])'):('📷 사진 '+x.files.length+'장 (하위 폴더 포함) · 생성 시 키워드에 맞춰 자동 선택')):'이 폴더에 사진이 없습니다'}</div>
       <div class="photos">${x.files.slice(0,6).map(f=>`<img src="/img?folder=${encodeURIComponent(x.folder)}&name=${encodeURIComponent(f)}" title="${esc(f)}">`).join('')}${x.files.length>6?`<div style="width:62px;height:62px;border-radius:7px;background:#eef1f4;display:flex;align-items:center;justify-content:center;font-size:12px;color:#889;font-weight:700">+${x.files.length-6}</div>`:''}</div>`:''}
@@ -2933,13 +3138,35 @@ function driveFetch(){const x=t();const url=(el('drivelink')?el('drivelink').val
      const poll=()=>fetch('/api/drive-status?job='+d.job).then(r=>r.json()).then(s=>{
        if(s.status=='running'){x.driveMsg=s.total?('☁ 사진 내려받는 중… '+s.done+' / '+s.total):('☁ 폴더 읽는 중… 사진 '+(s.listed||0)+'장 찾음');render();setTimeout(poll,1200);return;}
        x.driveBusy=false;
-       if(s.status=='done'){x.driveErr=false;x.driveMsg='✓ Drive 사진 '+s.ok+'장 가져옴'+(s.failed?(' (실패 '+s.failed+'장)'):'');
-         x.folder=s.folder;x.picked=false;
-         fetch('/api/photos?folder='+encodeURIComponent(s.folder)).then(r=>r.json()).then(v=>{x.files=v.files;render();});}
+       if(s.status=='done'){x.driveErr=false;x.driveMsg='✓ Drive 사진 '+s.ok+'장 가져옴'+(s.failed?(' (실패 '+s.failed+'장)'):'')+' · 생성 시 글 내용에 맞는 사진 2장씩 골라 본문 합성 이미지 3장을 만듭니다(카드뉴스에는 쓰지 않음)';
+         x.driveFolder=s.folder;
+         fetch('/api/photos?folder='+encodeURIComponent(s.folder)).then(r=>r.json()).then(v=>{x.driveFiles=v.files;render();});}
        else{x.driveErr=true;x.driveMsg=s.msg||'가져오기 실패';render();}
      }).catch(()=>setTimeout(poll,2000));
      poll();
    }).catch(()=>{x.driveBusy=false;x.driveErr=true;x.driveMsg='가져오기 실패(네트워크)';render();});}
+function driveClear(){const x=t();x.driveFolder='';x.driveFiles=[];x.driveMsg='';x.driveErr=false;render();}
+// 합성 이미지 블록을 원고에 끼움: 합성 k(sec=s) → s번째 소제목 끝(= s+1번째 소제목 줄 바로 앞). 여러 번 불러도 결과 동일.
+function applyCombos(p){if(!p||!p.blocks)return;
+  p.blocks=p.blocks.filter(b=>b.type!='combo');
+  const combos=(p.combos||[]).slice().sort((a,b)=>b.sec-a.sec);   // 뒤에서부터 넣어야 앞 위치가 안 밀림
+  combos.forEach(c=>{let hc=0,placed=false;
+    for(let bi=0;bi<p.blocks.length&&!placed;bi++){const b=p.blocks[bi];if(b.type!='text')continue;
+      const lines=b.text.split('\n');
+      for(let li=0;li<lines.length;li++){
+        if(/^\s*\*\*.+\*\*\s*$/.test(lines[li])){hc++;
+          if(hc==c.sec+1){const before=lines.slice(0,li).join('\n'),after=lines.slice(li).join('\n');
+            const nb=[];if(before.trim())nb.push({type:'text',text:before});nb.push({type:'combo',img:c.img,sec:c.sec});nb.push({type:'text',text:after});
+            p.blocks.splice(bi,1,...nb);placed=true;break;}}}}
+    if(!placed){   // 다음 소제목을 못 찾으면 마지막 텍스트 앞에
+      let idx=p.blocks.length;for(let i=p.blocks.length-1;i>=0;i--){if(p.blocks[i].type=='text'){idx=i;break;}}
+      p.blocks.splice(idx,0,{type:'combo',img:c.img,sec:c.sec});}
+  });}
+function pollCombos(job, tab){const iv=setInterval(()=>{fetch('/api/combo-status?id='+job).then(r=>r.json()).then(s=>{
+  if(s.status=='done'){clearInterval(iv);tab.post.combos=s.combos||[];tab.post.combo_dir=s.dir;tab.post.combo_busy=false;applyCombos(tab.post);
+    if(t()===tab)render();toast('🖼 본문 합성 이미지 '+(s.combos||[]).length+'장 완성','ok');}
+  else if(s.status=='error'||s.status=='unknown'){clearInterval(iv);tab.post.combo_busy=false;tab.post.combo_err=s.msg||'합성 이미지 실패';if(t()===tab)render();toast('합성 이미지 실패: '+(s.msg||''),'err');}
+}).catch(()=>{});},2500);}
 function loadPhotos(){const f=el('folder').value;const x=t();x.folder=f;x.picked=false;
   fetch('/api/photos?folder='+encodeURIComponent(f)).then(r=>r.json()).then(d=>{x.files=d.files;render();});}
 function organize(){const x=t();
@@ -2953,12 +3180,14 @@ function pollOrg(){const iv=setInterval(()=>{fetch('/api/organize-status').then(
 });},1500);}
 function generate(extra){const x=t();if(!x.keyword){toast('키워드를 입력하세요','err');return;}
   x.busy=true;render();
-  const pay=Object.assign({keyword:x.keyword,subkeyword:x.subkeyword||'',question:x.question||'',title:x.title||'',folder:x.folder,files:(x.picked&&x.files&&x.files.length)?x.files:null,hint:x.hint,model:x.model||'opus',brand:x.brand||BRAND,template:x.cardTpl||'1',portfolio:!!x.portfolio},extra||{});
+  const pay=Object.assign({keyword:x.keyword,subkeyword:x.subkeyword||'',question:x.question||'',title:x.title||'',folder:x.folder,files:(x.picked&&x.files&&x.files.length)?x.files:null,hint:x.hint,model:x.model||'opus',brand:x.brand||BRAND,template:x.cardTpl||'1',portfolio:!!x.portfolio,
+    drive_folder:(curBrand().drive_link&&x.driveFolder)?x.driveFolder:''},extra||{});
   fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pay)})
    .then(r=>r.json()).then(d=>{x.busy=false;
      if(!d.ok){toast(d.msg||'생성 실패','err');render();return;}
-     x.post=d.post;render();toast('✍ 원고 완성','ok');
+     x.post=d.post;if(d.post.combo_job)x.post.combo_busy=true;render();toast('✍ 원고 완성','ok');
      if(d.post.cardnews_job) pollCards(d.post.cardnews_job, x);
+     if(d.post.combo_job) pollCombos(d.post.combo_job, x);
    }).catch(e=>{x.busy=false;toast('오류: '+e,'err');render();});
 }
 function pollCards(job, tab){const iv=setInterval(()=>{fetch('/api/cardnews-status?id='+job).then(r=>r.json()).then(s=>{
@@ -2971,7 +3200,12 @@ function renderPost(p){
   const folder=p.folder||'', cdir=p.cardnews_dir||'';
   const pngs=p.cardnews_pngs||[], useCards=pngs.length>0;
   let pi=0;
+  let ki=0;
   let body=p.blocks.map((b,bi)=>{
+    if(b.type=='combo'){ki++;   // Drive 사진 2장 합성 이미지 — 왼쪽·오른쪽 칸마다 사진 교체·위치·확대
+      return `<div class="chartwrap combowrap"><div class="combobox"><img id="comboimg_${esc(b.img)}" src="/img?folder=${encodeURIComponent(p.combo_dir||cdir)}&name=${encodeURIComponent(b.img)}&v=${Date.now()}">
+        <div class="combohalf" style="left:0">${comboCtl(b.img,0)}</div><div class="combohalf" style="right:0">${comboCtl(b.img,1)}</div></div>
+        <div class="altcap">🖼 합성 ${ki} · 사진에 마우스를 올리면 왼쪽·오른쪽 칸을 따로 🔄 교체 · 위치 ▲▼◀▶ · 확대 ＋－</div></div>`;}
     if(b.type=='chart'){       // C6: 표·차트 이미지
       if(b.img) return `<div class="chartwrap"><img src="/img?folder=${encodeURIComponent(cdir)}&name=${encodeURIComponent(b.img)}&v=${Date.now()}"><button class="chartdel" onclick="delChart(${bi})" title="이 표/차트 삭제">✕</button></div>`;
       return `<div class="chartpend"><span class="spin"></span> 📊 표·차트 만드는 중…<button class="chartdel" style="position:static;margin-left:10px" onclick="delChart(${bi})" title="이 표 자리 삭제">✕</button></div>`;
@@ -2999,20 +3233,24 @@ function renderPost(p){
   if(!pngs.length && p.cardnews_err) extra=`<div style="font-size:11px;color:#d55;margin:8px 0">카드뉴스 오류: ${esc(p.cardnews_err)}</div>`;
   else if(!pngs.length && p.cardnews_png_err) extra=`<div style="font-size:11px;color:#d55;margin:8px 0">카드 렌더 실패: ${esc(p.cardnews_png_err)}</div>`;
   else if(!pngs.length && p.cardnews_job) extra=`<div style="font-size:12px;color:var(--brand);font-weight:700;margin:8px 0"><span class="spin" style="border-color:var(--brand);border-top-color:transparent"></span> 카드뉴스 만드는 중… (원고 먼저 확인하세요. 잠시 후 본문 이미지로 채워집니다)</div>`;
+  if(p.combo_busy) extra+=`<div style="font-size:12px;color:var(--brand);font-weight:700;margin:8px 0"><span class="spin" style="border-color:var(--brand);border-top-color:transparent"></span> Drive 사진을 보고 본문 합성 이미지 고르는 중… (1~3분)</div>`;
+  else if(p.combo_err) extra+=`<div style="font-size:11px;color:#d55;margin:8px 0">합성 이미지 실패: ${esc(p.combo_err)}</div>`;
+  const nCombo=p.blocks.filter(b=>b.type=='combo').length;
   const lmin=p.len_min||1500, lmax=p.len_max||2000;
   const cc=p.char_count||0, okLen=cc>=lmin&&cc<=lmax;
   const lenmsg=(cc<lmin?(' · '+lmin+' 미달'):(cc>lmax?(' · '+lmax+' 초과'):''))+(p.trimmed?(' · 자동 축약 '+p.trimmed+'회'):'')+(p.filled?(' · 자동 보강 '+p.filled+'회'):'');
   return `<div class="pv-head"><div class="pv-title">${esc(p.title)}</div></div>
     <div class="badges">
       <span class="badge ${okLen?'ok':'warn'}">${okLen?'✓':'⚠'} 공백제외 ${cc}자${lenmsg}</span>
-      ${useCards?`<span class="badge brand">🎴 카드뉴스 ${pngs.length}장</span>`:`<span class="badge">📷 본문사진 ${p.blocks.filter(b=>b.type=='photo'&&b.file).length}장</span>`}</div>
+      ${useCards?`<span class="badge brand">🎴 카드뉴스 ${pngs.length}장</span>`:`<span class="badge">📷 본문사진 ${p.blocks.filter(b=>b.type=='photo'&&b.file).length}장</span>`}
+      ${nCombo?`<span class="badge brand">🖼 합성 이미지 ${nCombo}장</span>`:''}</div>
     <div class="naver-box">
       <div class="naver-title">📤 네이버 블로그로 옮기기</div>
       <div class="row" style="flex-wrap:wrap;gap:8px">
         <button class="btn pri" onclick="copyTitle()">① 제목 복사</button>
         <button class="btn pri" onclick="copyBody()">② 본문 복사</button>
         ${useCards?`<button class="btn" onclick="openFile(t().post.cardnews_dir)">③ 카드 이미지 폴더 열기</button>`:''}</div>
-      <div class="naver-steps">네이버 글쓰기 열기 → <b>①</b> 제목칸에 붙여넣기 → <b>②</b> 본문에 붙여넣기 → <b>③</b> 폴더 열고 <b>${useCards?'[사진N] 자리에 card 1~'+pngs.length+'을 순서대로':'사진을'}</b> 드래그${p.crm_line?` → <b>④</b> 게시 후 아래 [게시 완료] 클릭`:''}</div>
+      <div class="naver-steps">네이버 글쓰기 열기 → <b>①</b> 제목칸에 붙여넣기 → <b>②</b> 본문에 붙여넣기 → <b>③</b> 폴더 열고 <b>${useCards?'[사진N] 자리에 card 1~'+pngs.length+'을 순서대로':'사진을'}${nCombo?', [합성N] 자리에 합성1~'+nCombo+'.jpg':''}</b> 드래그${p.crm_line?` → <b>④</b> 게시 후 아래 [게시 완료] 클릭`:''}</div>
       ${p.crm_line?`<div class="row" style="margin-top:8px"><button class="btn" onclick="crmConfirm()">📊 ④ 네이버 게시 완료 — CRM 보고</button></div>`:''}
     </div>
     <div class="row" style="margin:10px 0;flex-wrap:wrap">
@@ -3068,7 +3306,7 @@ function runEditQueue(tab){
   if(tab===t())render();
   fetch('/api/edit-section',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({post:tab.post,section:job.sid,instruction:job.instr,brand:tab.brand||BRAND,model:tab.model||'opus'})})
    .then(r=>r.json()).then(d=>{
-     if(d.ok){(tab.undo=tab.undo||[]).push(tab.post);if(tab.undo.length>30)tab.undo.shift();tab.post=d.post;toast('✏️ 한 부분 반영됨','ok');}
+     if(d.ok){(tab.undo=tab.undo||[]).push(tab.post);if(tab.undo.length>30)tab.undo.shift();tab.post=d.post;applyCombos(tab.post);toast('✏️ 한 부분 반영됨','ok');}
      else toast(d.msg||'수정 실패','err');
      tab.editActive=null; if(tab===t())render();
      runEditQueue(tab);                  // 다음 대기 작업 이어서
@@ -3123,9 +3361,10 @@ function crmConfirm(){const x=t();const p=x.post;if(!p)return;
    .then(r=>r.json()).then(d=>toast(d.ok?'📊 CRM 게시 현황에 보고됐어요':'CRM 보고 실패: '+(d.msg||'?'),d.ok?'ok':'err'))
    .catch(e=>toast('CRM 보고 실패: '+e,'err'));}
 function copyBody(){const p=t().post;const pngs=p.cardnews_pngs||[],useCards=pngs.length>0;let pi=0;const out=[];
-  let ti=0;
+  let ti=0,ki=0;
   p.blocks.forEach(b=>{
-    if(b.type=='chart'){ if(b.img){ti++;out.push('📊 [표차트'+ti+']');} }
+    if(b.type=='combo'){ki++;out.push('🖼 [합성'+ki+']');}
+    else if(b.type=='chart'){ if(b.img){ti++;out.push('📊 [표차트'+ti+']');} }
     else if(b.type=='photo'){
       const altx=b.alt?'  (alt: '+b.alt+')':'';
       if(useCards){if(pi<pngs.length){pi++;out.push('📷 [사진'+pi+']'+altx);}else pi++;}
@@ -3134,7 +3373,7 @@ function copyBody(){const p=t().post;const pngs=p.cardnews_pngs||[],useCards=png
   });
   if(useCards){while(pi<pngs.length){pi++;out.push('📷 [사진'+pi+']');}}
   try{ if(p.crm_line){ out.push(p.crm_line); } }catch(e){}
-  copyClip(out.join('\n\n'),'② 본문 복사됨 · [사진N]자리에 카드, [표차트N]자리에 표·차트 이미지를 드래그');}
+  copyClip(out.join('\n\n'),'② 본문 복사됨 · [사진N]자리에 카드, [표차트N]자리에 표·차트'+(ki?', [합성N]자리에 합성N.jpg':'')+' 이미지를 드래그');}
 function delChart(bi){const x=t();const b=x.post.blocks[bi];if(!b||b.type!='chart')return;
   x.post.blocks.splice(bi,1);toast('표·차트 삭제됨','ok');render();}
 function addChart(){const x=t();const p=x.post;
@@ -3165,6 +3404,36 @@ function openSwap(ci){   // 네이티브 Windows 파일 선택창으로 바로 �
       }).catch(e=>toast('오류: '+e,'err'));
    }).catch(e=>toast('오류: '+e,'err'));
 }
+// ── 합성 이미지: 칸(side 0=왼쪽, 1=오른쪽)별 사진 교체 / 위치 / 확대 ──
+function comboCtl(img,s){const a=`'${img}',${s}`;return `<div class="cardbar">
+  <button class="tb" onclick="comboSwap(${a})" title="이 칸 사진 교체">🔄 사진</button>
+  <span class="sep"></span>
+  <button onclick="comboNudge(${a},0,-.08)" title="위로">▲</button>
+  <button onclick="comboNudge(${a},-.08,0)" title="왼쪽">◀</button>
+  <button onclick="comboEdit(${a},{cx:.5,cy:.5,zoom:1})" title="가운데/초기화">⟳</button>
+  <button onclick="comboNudge(${a},.08,0)" title="오른쪽">▶</button>
+  <button onclick="comboNudge(${a},0,.08)" title="아래로">▼</button>
+  <span class="sep"></span>
+  <button onclick="comboZoom(${a},.15)" title="확대">＋</button>
+  <button onclick="comboZoom(${a},-.15)" title="축소">－</button></div>`;}
+function _comboHalf(img,s){const c=(t().post.combos||[]).find(c=>c.img==img);return c&&c.halves&&c.halves[s];}
+function comboNudge(img,s,dx,dy){const h=_comboHalf(img,s);if(!h)return;
+  comboEdit(img,s,{cx:Math.max(0,Math.min(1,(h.cx??.5)+dx)),cy:Math.max(0,Math.min(1,(h.cy??.5)+dy))});}
+function comboZoom(img,s,dz){const h=_comboHalf(img,s);if(!h)return;comboEdit(img,s,{zoom:Math.max(1,Math.min(3,(h.zoom||1)+dz))});}
+function comboEdit(img,s,chg){const x=t();const p=x.post;const c=(p.combos||[]).find(c=>c.img==img);
+  if(!c||!c.halves){toast('합성 이미지 정보가 없어요(다시 생성해 주세요)','err');return;}
+  const im=el('comboimg_'+img); if(im)im.style.opacity='.4';
+  fetch('/api/combo-edit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({dir:p.combo_dir,img,side:s},chg))})
+   .then(r=>r.json()).then(d=>{if(im)im.style.opacity='1';
+     if(!d.ok){toast(d.msg||'조정 실패','err');return;}
+     c.halves=d.halves; if(im)im.src='/img?folder='+encodeURIComponent(p.combo_dir)+'&name='+encodeURIComponent(img)+'&v='+Date.now();
+     if(chg.src)toast('🔄 사진 교체됨','ok');
+   }).catch(e=>{if(im)im.style.opacity='1';toast('오류: '+e,'err');});}
+function comboSwap(img,s){const x=t();   // Windows 사진 선택 창(Drive 사진 폴더에서 시작)
+  toast('📂 사진 선택 창을 여는 중…');
+  fetch('/api/pick-file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({folder:x.driveFolder||x.folder||''})})
+   .then(r=>r.json()).then(d=>{if(!d.ok||!d.path)return;comboEdit(img,s,{src:d.path});})
+   .catch(e=>toast('오류: '+e,'err'));}
 // ── 카드별 위치 이동 / 확대 ──
 function cardCtl(ci){return `<div class="cardbar">
   <button class="tb" onclick="openTextEdit(${ci})" title="카드 글 수정">✏️ 글</button>
