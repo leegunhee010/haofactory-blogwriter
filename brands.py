@@ -143,7 +143,8 @@ def list_brands():
         if os.path.isfile(os.path.join(BRANDS_DIR, d, "brand.json")):
             b = load_brand(d)
             out.append({"id": d, "name": b["name"] or d, "color": b["color"],
-                        "has_cards": b["has_cards"], "card_templates": b.get("card_templates", [])})
+                        "has_cards": b["has_cards"], "card_templates": b.get("card_templates", []),
+                        "drive_link": bool(b.get("drive_link"))})
     return out
 
 

@@ -9,7 +9,9 @@
 엔진: claude.exe -p (각자 자기 구독으로 인증, API 종량제 아님)
 실행: 작성기_실행.bat → http://127.0.0.1:5002
 """
-import os, sys, json, glob, shutil, subprocess, threading, time, webbrowser, re, datetime, random, hashlib
+import os, sys, json, glob, shutil, subprocess, threading, time, webbrowser, re, datetime, random, hashlib, uuid
+import html as html_lib
+import urllib.request
 from flask import Flask, request, jsonify, send_file
 
 
@@ -1012,6 +1014,129 @@ def api_photos():
     folder = request.args.get("folder", "")
     files = list_images(folder)
     return jsonify(folder=folder, files=files)
+
+
+# ── Google Drive 링크로 사진 가져오기(brand.json drive_link=true 브랜드) ──────────
+# '링크가 있는 모든 사용자' 공개 폴더/파일만 가능(로그인 없음). 폴더 목록 = embeddedfolderview 스크레이핑,
+# 다운로드 = lh3(2000px) → 실패 시 uc?export=download. 출력/_drive/<폴더ID>/ 에 하위 폴더 구조째 저장(받은 파일은 재사용).
+DRIVE_JOBS = {}
+_DRIVE_IMG_EXT = (".jpg", ".jpeg", ".png", ".webp", ".gif")
+_DRIVE_UA = {"User-Agent": "Mozilla/5.0"}
+
+
+def _drive_id(url):
+    """Drive 링크 → ('folder'|'file', id). 못 찾으면 (None, None)."""
+    u = (url or "").strip()
+    m = re.search(r"/folders/([A-Za-z0-9_-]{10,})", u)
+    if m:
+        return "folder", m.group(1)
+    m = re.search(r"/file/d/([A-Za-z0-9_-]{10,})", u) or re.search(r"[?&]id=([A-Za-z0-9_-]{10,})", u)
+    if m:
+        return ("folder" if "embeddedfolderview" in u else "file"), m.group(1)
+    if re.fullmatch(r"[A-Za-z0-9_-]{25,}", u):
+        return "folder", u
+    return None, None
+
+
+def _drive_list(fid):
+    """공개 폴더 1단계 목록 [(id, is_folder, title)]. 공개가 아니면 None."""
+    req = urllib.request.Request("https://drive.google.com/embeddedfolderview?id=%s" % fid, headers=_DRIVE_UA)
+    try:
+        h = urllib.request.urlopen(req, timeout=20).read().decode("utf-8", "ignore")
+    except Exception:
+        return None
+    if "flip-entries" not in h:
+        return None
+    out = []
+    for m in re.finditer(r'<div class="flip-entry" id="entry-([^"]+)".*?<a href="([^"]+)".*?flip-entry-title">([^<]*)', h, re.S):
+        out.append((m.group(1), "/folders/" in m.group(2), html_lib.unescape(m.group(3)).strip()))
+    return out
+
+
+def _drive_safe(name):
+    return re.sub(r'[\\/:*?"<>|]', "_", name).strip(" .")[:80] or "_"
+
+
+def _drive_get(fid, dest):
+    """파일 1개 다운로드(이미 있으면 건너뜀). 이미지가 아니면 False."""
+    if os.path.isfile(dest) and os.path.getsize(dest) > 1000:
+        return True
+    for url in ("https://lh3.googleusercontent.com/d/%s=w2000" % fid,
+                "https://drive.google.com/uc?export=download&id=%s" % fid):
+        for _ in range(2):
+            try:
+                r = urllib.request.urlopen(urllib.request.Request(url, headers=_DRIVE_UA), timeout=60)
+                if not (r.headers.get("Content-Type") or "").startswith("image/"):
+                    break                      # HTML(차단·비공개) → 다음 URL
+                data = r.read()
+                os.makedirs(os.path.dirname(dest), exist_ok=True)
+                with open(dest + ".part", "wb") as f:
+                    f.write(data)
+                os.replace(dest + ".part", dest)
+                return True
+            except Exception:
+                time.sleep(1.5)
+    return False
+
+
+def _drive_job(jid, kind, fid):
+    job = DRIVE_JOBS[jid]
+    try:
+        root = os.path.join(OUT_DIR, "_drive", fid)
+        todo = []                                  # [(file_id, 로컬 경로)]
+        if kind == "file":
+            todo.append((fid, os.path.join(root, fid + ".jpg")))
+        else:
+            if _drive_list(fid) is None:
+                job.update(status="error", msg="폴더를 열 수 없어요. Drive 공유 설정이 '링크가 있는 모든 사용자'인지 확인해 주세요.")
+                return
+            stack = [(fid, root, 0)]
+            while stack and len(todo) < 300:
+                cur, path, depth = stack.pop()
+                for eid, is_dir, title in (_drive_list(cur) or []):
+                    if is_dir:
+                        if depth < 4:
+                            stack.append((eid, os.path.join(path, _drive_safe(title)), depth + 1))
+                    elif title.lower().endswith(_DRIVE_IMG_EXT):
+                        todo.append((eid, os.path.join(path, _drive_safe(title))))
+                job["listed"] = len(todo)
+        if not todo:
+            job.update(status="error", msg="이 링크에서 사진(jpg·png·webp)을 찾지 못했어요.")
+            return
+        job["total"] = len(todo)
+        from concurrent.futures import ThreadPoolExecutor
+        ok = [0]
+        def one(it):
+            if _drive_get(*it):
+                ok[0] += 1
+            job["done"] += 1
+        with ThreadPoolExecutor(6) as ex:
+            list(ex.map(one, todo))
+        if not ok[0]:
+            job.update(status="error", msg="사진을 내려받지 못했어요. 공유 설정(링크가 있는 모든 사용자)을 확인해 주세요.")
+            return
+        job.update(status="done", folder=root, ok=ok[0], failed=len(todo) - ok[0])
+    except Exception as e:
+        job.update(status="error", msg=str(e)[:200])
+
+
+@app.route("/api/drive-fetch", methods=["POST"])
+def api_drive_fetch():
+    b = request.get_json(force=True) or {}
+    if not brands.load_brand((b.get("brand") or "").strip()).get("drive_link"):
+        return jsonify(ok=False, msg="이 브랜드는 Drive 링크 가져오기를 쓰지 않습니다.")
+    kind, fid = _drive_id(b.get("url", ""))
+    if not fid:
+        return jsonify(ok=False, msg="Google Drive 폴더(또는 파일) 링크를 붙여 넣어 주세요.")
+    jid = uuid.uuid4().hex[:10]
+    DRIVE_JOBS[jid] = {"status": "running", "listed": 0, "total": 0, "done": 0}
+    threading.Thread(target=_drive_job, args=(jid, kind, fid), daemon=True).start()
+    return jsonify(ok=True, job=jid)
+
+
+@app.route("/api/drive-status")
+def api_drive_status():
+    return jsonify(DRIVE_JOBS.get(request.args.get("job", ""), {"status": "error", "msg": "작업을 찾을 수 없습니다."}))
 
 
 # ── 사진 정리 (폴더명·파일명·비전으로 분류 → 원본 이름변경) ──────────
@@ -2599,7 +2724,7 @@ function loadBrands(cb){return fetch('/api/brands').then(r=>r.json()).then(d=>{B
 function switchBrand(id){BRAND=id;if(TABS[CUR])TABS[CUR].brand=id;   // 현재 탭의 브랜드만 바꿈(탭별 브랜드)
   if(el('recbox')&&el('recbox').style.display=='block'){el('recbox').style.display='none';}
   render();toast('이 글 브랜드: '+(curBrand().name||id));}
-function init(){TABS=[newTab()];CUR=0;loadBrands();render();
+function init(){TABS=[newTab()];CUR=0;loadBrands(render);render();   // 브랜드 목록 도착 후 다시 그림(브랜드별 Drive 링크 칸 등)
   fetch('/api/version').then(r=>r.json()).then(d=>{if(el('ver'))el('ver').textContent='v'+d.version;}).catch(()=>{});
   fetch('/api/status').then(r=>r.json()).then(s=>{
     if(!s.claude){el('engine').textContent='● 엔진 없음';el('engine').className='pill off';el('loginwarn').style.display='block';el('loginwarn').textContent='⚠ claude 실행파일을 찾지 못했습니다. Claude 데스크톱 앱 또는 CLI 설치 필요.';return;}
@@ -2703,6 +2828,9 @@ function render(){
         <button class="btn" onclick="pickFolder()">폴더 선택</button>
         <button class="btn" onclick="loadPhotos()">불러오기</button>
         ${x.folder&&x.files.length?`<button class="btn" onclick="organize()" title="파일명을 단계별(공정/완성 등)로 자동 정리">📷 사진 정리</button>`:''}</div>
+      ${curBrand().drive_link?`<div class="row" style="margin-top:6px"><input type="text" id="drivelink" value="${esc(x.driveUrl||'')}" placeholder="또는 Google Drive 폴더 링크 붙여넣기 (공유: 링크가 있는 모든 사용자)" oninput="t().driveUrl=this.value">
+        <button class="btn" onclick="driveFetch()" ${x.driveBusy?'disabled':''}>☁ Drive에서 가져오기</button></div>
+      ${x.driveMsg?`<div class="hint ${x.driveErr?'bad':'ok'}">${esc(x.driveMsg)}</div>`:''}`:''}
       <div id="orgbar" style="margin-top:6px;font-size:12px;color:var(--brand);font-weight:700"></div>
       ${x.folder?`<div class="hint ${x.files.length?'ok':'bad'}">${x.files.length?(x.picked?('📌 선택한 사진 '+x.files.length+'장만 사용 (폴더 전체를 쓰려면 다시 [폴더 선택])'):('📷 사진 '+x.files.length+'장 (하위 폴더 포함) · 생성 시 키워드에 맞춰 자동 선택')):'이 폴더에 사진이 없습니다'}</div>
       <div class="photos">${x.files.slice(0,6).map(f=>`<img src="/img?folder=${encodeURIComponent(x.folder)}&name=${encodeURIComponent(f)}" title="${esc(f)}">`).join('')}${x.files.length>6?`<div style="width:62px;height:62px;border-radius:7px;background:#eef1f4;display:flex;align-items:center;justify-content:center;font-size:12px;color:#889;font-weight:700">+${x.files.length-6}</div>`:''}</div>`:''}
@@ -2796,6 +2924,22 @@ function browse(path){
 }
 function selectFolder(){const x=t();x.folder=BR.path;x.picked=false;closeBrowse();
   fetch('/api/photos?folder='+encodeURIComponent(BR.path)).then(r=>r.json()).then(d=>{x.files=d.files;render();});}
+function driveFetch(){const x=t();const url=(el('drivelink')?el('drivelink').value:x.driveUrl||'').trim();x.driveUrl=url;
+  if(!url){toast('Google Drive 링크를 붙여 넣어 주세요','err');return;}
+  x.driveBusy=true;x.driveErr=false;x.driveMsg='☁ Drive 폴더를 읽는 중…';render();
+  fetch('/api/drive-fetch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,brand:x.brand||BRAND})})
+   .then(r=>r.json()).then(d=>{
+     if(!d.ok){x.driveBusy=false;x.driveErr=true;x.driveMsg=d.msg||'가져오기 실패';render();return;}
+     const poll=()=>fetch('/api/drive-status?job='+d.job).then(r=>r.json()).then(s=>{
+       if(s.status=='running'){x.driveMsg=s.total?('☁ 사진 내려받는 중… '+s.done+' / '+s.total):('☁ 폴더 읽는 중… 사진 '+(s.listed||0)+'장 찾음');render();setTimeout(poll,1200);return;}
+       x.driveBusy=false;
+       if(s.status=='done'){x.driveErr=false;x.driveMsg='✓ Drive 사진 '+s.ok+'장 가져옴'+(s.failed?(' (실패 '+s.failed+'장)'):'');
+         x.folder=s.folder;x.picked=false;
+         fetch('/api/photos?folder='+encodeURIComponent(s.folder)).then(r=>r.json()).then(v=>{x.files=v.files;render();});}
+       else{x.driveErr=true;x.driveMsg=s.msg||'가져오기 실패';render();}
+     }).catch(()=>setTimeout(poll,2000));
+     poll();
+   }).catch(()=>{x.driveBusy=false;x.driveErr=true;x.driveMsg='가져오기 실패(네트워크)';render();});}
 function loadPhotos(){const f=el('folder').value;const x=t();x.folder=f;x.picked=false;
   fetch('/api/photos?folder='+encodeURIComponent(f)).then(r=>r.json()).then(d=>{x.files=d.files;render();});}
 function organize(){const x=t();
