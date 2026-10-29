@@ -10,6 +10,11 @@ exe는 파이썬+Flask+PIL+numpy+docx+pptx 런타임을 품은 껍데기이고,
 실제 로직/디자인(작성기앱.py·cardnews_pil.py·brands.py·brands/·assets/)은 바깥에 있어 GitHub로 갱신됩니다.
 """
 import os, sys, io, json, zipfile, importlib.util, urllib.request, ctypes
+try:    # 콘솔이 한글을 못 받는 PC(영문 로캘 등)에서도 죽지 않게 — 출력 인코딩 고정
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
 # ↓ 동적 로드되는 앱이 쓰는 라이브러리 — PyInstaller가 exe에 포함하도록 여기서 import
 import flask                       # noqa
 import numpy                       # noqa

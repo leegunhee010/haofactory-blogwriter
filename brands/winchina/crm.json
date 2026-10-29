@@ -1,0 +1,6 @@
+{
+ "link": "https://winchina.co.kr/?utm_source=naver&utm_medium=post&utm_campaign=content_{key}",
+ "cta": "▶ 중국비자·서류 대행 문의: ",
+ "prefix": "wc",
+ "_note": "CRM 미지원(2026-09-08 확인). GA4 G-W6K35V49XH utm_campaign으로 글별 집계. vigo가 CRM 열어주면 link만 교체."
+}

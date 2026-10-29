@@ -123,9 +123,14 @@ _font_cache = {}
 
 
 def _layout(assets_dir):
-    if assets_dir not in _layout_cache:
-        _layout_cache[assets_dir] = json.load(open(os.path.join(assets_dir, "layout.json"), encoding="utf-8"))
-    return _layout_cache[assets_dir]
+    p = os.path.join(assets_dir, "layout.json")
+    try:
+        key = (assets_dir, os.path.getmtime(p))   # 파일이 바뀌면 자동으로 새로 읽는다(앱 재시작 없이)
+    except OSError:
+        key = (assets_dir, 0)
+    if key not in _layout_cache:
+        _layout_cache[key] = json.load(open(p, encoding="utf-8"))
+    return _layout_cache[key]
 
 
 def _font(path, px):
@@ -161,9 +166,14 @@ def _remap(im, theme):
 
 
 def _asset(assets_dir, name, box, theme, recolor):
-    key = (assets_dir, name, theme if recolor else None)
+    p = os.path.join(assets_dir, name)
+    try:
+        mt = os.path.getmtime(p)      # 에셋 PNG를 다시 만들면 캐시가 아니라 새 파일을 쓴다
+    except OSError:
+        mt = 0
+    key = (assets_dir, name, theme if recolor else None, mt)
     if key not in _recolor_cache:
-        im = Image.open(os.path.join(assets_dir, name)).convert("RGBA")
+        im = Image.open(p).convert("RGBA")
         if recolor:
             im = _remap(im, theme)
         _recolor_cache[key] = im
@@ -265,6 +275,17 @@ def _accent_bg_from_image(path):
     return (int(round(r * 255)), int(round(g * 255)), int(round(b * 255)))
 
 
+def _floor_sat(color, min_s, max_v=0.58):
+    """사진에서 뽑은 색이 너무 흐리면(회색빠짐) 채도를 끌어올리고 명도를 눌러 글자 가독을 지킨다.
+    layout.json의 accent_min_sat 이 있을 때만 적용 — 다른 브랜드 동작은 그대로."""
+    import colorsys
+    h, s, v = colorsys.rgb_to_hsv(*[c / 255.0 for c in color[:3]])
+    s = max(float(min_s), s)
+    v = min(v, float(max_v))
+    r, g, b = colorsys.hsv_to_rgb(h, s, v)
+    return (int(round(r * 255)), int(round(g * 255)), int(round(b * 255)))
+
+
 def _random_accent():
     """생성마다 다른 선명한 색(밝은배경 위 가독·장식 recolor 겸용 중간명도)."""
     import colorsys
@@ -291,15 +312,41 @@ def _shorten_title(t, maxlen=24):
     return cut.strip().rstrip(",·-— ")
 
 
-def _draw_text(canvas, box, text, font_path, size_pt, theme, align, pt2px, oneline=False):
+def _hex(c):
+    c = str(c).lstrip("#")
+    return (int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16))
+
+
+def _emph_text(text, auto=False):
+    """헤드라인 강조 표기 정리: *핵심어* 만 강조. '**' 는 '*' 로, 짝이 안 맞으면 표기 제거.
+    auto=True 이고 표기가 없으면 마지막 어절(2어절 이상일 때)을 강조한다."""
+    t = re.sub(r"\*{2,}", "*", str(text or ""))
+    if t.count("*") % 2:
+        t = t.replace("*", "")
+    if auto and "*" not in t:
+        ws = t.strip().split(" ")
+        # '다섯 가지'·'3 단계'처럼 수+단위로 끝나면 수 어절까지 함께 강조
+        n = 2 if len(ws) >= 3 and re.match(r"^(\d[\d,.~]*|한|두|세|네|다섯|여섯|일곱|여덟|아홉|열)$", ws[-2]) else 1
+        if len(ws) >= 2:
+            t = " ".join(ws[:-n]) + " *" + " ".join(ws[-n:]) + "*"
+    return t
+
+
+def _draw_text(canvas, box, text, font_path, size_pt, theme, align, pt2px, oneline=False, line_gap=0, emph=None):
+    """emph=(r,g,b) 이면 text 안의 *…* 구간만 그 색, 나머지는 theme 색(헤드라인 핵심어 강조)."""
     if not text:
         return canvas
+    if emph is None:
+        text = str(text).replace("*", "")
     x, y, w, h = box
     col = (theme[0], theme[1], theme[2], 255)
     px = max(10, int(round(size_pt * pt2px)))
     ew = min(w, canvas.size[0])   # 실제 카드(캔버스) 폭 기준으로 맞춤 — box가 카드보다 넓어도(블리드) 글자가 카드 밖으로 안 넘치게
     layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
+
+    def tl(t, fnt):   # 강조 표기(*)는 폭 계산에서 뺀다
+        return d.textlength(t.replace("*", ""), font=fnt)
 
     def build(fnt):   # oneline=줄바꿈 금지(폭 맞게 축소만). 아니면 \n 분리 후 폭 맞춰 단어 줄바꿈
         if oneline:
@@ -309,12 +356,12 @@ def _draw_text(canvas, box, text, font_path, size_pt, theme, align, pt2px, oneli
             raw = raw.strip()
             if not raw:
                 out.append(""); continue
-            if d.textlength(raw, font=fnt) <= ew or " " not in raw:
+            if tl(raw, fnt) <= ew or " " not in raw:
                 out.append(raw); continue
             cur = ""
             for wd in raw.split(" "):
                 tt = (cur + " " + wd).strip()
-                if d.textlength(tt, font=fnt) <= ew:
+                if tl(tt, fnt) <= ew:
                     cur = tt
                 else:
                     if cur:
@@ -325,18 +372,26 @@ def _draw_text(canvas, box, text, font_path, size_pt, theme, align, pt2px, oneli
         return out
     fnt = _font(font_path, px)
     lines = build(fnt)
-    while px > 12 and lines and max((d.textlength(ln, font=fnt) for ln in lines if ln), default=0) > ew:
+    while px > 12 and lines and max((tl(ln, fnt) for ln in lines if ln), default=0) > ew:
         px -= 2; fnt = _font(font_path, px); lines = build(fnt)
     # 세로로도 박스 안에 들어오도록 축소 — 글자가 박스를 넘어 위/아래 다른 요소를 침범(겹침)하는 것 방지
-    asc, desc = fnt.getmetrics(); lh = asc + desc
+    gap = int(round(float(line_gap or 0) * pt2px))   # 줄 간격 추가(layout 항목 line_gap, pt 단위) — 기본 0
+    asc, desc = fnt.getmetrics(); lh = asc + desc + gap
     while px > 10 and lines and lh * len(lines) > h:
         px -= 2; fnt = _font(font_path, px); lines = build(fnt)
-        asc, desc = fnt.getmetrics(); lh = asc + desc
+        asc, desc = fnt.getmetrics(); lh = asc + desc + gap
     cy = max(y, y + (h - lh * len(lines)) / 2)   # 위로 넘쳐 상단 요소와 겹치지 않게 클램프
+    ecol = (emph[0], emph[1], emph[2], 255) if emph else col
+    on = False                                   # 강조 구간이 줄을 넘어가도 이어진다
     for ln in lines:
-        tw = d.textlength(ln, font=fnt) if ln else 0
+        tw = tl(ln, fnt) if ln else 0
         tx = x + w - tw if align == "right" else (x + (w - tw) / 2 if align == "center" else x)
-        d.text((tx, cy), ln, font=fnt, fill=col)
+        for k, seg in enumerate(ln.split("*")):
+            if k:
+                on = not on
+            if seg:
+                d.text((tx, cy), seg, font=fnt, fill=ecol if on else col)
+                tx += d.textlength(seg, font=fnt)
         cy += lh
     return Image.alpha_composite(canvas, layer)
 
@@ -356,7 +411,31 @@ def _two_lines(text):
     return " ".join(words[:best_i]) + "\n" + " ".join(words[best_i:])
 
 
-def _draw_kw_title(canvas, box, keyword, title, font_path, kw_size, title_size, color, pt2px, align="right", gap=0, dy=0):
+def _balanced_lines(d, text, fnt, w):
+    """폭 w에 맞는 최소 줄 수로, 줄 길이가 고르게 어절 단위 분할(한 단어만 다음 줄로 떨어지는 것 방지)."""
+    words = str(text).split()
+    if not words:
+        return []
+    if d.textlength(" ".join(words), font=fnt) <= w or len(words) == 1:
+        return [" ".join(words)]
+    from itertools import combinations
+    for n in range(2, len(words) + 1):
+        best, best_cost = None, None
+        for cuts in combinations(range(1, len(words)), n - 1):
+            b = (0,) + cuts + (len(words),)
+            ls = [" ".join(words[b[i]:b[i + 1]]) for i in range(n)]
+            ws = [d.textlength(l, font=fnt) for l in ls]
+            if max(ws) > w:
+                continue
+            cost = max(ws) - min(ws) + (w if len(words[b[-2]:]) == 1 and len(words[-1]) <= 3 else 0)
+            if best_cost is None or cost < best_cost:
+                best, best_cost = ls, cost
+        if best:
+            return best
+    return words
+
+
+def _draw_kw_title(canvas, box, keyword, title, font_path, kw_size, title_size, color, pt2px, align="right", gap=0, dy=0, wrap_title=False):
     """키워드(큰글씨) + 제목(작은글씨)을 각자 원본 사이즈로, 정렬·세로가운데 그대로 렌더."""
     x, y, w, h = box
     col = (color[0], color[1], color[2], 255)
@@ -387,7 +466,9 @@ def _draw_kw_title(canvas, box, keyword, title, font_path, kw_size, title_size, 
     klines = wrap(keyword, kf) if keyword else []
     # 제목은 무조건 한 줄. 폭을 넘으면 끝 어절부터 떼어 축약, 그래도 길면 글자 단위로 컷
     tlines = []
-    if title:
+    if title and wrap_title:                            # comma_split: 쉼표 뒤 문장은 자르지 않고 고르게 줄바꿈
+        tlines = _balanced_lines(d, title, tf, w)
+    elif title:
         one = " ".join(str(title).split())
         while d.textlength(one, font=tf) > w and " " in one:
             one = one.rsplit(" ", 1)[0]
@@ -413,8 +494,160 @@ def _draw_kw_title(canvas, box, keyword, title, font_path, kw_size, title_size, 
     return Image.alpha_composite(canvas, layer)
 
 
+def _rrect_img(w, h, rad, fill):
+    """안티에일리어싱 라운드 사각형(4배 슈퍼샘플링)."""
+    w = max(1, int(w)); h = max(1, int(h)); S = 4
+    m = Image.new("L", (w * S, h * S), 0)
+    ImageDraw.Draw(m).rounded_rectangle([0, 0, w * S - 1, h * S - 1], radius=max(0, int(rad)) * S, fill=255)
+    m = m.resize((w, h), Image.LANCZOS)
+    im = Image.new("RGBA", (w, h), tuple(fill) + (255,))
+    im.putalpha(m)
+    return im
+
+
+_icon_cache = {}
+
+
+def _check_icon(d, color):
+    """체크 아이콘(색 원 + 흰 체크). 4배 슈퍼샘플링."""
+    d = max(8, int(d)); key = (d, tuple(color))
+    if key in _icon_cache:
+        return _icon_cache[key]
+    S = 4; D = d * S
+    im = Image.new("RGBA", (D, D), (0, 0, 0, 0))
+    dr = ImageDraw.Draw(im)
+    dr.ellipse([0, 0, D - 1, D - 1], fill=tuple(color) + (255,))
+    dr.line([(D * 0.27, D * 0.52), (D * 0.43, D * 0.68), (D * 0.74, D * 0.33)],
+            fill=(255, 255, 255, 255), width=max(2, int(D * 0.105)), joint="curve")
+    im = im.resize((d, d), Image.LANCZOS)
+    _icon_cache[key] = im
+    return im
+
+
+def _bullet_lines(text, max_rows):
+    """본문 한 덩어리를 체크리스트 행으로 분해(줄바꿈 / ' / ' / 문장 끝 순)."""
+    raw = str(text or "")
+    lines = [s.strip() for s in re.split(chr(10) + r"|\s+/\s+", raw) if s.strip()]
+    if len(lines) < 2:
+        one = " ".join(raw.split())
+        parts = [p.strip() for p in re.split(r"(?<=[.!?])\s+", one) if p.strip()]
+        if len(parts) > 1:
+            lines = parts
+    lines = [re.sub(r"\s*[.]\s*$", "", ln) for ln in lines if ln.strip()]
+    return lines[:max(1, int(max_rows or 5))]
+
+
+_LIST_HEAD = re.compile("순서|단계|절차|프로세스|흐름|체크|점검|주의|유의|준비|필요\\s*서류|서류|목록|리스트|핵심|요약|정리|팁|포인트|조건|자격|기준|비교|차이")
+
+
+def _is_list_content(head, body):
+    """이 카드가 '절차·체크리스트'성 내용인지 — 리스트 카드 디자인을 쓸지 판단."""
+    b = " ".join(str(body or "").split())
+    if not b:
+        return False
+    if " / " in b:
+        return True
+    n = len([s for s in re.split(r"(?<=[.!?])\s+", b) if s.strip()])
+    if n >= 3:
+        return True
+    return n >= 2 and bool(_LIST_HEAD.search(str(head or "")))
+
+
+_ADJ_ROLES = ("headline", "subtitle", "body", "bullets", "label")
+
+
+def _tint(color, t):
+    """색을 흰색과 섞어 옅게 — 장식 recolor(_remap)와 같은 방식이라 톤이 맞는다."""
+    t = max(0.0, min(1.0, float(t)))
+    return tuple(int(round(255 * (1 - t) + c * t)) for c in color[:3])
+
+
+def _hex_or_tint(v, color, t):
+    """'auto'면 글자색의 옅은 톤, 아니면 지정한 hex 그대로."""
+    if not v:
+        return None
+    if str(v).lower() == "auto":
+        return _tint(color, t)
+    return (int(v[0:2], 16), int(v[2:4], 16), int(v[4:6], 16))
+
+
+def _draw_bullets(canvas, box, text, it, color, pt2px):
+    """체크 아이콘 + 문구 + 구분선을 행 단위로 반복. 행 수 = 본문 문장 수(패널 높이 자동)."""
+    lines = _bullet_lines(text, it.get("max_rows", 5))
+    if not lines:
+        return canvas
+    x, y, w, h = box
+    rows = len(lines)
+    pad = int(round(it.get("pad", 40) * pt2px))
+    row_h = int(round(it.get("row_h", 96) * pt2px))
+    inset = int(round(it.get("inset", 44) * pt2px))
+    icon_d = int(round(it.get("icon", 34) * pt2px))
+    gap = int(round(it.get("icon_gap", 26) * pt2px))
+    panel_h = pad * 2 + row_h * rows
+    # 행이 적으면 패널이 허전해 보인다 — fill(박스 대비 최소 높이 비율)만큼 행 간격을 넓힌다
+    want = h * float(it.get("fill", 0) or 0)
+    if want > panel_h:
+        panel_h = min(want, pad * 2 + row_h * rows * float(it.get("row_h_max", 1.6)))
+    panel_h = min(h, panel_h)
+    row_h = (panel_h - pad * 2) / rows
+    py = int(y + (h - panel_h) / 2)
+    fill = _hex_or_tint(it.get("panel"), color, it.get("panel_tint", 0.22))
+    if fill:
+        canvas = _paste(canvas, _rrect_img(w, panel_h, it.get("panel_round", 6), fill), int(x), py)
+    layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    col = (color[0], color[1], color[2], 255)
+    rc = _hex_or_tint(it.get("rule"), color, it.get("rule_tint", 0.45))
+    rule_col = (rc + (255,)) if rc else None
+    ix = int(x) + inset
+    tx = ix + icon_d + gap
+    tw = int(x + w) - inset - tx
+    px = max(10, int(round(it.get("size", 32) * pt2px)))
+    minpx = max(10, int(round(it.get("min_size", 26) * pt2px)))
+    fp = _font_for(it.get("font"), _HEAD_FONT)
+    fnt = _font(fp, px)
+    # 폭에 맞춰 줄이되 min_size 아래로는 안 줄인다(문장이 길면 행 안에서 2줄로 접는다)
+    while px > minpx and max(d.textlength(ln, font=fnt) for ln in lines) > tw:
+        px -= 2; fnt = _font(fp, px)
+
+    def wrap_row(ln):
+        if d.textlength(ln, font=fnt) <= tw or " " not in ln:
+            return [ln]
+        out, cur = [], ""
+        for wd in ln.split(" "):
+            t = (cur + " " + wd).strip()
+            if d.textlength(t, font=fnt) <= tw:
+                cur = t
+            else:
+                if cur:
+                    out.append(cur)
+                cur = wd
+        if cur:
+            out.append(cur)
+        return out[:int(it.get("row_lines", 2))]
+    asc, desc = fnt.getmetrics(); lh = asc + desc
+    for i, ln in enumerate(lines):
+        top = py + pad + row_h * i
+        cy = top + row_h / 2
+        sub = wrap_row(ln)
+        ty = cy - lh * len(sub) / 2
+        for s in sub:
+            d.text((tx, ty), s, font=fnt, fill=col)
+            ty += lh
+        if rule_col and i < rows - 1:
+            ry = int(top + row_h)
+            d.line([(ix, ry), (int(x + w) - inset, ry)], fill=rule_col,
+                   width=max(1, int(round(it.get("rule_w", 2) * pt2px))))
+    canvas = Image.alpha_composite(canvas, layer)
+    for i in range(rows):
+        cy = py + pad + row_h * i + row_h / 2
+        canvas = _paste(canvas, _check_icon(icon_d, color), ix, int(cy - icon_d / 2))
+    return canvas
+
+
 def render_card(slide_idx, photo_path, headline, theme, out_path, assets_dir,
-                center=None, zoom=1.0, seed="", subtitle="", body="", title="", accent=None):
+                center=None, zoom=1.0, seed="", subtitle="", body="", title="", accent=None,
+                text_adj=None, emph_color=None):
     lay = _layout(assets_dir)
     SIZE = lay["size"]
     pt2px = SIZE / float(lay.get("pt_height", 810))
@@ -451,6 +684,18 @@ def render_card(slide_idx, photo_path, headline, theme, out_path, assets_dir,
         return eff_theme
     for it in items:
         role = it["role"]; box = it["box"]
+        # 사용자 미세조정: 역할별 글자 크기 배율(s)·위치 이동(dx,dy). 레이아웃 원본은 그대로 둔다.
+        if text_adj and role in _ADJ_ROLES:
+            a = text_adj.get(role) or {}
+            sc = float(a.get("s", 1) or 1)
+            dx = int(a.get("dx", 0) or 0); dy = int(a.get("dy", 0) or 0)
+            if sc != 1 or dx or dy:
+                it = dict(it)
+                box = [box[0] + dx, box[1] + dy, box[2], box[3]]
+                if sc != 1:
+                    for k in ("size", "kw_size", "title_size", "min_size"):
+                        if it.get(k):
+                            it[k] = it[k] * sc
         if role == "photo":
             if photo_path and os.path.isfile(photo_path):
                 if it.get("shape") == "circle":
@@ -474,19 +719,31 @@ def render_card(slide_idx, photo_path, headline, theme, out_path, assets_dir,
             if it.get("kw_title"):                       # 표지: 키워드(큰)+제목(작게, 무조건 한 줄) 원본 사이즈·정렬 유지
                 kw = (headline or "").strip().rstrip(",")
                 ti = " ".join((title or "").split())
-                if kw and ti.startswith(kw):             # 제목이 키워드로 시작하면 중복 제거
+                wrap_ti = False
+                if it.get("comma_split") and "," in ti:  # 제목의 쉼표 앞 = 위(큰 글씨), 쉼표 뒤 = 아래(작은 글씨, 길면 줄바꿈)
+                    kw, ti = (s.strip() for s in ti.split(",", 1))
+                    wrap_ti = True
+                elif kw and ti.startswith(kw):           # 제목이 키워드로 시작하면 중복 제거
                     ti = ti[len(kw):].lstrip(" ,·")
                 if kw and not kw.endswith((",", ".", "!", "?")):
                     kw += ","
                 canvas = _draw_kw_title(canvas, box, kw, ti, fp,
                                         it.get("kw_size", it.get("size", 80)), it.get("title_size", 54),
                                         col, pt2px, it.get("align", "right"),
-                                        it.get("gap", 0), it.get("dy", 0))
+                                        it.get("gap", 0), it.get("dy", 0), wrap_title=wrap_ti)
             else:
                 txt = (title or "") if it.get("source") == "title" else (headline or "")
+                emph = None
+                if it.get("emph"):                       # 핵심어만 강조색(*…*), 나머지는 emph_base 색(없으면 원래 색)
+                    txt = _emph_text(txt, auto=True)
+                    emph = _hex(it["emph_color"]) if it.get("emph_color") else (acc or eff_theme)
+                    if emph_color:                       # 사용자가 직접 고른 강조색(카드 세트 전체)
+                        emph = tuple(emph_color)
+                    if it.get("emph_base"):
+                        col = _hex(it["emph_base"])
                 if it.get("lines") == 2:
                     txt = _two_lines(txt)
-                canvas = _draw_text(canvas, box, txt, fp, it.get("size", 40), col, it.get("align", "center"), pt2px)
+                canvas = _draw_text(canvas, box, txt, fp, it.get("size", 40), col, it.get("align", "center"), pt2px, line_gap=it.get("line_gap", 0), emph=emph)
         elif role == "subtitle":
             sub = subtitle or ""
             if it.get("lines") == 2 and sub and "\n" not in sub:
@@ -499,15 +756,18 @@ def render_card(slide_idx, photo_path, headline, theme, out_path, assets_dir,
                 bod = re.sub(r"\s+/\s+", "\n", bod)
             if it.get("lines") == 2 and bod and "\n" not in bod:
                 bod = _two_lines(bod)          # 내지 본문 2줄 고정(길이 균형 분할)
-            canvas = _draw_text(canvas, box, bod, _font_for(it.get("font"), _BODY_FONT), it.get("size", 19), textcol(it), it.get("align", "center"), pt2px)
+            canvas = _draw_text(canvas, box, bod, _font_for(it.get("font"), _BODY_FONT), it.get("size", 19), textcol(it), it.get("align", "center"), pt2px, line_gap=it.get("line_gap", 0))
         elif role == "label":
             canvas = _draw_text(canvas, box, it.get("text", ""), _font_for(it.get("font"), _LABEL_FONT), it.get("size", 14), textcol(it), it.get("align", "left"), pt2px)
+        elif role == "bullets":
+            canvas = _draw_bullets(canvas, box, body or "", it, textcol(it), pt2px)
     canvas.convert("RGB").save(out_path, "PNG")
     return out_path
 
 
-def make_cards(photo_paths, headlines, out_dir, assets_dir, theme=None, subtitle="", bodies=None, title=""):
-    """카드 N장 생성. subtitle=표지부제, bodies=카드별본문, title=블로그제목(source=title 헤드라인용)."""
+def make_cards(photo_paths, headlines, out_dir, assets_dir, theme=None, subtitle="", bodies=None, title="", count=None):
+    """카드 N장 생성. subtitle=표지부제, bodies=카드별본문, title=블로그제목(source=title 헤드라인용).
+    count=원하는 총 장수(표지 포함). 레이아웃 기본 장수와 다르면 표지+내지 디자인을 순환해 count장을 만든다."""
     os.makedirs(out_dir, exist_ok=True)
     bodies = bodies or []
     lay = _layout(assets_dir)
@@ -533,13 +793,31 @@ def make_cards(photo_paths, headlines, out_dir, assets_dir, theme=None, subtitle
         accent = _random_accent()
     elif uses_auto and photo_paths and os.path.isfile(photo_paths[0]):
         accent = _accent_from_image(photo_paths[0])
+    if accent and lay.get("accent_min_sat"):
+        accent = _floor_sat(accent, lay["accent_min_sat"], lay.get("accent_max_val", 0.58))
     pngs, cards = [], []
     # 헤드라인 슬라이드는 '헤드라인과 같은 인덱스의 사진'을 써서 제목-사진을 맞춘다.
     # 사진만 슬라이드(예: 퍼스트디자인 s5)는 여분 사진을 써서 뒤 카드가 밀리지 않게 한다.
     n_heads = sum(1 for sl in slides
                   if any(it.get("role") == "headline" and it.get("source") != "title" for it in sl))
+    # 동적 장수: count가 레이아웃 기본 헤드라인 장수와 다르면
+    # 표지(0번) + 내지 헤드라인 디자인 순환으로 count장을 만든다(원고 구간 수 = 카드 장수).
+    order = list(range(n))
+    if count and count != n_heads:
+        inner = [i for i in range(1, n)
+                 if any(it.get("role") == "headline" and it.get("source") != "title" for it in slides[i])]
+        if inner:
+            order = [0] + [inner[k % len(inner)] for k in range(max(1, count) - 1)]
+    # 내용 기반 디자인 선택: 절차·단계·체크리스트성 원고면 리스트 카드, 아니면 기본(사진) 카드
+    pick = lay.get("pick_by_content")
+    if pick:
+        dflt = int(pick.get("default", 1)); lst = int(pick.get("list", dflt))
+        m = max(1, (count or len(headlines) or n)) - 1
+        order = [0] + [lst if _is_list_content(headlines[k + 1] if k + 1 < len(headlines) else "",
+                                               bodies[k + 1] if k + 1 < len(bodies) else "")
+                       else dflt for k in range(m)]
     hi = 0; spare = n_heads
-    for i in range(n):
+    for pos, i in enumerate(order):
         head_item = next((it for it in slides[i] if it.get("role") == "headline"), None)
         head = bod = ""
         if head_item is not None and head_item.get("source") != "title":
@@ -551,8 +829,8 @@ def make_cards(photo_paths, headlines, out_dir, assets_dir, theme=None, subtitle
             src = photo_paths[spare % len(photo_paths)] if photo_paths else ""
             spare += 1
         sub = subtitle if any(it.get("role") == "subtitle" for it in slides[i]) else ""
-        out = os.path.join(out_dir, "card%02d.png" % (i + 1))
-        render_card(i, src, head, theme, out, assets_dir, seed=f"{salt}:{i}", subtitle=sub, body=bod, title=title, accent=accent)
+        out = os.path.join(out_dir, "card%02d.png" % (pos + 1))
+        render_card(i, src, head, theme, out, assets_dir, seed=f"{salt}:{pos}", subtitle=sub, body=bod, title=title, accent=accent)
         flds = []
         for it in slides[i]:
             r = it.get("role")
@@ -560,9 +838,15 @@ def make_cards(photo_paths, headlines, out_dir, assets_dir, theme=None, subtitle
                 flds.append("title" if it.get("source") == "title" else "headline")
             elif r in ("subtitle", "body"):
                 flds.append(r)
+            elif r == "bullets":
+                flds.append("body")
+        # 크기·위치를 조정할 수 있는 역할 목록(UI 선택기용). bullets는 본문을 쓰지만 역할명은 따로다.
+        adj_roles = [r for r in ("headline", "subtitle", "body", "bullets")
+                     if any(it.get("role") == r for it in slides[i])]
         pngs.append(out)
         cards.append({"src": src, "headline": head, "subtitle": sub, "body": bod, "title": title,
-                      "fields": flds, "cx": 0.5, "cy": 0.5, "zoom": 1.0})
+                      "slide": i, "fields": flds, "adj_roles": adj_roles, "tadj": {},
+                      "cx": 0.5, "cy": 0.5, "zoom": 1.0})
     state = {"theme": list(theme), "assets_dir": assets_dir, "cards": cards,
              "accent": list(accent) if accent else None}
     json.dump(state, open(os.path.join(out_dir, "cards.json"), "w", encoding="utf-8"), ensure_ascii=False)
@@ -578,10 +862,17 @@ def save_state(out_dir, state):
 
 
 def edit_card(out_dir, index, src=None, center=None, zoom=None,
-              headline=None, subtitle=None, body=None, title=None):
-    """cards.json 상태 기반으로 카드 1장만 다시 렌더(사진교체/위치·확대/글 수정)."""
+              headline=None, subtitle=None, body=None, title=None, text_adj=None):
+    """cards.json 상태 기반으로 카드 1장만 다시 렌더(사진교체/위치·확대/글 수정/글자 크기·위치)."""
     st = load_state(out_dir); c = st["cards"][index]
     adir = st.get("assets_dir")
+    if text_adj is not None:
+        cur = dict(c.get("tadj") or {})
+        for role, v in (text_adj or {}).items():   # 역할별로 병합(넘어온 값만 덮어씀)
+            a = dict(cur.get(role) or {})
+            a.update({k: v[k] for k in ("s", "dx", "dy") if k in v})
+            cur[role] = a
+        c["tadj"] = cur
     if src is not None:
         c["src"] = src; c["cx"] = 0.5; c["cy"] = 0.5; c["zoom"] = 1.0
     if center is not None:
@@ -597,10 +888,10 @@ def edit_card(out_dir, index, src=None, center=None, zoom=None,
     if title is not None:
         c["title"] = title
     out = os.path.join(out_dir, "card%02d.png" % (index + 1))
-    render_card(index, c["src"], c["headline"], tuple(st["theme"]), out, adir,
+    render_card(c.get("slide", index), c["src"], c["headline"], tuple(st["theme"]), out, adir,
                 center=(c["cx"], c["cy"]), zoom=c["zoom"], seed=f"edit:{index}",
                 subtitle=c.get("subtitle", ""), body=c.get("body", ""), title=c.get("title", ""),
-                accent=st.get("accent"))
+                accent=st.get("accent"), text_adj=c.get("tadj"), emph_color=st.get("emph_color"))
     save_state(out_dir, st)
     return out
 
@@ -616,10 +907,37 @@ def recolor_cards(out_dir, color):
     pngs = []
     for i, c in enumerate(st["cards"]):
         out = os.path.join(out_dir, "card%02d.png" % (i + 1))
-        render_card(i, c.get("src", ""), c.get("headline", ""), col, out, adir,
+        render_card(c.get("slide", i), c.get("src", ""), c.get("headline", ""), col, out, adir,
                     center=(c.get("cx", 0.5), c.get("cy", 0.5)), zoom=c.get("zoom", 1.0),
                     seed="recolor:%d" % i, subtitle=c.get("subtitle", ""),
-                    body=c.get("body", ""), title=c.get("title", ""), accent=col)
+                    body=c.get("body", ""), title=c.get("title", ""), accent=col,
+                    text_adj=c.get("tadj"), emph_color=st.get("emph_color"))
+        pngs.append(out)
+    save_state(out_dir, st)
+    return pngs
+
+
+def supports_emph(assets_dir):
+    """이 디자인이 헤드라인 핵심어 강조(*…*)를 쓰는지 — layout 항목에 emph 가 하나라도 있으면 True."""
+    try:
+        return any(it.get("emph") for sl in _layout(assets_dir)["slides"] for it in sl)
+    except Exception:
+        return False
+
+
+def set_emph_color(out_dir, color):
+    """강조 글자색만 바꿔 세트 전체 재렌더. color=(r,g,b) 또는 None(자동 — 카드 대표색을 따라감)."""
+    st = load_state(out_dir)
+    st["emph_color"] = list(color) if color else None
+    adir = st.get("assets_dir")
+    pngs = []
+    for i, c in enumerate(st["cards"]):
+        out = os.path.join(out_dir, "card%02d.png" % (i + 1))
+        render_card(c.get("slide", i), c.get("src", ""), c.get("headline", ""), tuple(st["theme"]), out, adir,
+                    center=(c.get("cx", 0.5), c.get("cy", 0.5)), zoom=c.get("zoom", 1.0),
+                    seed="edit:%d" % i, subtitle=c.get("subtitle", ""),
+                    body=c.get("body", ""), title=c.get("title", ""), accent=st.get("accent"),
+                    text_adj=c.get("tadj"), emph_color=st["emph_color"])
         pngs.append(out)
     save_state(out_dir, st)
     return pngs
@@ -729,6 +1047,6 @@ def extract_template(pptx_path, out_assets_dir, theme_recolor=False, photo_round
         spec["slide_bg"].append(slide_bg(s))
         spec["slides"].append(items)
     json.dump(spec, open(os.path.join(out_assets_dir, "layout.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    _layout_cache.pop(out_assets_dir, None)
+    _layout_cache.clear()   # 키에 mtime이 들어가므로 통째로 비운다
     nassets = len([f for f in os.listdir(out_assets_dir) if not f.endswith(".json")])
     return {"slides": len(spec["slides"]), "assets": nassets}

@@ -9,7 +9,14 @@
 엔진: claude.exe -p (각자 자기 구독으로 인증, API 종량제 아님)
 실행: 작성기_실행.bat → http://127.0.0.1:5002
 """
-import os, sys, json, glob, shutil, subprocess, threading, time, webbrowser, re, datetime, random, hashlib
+import os, sys, json, glob, shutil, subprocess, threading, time, webbrowser, re, datetime, random, hashlib, uuid
+try:    # 콘솔이 한글을 못 받는 PC(영문 로캘 등)에서도 죽지 않게 — 출력 인코딩 고정
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+import html as html_lib
+import urllib.request
 from flask import Flask, request, jsonify, send_file
 
 
@@ -91,6 +98,7 @@ sys.path.insert(0, HERE)
 import cardnews_pil  # noqa  (순수 Pillow 엔진 — PowerPoint 불필요)
 import brands  # noqa  (브랜드 설정 관리)
 import charts_pil  # noqa  (C6: 내용 기반 표·차트 이미지)
+import collage_pil  # noqa  (C7: 본문 사진 모음 이미지)
 
 CARD_JOBS = {}
 CARD_LOCK = threading.Lock()
@@ -128,13 +136,18 @@ def sync_card_sources(cdir):
         pass
 
 
-def _cardnews_job(jid, photo_paths, cards, keyword, assets_dir, subtitle="", bodies=None, title="", chart_specs=None, table_w=None):
+def _card_dir_for(keyword):
+    safe = re.sub(r'[\\/:*?"<>|]', "_", keyword)
+    stamp = datetime.datetime.now().strftime("%H%M%S%f")[:9]
+    return os.path.join(OUT_DIR, f"{safe}_카드뉴스_{stamp}")
+
+
+def _cardnews_job(jid, photo_paths, cards, keyword, assets_dir, subtitle="", bodies=None, title="", chart_specs=None, table_w=None, png_dir=None, extra_photos=None, collage_sizes=None):
     try:
-        safe = re.sub(r'[\\/:*?"<>|]', "_", keyword)
-        stamp = datetime.datetime.now().strftime("%H%M%S%f")[:9]
-        png_dir = os.path.join(OUT_DIR, f"{safe}_카드뉴스_{stamp}")
-        res = cardnews_pil.make_cards(photo_paths, cards[:7], png_dir, assets_dir,
-                                      subtitle=subtitle, bodies=bodies, title=title)   # 순수 PIL, 즉시
+        png_dir = png_dir or _card_dir_for(keyword)
+        res = cardnews_pil.make_cards(photo_paths, cards, png_dir, assets_dir,
+                                      subtitle=subtitle, bodies=bodies, title=title,
+                                      count=len(cards))   # 순수 PIL, 즉시 — 카드 장수 = 헤드라인 수(원고 구간 수)
         srcs = [c["src"] for c in res["cards"]]
         sync_card_sources(png_dir)                    # 원본사진/ 에 카드 원본 복사
         # C6: 표·차트를 카드뉴스 색으로 렌더(cards.json accent 사용) → cid별 파일명 반환
@@ -148,8 +161,17 @@ def _cardnews_job(jid, photo_paths, cards, keyword, assets_dir, subtitle="", bod
                     chart_imgs[cid] = nm
                 except Exception:
                     pass
+        # C7: 본문 사진 모음(2장·4장 묶음) — 카드에 쓴 원본 + 모자라면 폴더의 다른 사진으로 보충
+        collage_imgs, collage_meta = [], []
+        if collage_sizes:
+            try:
+                collage_imgs = collage_pil.make_collages(srcs, extra_photos or [], png_dir, tuple(collage_sizes))
+                collage_meta = collage_pil.meta(png_dir) if collage_imgs else []
+            except Exception:
+                collage_imgs, collage_meta = [], []
         CARD_JOBS[jid] = {"status": "done", "pngs": res["pngs"], "dir": png_dir, "srcs": srcs,
-                          "cards": res["cards"], "chart_imgs": chart_imgs}
+                          "cards": res["cards"], "chart_imgs": chart_imgs,
+                          "collage_imgs": collage_imgs, "collage_meta": collage_meta}
     except Exception as e:
         CARD_JOBS[jid] = {"status": "error", "msg": str(e)[:200]}
 
@@ -180,28 +202,38 @@ def find_claude():
     if p:
         return p
     pats = [
-        # 데스크톱 앱 번들 — 2026-10 업데이트로 버전 폴더 아래 해시 폴더가 하나 더 생겼다(둘 다 찾는다)
-        os.path.expanduser(r"~/AppData/Local/Packages/Claude_*/LocalCache/Roaming/Claude/claude-code/*/*/claude.exe"),
-        os.path.expanduser(r"~/AppData/Local/Packages/Claude_*/LocalCache/Roaming/Claude/claude-code/*/claude.exe"),
-        os.path.expanduser(r"~/AppData/Roaming/Claude/claude-code/*/*/claude.exe"),
         os.path.expanduser(r"~/AppData/Roaming/Claude/claude-code/*/claude.exe"),
+        os.path.expanduser(r"~/AppData/Local/Packages/Claude_*/LocalCache/Roaming/Claude/claude-code/*/claude.exe"),
+        # 2026-10 앱 2.1.288~ : 버전 폴더 아래 해시 폴더(…/2.1.288/36aa8c97bf86/claude.exe)
+        os.path.expanduser(r"~/AppData/Roaming/Claude/claude-code/*/*/claude.exe"),
+        os.path.expanduser(r"~/AppData/Local/Packages/Claude_*/LocalCache/Roaming/Claude/claude-code/*/*/claude.exe"),
+        # 2026-10 앱 3.1623~ : Local/Claude-Data/claude_<id>/claude-code/2.1.308/<해시>/claude.exe
+        os.path.expanduser(r"~/AppData/Local/Claude-Data/*/claude-code/*/claude.exe"),
+        os.path.expanduser(r"~/AppData/Local/Claude-Data/*/claude-code/*/*/claude.exe"),
         os.path.expanduser(r"~/.local/bin/claude.exe"),
         os.path.expanduser(r"~/AppData/Roaming/npm/claude.cmd"),
     ]
     hits = []
     for g in pats:
         hits += glob.glob(g)
-    if not hits:
-        return None
-    # 최근에 설치된 것(수정 시각 최신) 우선 — 버전 폴더 이름 정렬보다 안전
-    try:
-        hits.sort(key=lambda f: os.path.getmtime(f))
-    except Exception:
-        hits.sort()
-    return hits[-1]
+
+    # 버전 숫자 큰 것(최신) 우선 — 폴더 위치가 달라도 버전으로 비교
+    def _ver(p):
+        m = re.search(r"claude-code[\\/](\d+)\.(\d+)\.(\d+)", p)
+        return tuple(int(x) for x in m.groups()) if m else (0, 0, 0)
+    hits.sort(key=lambda p: (_ver(p), p))
+    return hits[-1] if hits else None
 
 
 CLAUDE = find_claude()
+
+
+def ensure_claude():
+    """앱 자동 업데이트로 버전 폴더가 지워지면 시작 시 캐시한 경로가 죽음(WinError 2) → 호출 시 재탐지."""
+    global CLAUDE
+    if not CLAUDE or not os.path.isfile(CLAUDE):
+        CLAUDE = find_claude()
+    return CLAUDE
 
 
 # ── 멀티 Claude 계정 (CLAUDE_CONFIG_DIR로 계정별 분리) ───
@@ -213,6 +245,10 @@ ACCOUNTS_FILE = os.path.join(HERE, "accounts.json")
 _LIMIT_PAT = re.compile(
     r"(spend limit|usage limit|rate limit|monthly .{0,20}limit|hit your .{0,20}limit|"
     r"limit.{0,40}claude\.ai|reached your|out of .{0,15}usage|사용 한도|한도에 도달|한도를 초과)", re.I)
+# 세션 만료·인증 실패(짧은 출력일 때만 검사 — 원고 본문에 우연히 들어간 단어 오탐 방지)
+_AUTH_ERR_PAT = re.compile(
+    r"(Failed to authenticate|OAuth session expired|could not be refreshed|session expired|"
+    r"Invalid API key|authentication_error|401|unauthorized)", re.I)
 
 # 인증 실패 패턴(토큰 만료·철회 등) — 이 경우도 다른 로그인 계정으로 자동 전환, 안 되면 재로그인 안내
 _AUTH_FAIL_PAT = re.compile(
@@ -238,6 +274,19 @@ def save_accounts(d):
         pass
 
 
+def account_dir(acc):
+    """그 계정의 CLAUDE_CONFIG_DIR. accounts.json 의 절대경로가 이 PC에 없으면
+    프로그램 폴더의 accounts/<id> 로 대체한다(폴더째 옮기거나 압축해 배포해도 로그인 유지)."""
+    d = (acc or {}).get("dir") or ""
+    if not d:
+        return ""                                   # 기본 계정 = ~/.claude
+    if not os.path.isdir(d):
+        local = os.path.join(ACCOUNTS_DIR, (acc or {}).get("id") or "")
+        if os.path.isdir(local):
+            return local
+    return d
+
+
 def account_env(acc_id=None):
     """해당 계정의 CLAUDE_CONFIG_DIR 적용된 env. dir 비면 기본(~/.claude)."""
     d = load_accounts()
@@ -245,9 +294,10 @@ def account_env(acc_id=None):
         acc_id = d["active"]
     acc = next((a for a in d["accounts"] if a.get("id") == acc_id), None)
     env = os.environ.copy()
-    if acc and acc.get("dir"):
-        os.makedirs(acc["dir"], exist_ok=True)
-        env["CLAUDE_CONFIG_DIR"] = acc["dir"]
+    _d = account_dir(acc)
+    if _d:
+        os.makedirs(_d, exist_ok=True)
+        env["CLAUDE_CONFIG_DIR"] = _d
     else:
         env.pop("CLAUDE_CONFIG_DIR", None)
     return env
@@ -255,7 +305,7 @@ def account_env(acc_id=None):
 
 def auth_status_of(acc_id):
     """계정별 로그인 상태(dict: loggedIn/email/subscriptionType ...)."""
-    if not CLAUDE:
+    if not ensure_claude():
         return {}
     try:
         r = subprocess.run([CLAUDE, "auth", "status"], capture_output=True, text=True,
@@ -327,6 +377,12 @@ _VAR_FORMAT = ["핵심을 단계별로 짚는 가이드형", "궁금증을 하�
 
 def _variation_block(brand=None):
     emph = random.sample(_VAR_EMPH, 2)
+    if brand and brand.get("channel"):
+        # 채널 표준 프롬프트(레드트랜스·윈차이나·트래비티): 골격 A~D·소제목 수는 채널 프롬프트가 로테이션으로 정하므로 '표현·각도 새로 하기'만 지시
+        return ("[이번 글 변주 — 스크립트가 정한 구조(요약 블록·소제목 개수·Q&A·CTA 순서)는 그대로 지키되, 그 안의 표현·예시·비유·각도는 매번 새롭게 한다]\n"
+                f"- 이번 글은 특히 '{emph[0]}'·'{emph[1]}' 관점을 조금 더 살린다.\n"
+                "- ★가장 중요: 이전 글의 문장·소제목 문구·예시·비유·인사 변형·한계 인정 문구를 재활용해 '단어만 바꾸는' 식으로 쓰지 말 것. "
+                "같은 키워드·같은 정보라도 첫 문장·소제목·설명 순서·예시·비유를 전부 새로 짜서, 매번 완전히 다른 글처럼 읽히게 한다.")
     if brand and brands.custom_prompt(brand):
         # 완전 커스텀 스크립트(prompt.md) 브랜드: 고정되는 건 '필수 요소'(요약 블록·소제목 개수·Q&A·CTA)뿐.
         # 글 성격·소제목 전개·첫 문장 형태는 매번 앱이 무작위로 달리 지정 → 글끼리 같은 뼈대로 수렴하는 것을 막는다.
@@ -341,15 +397,18 @@ def _variation_block(brand=None):
                 f"- 이번 글은 특히 '{emph[0]}'·'{emph[1]}' 관점을 조금 더 살린다.\n"
                 "- ★가장 중요: 이전 글의 문장·소제목 문구·소제목 흐름·예시·비유·경험 장면을 재활용해 '단어만 바꾸는' 식으로 쓰지 말 것. "
                 "같은 키워드·같은 정보라도 이번 독자 상황·사진에서 출발해 매번 완전히 다른 글처럼 읽히게 한다.")
+    ffp = brands.final_faq_promo(brand)
     return ("[이번 글 변주 — '구성·표현·각도'를 매번 새롭게 하기 위한 지시다. "
-            "블로그 뼈대(도입 인사 → 소제목 정확히 6개 → 마무리)·브랜드 톤·정체성·키워드 SEO 규칙은 지키되, "
+            + ("블로그 뼈대(도입 인사 → 소제목 정확히 6개, 첫째~셋째 = 정보, 넷째·다섯째 = 정보+브랜드 홍보, 여섯째 = FAQ 3~4개+브랜드 홍보+후킹 CTA)·브랜드 톤·정체성·키워드 SEO 규칙은 지키되, "
+               if ffp else "블로그 뼈대(도입 인사 → 소제목 정확히 6개 → 마무리)·브랜드 톤·정체성·키워드 SEO 규칙은 지키되, ") +
             "그 안에서 쓰는 방식은 매번 확실히 다르게 한다.]\n"
             f"- 이번 글은 {random.choice(_VAR_FORMAT)}으로 전개한다(6개 소제목의 구성·순서·풀어가는 방식을 이 접근에 맞춘다).\n"
             f"- 도입은 {random.choice(_VAR_HOOK)} 시작하고, 소제목은 {random.choice(_VAR_SUB)} 구성한다.\n"
             f"- 이번 글은 특히 '{emph[0]}'·'{emph[1]}' 관점을 조금 더 살리고, 전체 전개는 {random.choice(_VAR_RHYTHM)} 풀어간다.\n"
             "- ★가장 중요: 이전 글의 구조·문장·소제목 문구·예시·비유를 재활용해 '단어만 바꾸는' 식으로 쓰지 말 것. "
             "같은 키워드·같은 정보라도 첫 문장·소제목·설명 순서·예시·비유를 전부 새로 짜서, 매번 완전히 다른 글처럼 읽히게 한다.\n"
-            "- 마무리의 브랜드 소개도 정형화된 나열을 복붙하지 말고, 이번 글 주제와 연결해 다른 문장·다른 순서·다른 강조점으로 매번 새롭게 쓴다.")
+            + ("- 넷째~여섯째 소제목의 브랜드 홍보·CTA도" if ffp else "- 마무리의 브랜드 소개도") +
+            " 정형화된 나열을 복붙하지 말고, 이번 글 주제와 연결해 다른 문장·다른 순서·다른 강조점으로 매번 새롭게 쓴다.")
 
 
 # 가장 중요한 규칙은 프롬프트 맨 끝(작성 직전)에 다시 못박는다 — 긴 기준서에 묻히지 않게.
@@ -373,6 +432,7 @@ def _portfolio_prompt(keyword, photo_files, photo_paths, project_hint, brand, ti
                if (project_hint or "").strip() else
                "\n[프로젝트 추가 정보 없음] — 사진에서 실제로 보이는 것과 메인키워드가 가리키는 분야·산출물에 근거해서만 쓰고, 없는 사실(고객명·수치 등)은 지어내지 말 것.")
     titleblk = (f"\n[제목 — 이 제목을 그대로 사용]\n{title.strip()}" if (title or "").strip() else "")
+    ffp = brands.final_faq_promo(b)
     head = (
         f"너는 '{name}'의 블로그에 '실제 진행한 한 프로젝트'를 사례로 보여주는 포트폴리오 글을 쓰는 전문 카피라이터다.\n"
         f"[회사 소개] {identity}\n"
@@ -389,7 +449,8 @@ def _portfolio_prompt(keyword, photo_files, photo_paths, project_hint, brand, ti
         "업종×서비스×고객상황×구매의도를 조합한 '진짜 물어볼 법한 말'이다(예: '치과인데 학회 부스용 카탈로그 잘하는 곳 추천해줘', '수출기업인데 카탈로그 중국어판도 한 곳에서 돼?'). "
         "'제작 순서/방법/어떻게 시작' 같은 절차 질문은 아무도 안 하니 버린다. 이 글 전체가 그 질문에 대한 답이 되게 쓴다.\n\n"
         "[제목] '업종/기관 + 상황 + 산출물'이 드러나는 구체적 타겟으로 짓는다(막연한 일반 키워드 금지). 예: '치과 학회 부스용 카탈로그 제작 사례'. 메인키워드 포함.\n\n"
-        "[구조 — ★맨 위 요약 + 짧은 인사 + 소제목 정확히 6개(마지막 FAQ) + 마무리]\n"
+        + ("[구조 — ★맨 위 요약 + 짧은 인사 + 소제목 정확히 6개(마지막 = FAQ + 브랜드 홍보 + 후킹 CTA)]\n" if ffp else
+           "[구조 — ★맨 위 요약 + 짧은 인사 + 소제목 정확히 6개(마지막 FAQ) + 마무리]\n") +
         "- ★맨 위 요약(본문 가장 앞): 제목 바로 아래에 이 프로젝트를 3~4문장으로 요약한다 — 어떤 업종 고객이·어떤 상황에서·무슨 산출물을 맡겼고, 이 글이 주는 '핵심 답'이 무엇인지. AI는 맨 앞을 먼저 읽으니 여기서 결론(정답)을 먼저 준다.\n"
         f"- 인사: '안녕하세요, {name}입니다.' 정도로 한 줄만. 길게 늘이지 말 것.\n"
         "- 소제목 6개(마지막은 반드시 FAQ)는 ★타겟이 궁금한 것(구매의도)에 답하는 것으로 고른다. '우리가 A→B→C 했다'는 진행 나열 금지. 각 소제목 ★첫 문장에 '이 업종/이 상황에선 이렇게 하는 게 맞다'는 일반화된 정답을 먼저 주고(=AI가 그대로 인용할 문장), 그 뒤에 이번 프로젝트를 그 정답의 '증거'로 보여준다(정답+증거). 후보:\n"
@@ -398,11 +459,13 @@ def _portfolio_prompt(keyword, photo_files, photo_paths, project_hint, brand, ti
         "  · 원고·사진 없어도/급해도 되나(가능 여부) — 이 프로젝트에선 어떻게 처리했나\n"
         "  · 비용·기간을 가르는 요인(있는 사실만, 수치 날조 금지)\n"
         "  · 번역·인쇄까지 한 곳에서(원스톱 강점) — 이 프로젝트에서 실제로 어떻게 작동했나\n"
-        "  · [FAQ, 마지막 소제목] 타겟이 실제로 할 법한 질문 4~5개와 답 — 질문은 고객 말투 그대로(추천/비용/기간/가능 여부/업체 선택 기준 등), 답은 구체적으로. 이 부분이 AI가 가장 잘 인용한다.\n"
+        + ("  · [넷째·다섯째 소제목] 정보 + 브랜드 홍보 / [마지막 소제목] FAQ 3~4개 + 브랜드 홍보 + 후킹 CTA — 아래 [넷째·다섯째]·[여섯째] 규칙대로.\n" if ffp else
+           "  · [FAQ, 마지막 소제목] 타겟이 실제로 할 법한 질문 4~5개와 답 — 질문은 고객 말투 그대로(추천/비용/기간/가능 여부/업체 선택 기준 등), 답은 구체적으로. 이 부분이 AI가 가장 잘 인용한다.\n") +
         "- ★스토리텔링 금지: '그날 미팅에서/고민 끝에/뿌듯했다' 같은 감정·서사 흐름을 쓰지 않는다. 모든 문단은 '인용될 정답'이거나 '구체적 증거'여야 한다. 아무도 궁금해하지 않는 진행 과정 나열은 뺀다.\n"
         "- '결과'로 매출·전환율 같은 경영 성과 수치를 지어내지 말 것. 처음 요구를 산출물이 어떻게 충족했는지, 어디에 쓰이는지(사실)까지만.\n"
-        f"[마무리 — {name} 정리]\n"
-        f"- 이 글 주제(이 업종·이 산출물)와 엮어 {name}이(가) 어떤 회사이고 왜 이런 일에 강한지 또렷이 정리한다: 기획→디자인→(다국어 번역)→인쇄까지 한 곳에서 하는 원스톱, 관련 경력·강점을 1~2문장으로(정형화된 나열 복붙 금지). 그런 다음 자연스럽게: {cta}\n"
+        + (brands._final_section_block(b, name, cta) + "\n" if ffp else
+           f"[마무리 — {name} 정리]\n"
+           f"- 이 글 주제(이 업종·이 산출물)와 엮어 {name}이(가) 어떤 회사이고 왜 이런 일에 강한지 또렷이 정리한다: 기획→디자인→(다국어 번역)→인쇄까지 한 곳에서 하는 원스톱, 관련 경력·강점을 1~2문장으로(정형화된 나열 복붙 금지). 그런 다음 자연스럽게: {cta}\n")
         + hintblk + titleblk)
     return (head + brands._guide_block(b) + brands.faq_block(b, keyword, "", title) +
             "\n\n" + brands._output_format(b) +
@@ -425,6 +488,237 @@ def question_block(question, keyword="", subkeyword="", title=""):
     return ("\n[★독자의 실제 질문 — 이 글이 답해야 하는 질문]\n" + q + "\n" + tline +
             "- 맨 앞 요약 블록, 소제목, Q&A, CTA까지 글 전체가 이 질문에 대한 답이 되게 쓴다(요약 블록의 형식·첫 줄 규칙은 위 브랜드 규칙을 따른다). 질문에 담긴 업종·상황·조건을 글의 니치로 삼고, 질문에서 벗어난 일반론으로 흐르지 않는다.\n"
             "- 질문에 나온 표현(고객이 쓰는 말)을 본문에 1~2회 자연스럽게 되살린다(AI가 같은 질문을 받았을 때 그대로 인용하기 쉽게).")
+
+
+# ── 채널(네이버 블로그/카페) 표준 프롬프트 지원 ──────────────────────────
+# brands/<id>/channels.json + prompt_<channel>.md (sync_channel_prompts.py 가 운영자 원본에서 생성).
+# 생성 이력(history_<channel>.json)으로 골격·인사 수식어·도입·요약·마무리 로테이션 근거를 프롬프트에 주입하고,
+# 출력 끝의 ===CATEGORY/TAGS/COMMENTS/ANALYSIS/META=== 블록을 분리해 UI 부가 패널에 보여준다.
+def _history_path(bid, ch):
+    return os.path.join(brands.brand_dir(bid), f"history_{ch}.json")
+
+
+def load_history(bid, ch, n=8):
+    try:
+        d = jload(_history_path(bid, ch), [])
+        return (d if isinstance(d, list) else [])[-n:]
+    except Exception:
+        return []
+
+
+def save_history(bid, ch, rec, cap=40):
+    try:
+        p = _history_path(bid, ch)
+        d = jload(p, [])
+        d = d if isinstance(d, list) else []
+        d.append(rec)
+        json.dump(d[-cap:], open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    except Exception:
+        pass
+
+
+def channel_block(brand, keyword):
+    """채널 글 전용 주입 블록: 오늘 날짜 + 직전 글 정보(골격·인사 수식어·도입·요약·마무리·제목).
+    프롬프트의 '직전 글 골격/최근 글 제목/오늘 날짜' INPUT을 앱 이력으로 대신 채운다(검색·RSS 없이 로테이션 작동)."""
+    ch = (brand or {}).get("channel")
+    if not ch:
+        return ""
+    today = datetime.date.today()
+    kl = len(re.sub(r"\s", "", keyword or ""))
+    hist = load_history(brand["id"], ch)
+    lines = [f"\n[오늘 날짜] {today.isoformat()} ({today.day}일) — 베트남 아포스티유 발효(2026-09-11) 전/후 등 날짜 분기는 이 날짜 기준",
+             f"[채널] {brand.get('channel_label') or ch} — 위 프롬프트는 이 채널 전용 표준이다."]
+    if hist:
+        last = hist[-1]
+        lines.append("[직전 글 정보 — 로테이션] 아래는 이 채널에서 최근 생성한 글(최신이 맨 아래). 직전 글과 같은 골격·인사 수식어·도입·요약·마무리 방식 금지, "
+                     "제목 훅·중심 각도 중복 금지. 검색·RSS 조회 대신 이 정보를 근거로 로테이션한다.")
+        for h in hist:
+            m = h.get("meta") or {}
+            lines.append(f"- {h.get('date', '')} 「{h.get('title', '')}」 골격 {m.get('골격', '-')} / 인사 「{m.get('인사', '-')}」 / "
+                         f"도입 {m.get('도입', '-')} / 요약 {m.get('요약', '-')} / 마무리 {m.get('마무리', '-')}")
+        lines.append(f"- ★직전 글 골격: {(last.get('meta') or {}).get('골격', '-')} → 이번 글은 다른 골격으로. 직전 2편의 인사 수식어와 다른 수식어로.")
+        recent = [h for h in hist if h.get("subs") or h.get("cards")][-3:]
+        if recent:
+            lines.append("[직전 3편 소제목·카드 헤드라인 — 같은 문구·같은 틀 재사용 금지(번호 형식은 유지, 표현은 이번 글 내용에 맞게 새로)]")
+            for h in recent:
+                lines.append(f"- 「{h.get('title', '')}」 소제목: {' / '.join(h.get('subs') or []) or '-'}"
+                             f" | 카드: {' / '.join(h.get('cards') or []) or '-'}")
+    else:
+        lines.append("[직전 글 정보 — 로테이션] 이 채널의 생성 이력이 아직 없다. 골격 A~D 로테이션 프롬프트면 자동 계산식"
+                     f"((메인 키워드 글자 수 + 오늘 日) ÷ 4 나머지 → 0=A, 1=B, 2=C, 3=D)으로 정한다 — 이번 글: {kl}자 + {today.day}일 = {kl + today.day} → 나머지 {(kl + today.day) % 4}. "
+                     "(글 유형 S/I 프롬프트는 이 계산과 무관하게 정보형/사례형 중 키워드에 맞는 쪽.)")
+    return "\n".join(lines)
+
+
+_EXTRA_RE = re.compile(r"^===([A-Z]+)===\s*$", re.M)
+
+
+def split_extra_blocks(out):
+    """채널 글 출력 끝의 ===CATEGORY/TAGS/COMMENTS/ANALYSIS/META=== 블록 분리 → (본문+카드뉴스 부분, {블록명(소문자): 내용, meta:{...}})."""
+    m = _EXTRA_RE.search(out or "")
+    if not m:
+        return out, {}
+    head, tail = out[:m.start()], out[m.start():]
+    parts = _EXTRA_RE.split(tail)
+    ex = {}
+    for i in range(1, len(parts) - 1, 2):
+        ex[parts[i].lower()] = parts[i + 1].strip()
+    meta = {}
+    for ln in (ex.get("meta") or "").splitlines():
+        mm = re.match(r"^\s*(골격|인사|도입|요약|마무리|썸네일|썸네일부제)\s*[:：]\s*(.*)$", ln)
+        if mm:
+            meta[mm.group(1)] = mm.group(2).strip()
+    ex["meta"] = meta
+    return head.rstrip(), ex
+
+
+# ── 카페 썸네일 생성기(E:\cafe-thumbnail, 포트 5011) 연동 ───────────────────────
+# 글 생성 직후 브랜드 시그니처 템플릿(channels.json _thumb: 윈차이나 sticker / 레드트랜스 cert)으로 썸네일 1장을 자동 저장.
+# 서버가 꺼져 있으면 node server.js 를 띄운다. 국가 코드(wm)·라틴 라벨(mono) 자동 인식은 대시보드(index.html)와 같은 규칙을 여기서 재현.
+THUMB_DIR = r"E:\cafe-thumbnail"
+THUMB_URL = "http://127.0.0.1:5011"
+_THUMB_META = {"t": 0, "d": None}
+_WM_COUNTRY = ("seal", "cert", "band", "form", "photo")           # 국가 코드를 wm 으로 쓰는 템플릿(대시보드 WM_COUNTRY)
+_MONO_TPL = ("sticker", "seal", "cert", "band", "stamp", "bi", "form", "photo")
+
+
+def _http_json(url, data=None, timeout=8):
+    import urllib.request
+    req = urllib.request.Request(url, data=(json.dumps(data, ensure_ascii=False).encode("utf-8") if data is not None else None),
+                                 headers={"Content-Type": "application/json; charset=utf-8"})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return json.loads(r.read().decode("utf-8"))
+
+
+def thumb_meta(force=False):
+    """/meta(브랜드·템플릿·국가·모노 표) 캐시(10분)."""
+    if not force and _THUMB_META["d"] and time.time() - _THUMB_META["t"] < 600:
+        return _THUMB_META["d"]
+    try:
+        _THUMB_META["d"] = _http_json(THUMB_URL + "/meta", timeout=4)
+        _THUMB_META["t"] = time.time()
+    except Exception:
+        return _THUMB_META["d"]
+    return _THUMB_META["d"]
+
+
+def thumb_ensure():
+    """5011 이 죽어 있으면 node server.js 를 백그라운드로 띄우고 최대 12초 대기."""
+    if thumb_meta(force=True):
+        return True
+    if not os.path.isfile(os.path.join(THUMB_DIR, "server.js")):
+        return False
+    node = shutil.which("node") or next((p for p in (r"C:\Program Files\nodejs\node.exe",
+                                                     os.path.expandvars(r"%LOCALAPPDATA%\Programs\nodejs\node.exe")) if os.path.isfile(p)), None)
+    if not node:
+        return False
+    try:
+        subprocess.Popen([node, "server.js"], cwd=THUMB_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         creationflags=0x00000008 | 0x00000200)     # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
+    except Exception:
+        return False
+    for _ in range(12):
+        time.sleep(1)
+        if thumb_meta(force=True):
+            return True
+    return False
+
+
+def thumb_auto_fields(bkey, template, topic):
+    """대시보드의 자동 인식(deriveWm/monoAuto)과 같은 규칙: 주제 텍스트(글 제목+키워드)에서 국가 코드·라틴 라벨."""
+    m = thumb_meta() or {}
+    b = (m.get("brands") or {}).get(bkey) or {}
+    out = {"badge": b.get("defaultBadge", ""), "contact": b.get("defaultContact", ""), "fine": b.get("defaultFine", ""),
+           "tags": b.get("defaultTags", ""), "wm": "", "mono": ""}
+    low = (topic or "").lower()
+    hit = next((c for c in (m.get("countries") or []) if c[0] in (topic or "")), None)
+    if template in _WM_COUNTRY:
+        out["wm"] = hit[1] if hit else "DOC"
+    elif template == "number":
+        out["wm"] = b.get("defaultWm", "")
+    if template in _MONO_TPL:
+        if template == "bi":
+            out["mono"] = "KO ⇄ " + (((m.get("langs") or {}).get(hit[1]) if hit else None) or "EN")
+        else:
+            r = next((x for x in (m.get("monos") or []) if any(k in low for k in (x.get("match") or []))), None)
+            out["mono"] = ((r.get("rt") if bkey == "redtrans" else r.get("wc")) if r else "") or b.get("defaultMono", "")
+    return out
+
+
+def thumb_render(bkey, template, title, sub="", size="square", stamp="auto", topic="", fs=0, dx=0, dy=0):
+    """썸네일 1장 저장(/save) → {"file","url","title","sub","template","size"}. 실패 시 {"err"}."""
+    if not thumb_ensure():
+        return {"err": "썸네일 서버(5011)를 띄우지 못했습니다 — E:\\cafe-thumbnail\\start.bat 을 실행하세요."}
+    auto = thumb_auto_fields(bkey, template, topic or title)
+    d = {"brand": bkey, "template": template, "size": size or "square", "badge": auto["badge"], "mono": auto["mono"],
+         "wm": auto["wm"], "stamp": stamp or "auto", "title": title, "sub": sub or "", "fine": auto["fine"],
+         "tags": auto["tags"], "items": "", "contact": auto["contact"], "fs": fs or 0, "dx": dx or 0, "dy": dy or 0, "photo": ""}
+    try:
+        r = _http_json(THUMB_URL + "/save", d, timeout=90)
+    except Exception as e:
+        return {"err": f"썸네일 저장 실패: {e}"}
+    if not r.get("ok"):
+        return {"err": r.get("error") or "썸네일 저장 실패"}
+    return {"file": r.get("file", ""), "url": THUMB_URL + r.get("url", ""), "title": title, "sub": sub or "",
+            "template": template, "size": size or "square", "stamp": stamp or "auto", "brand": bkey,
+            "mono": auto["mono"], "wm": auto["wm"], "fs": int(fs or 0), "dx": int(dx or 0), "dy": int(dy or 0)}
+
+
+def thumb_cfg(bid):
+    """channels.json _thumb — 자동 썸네일을 만드는 브랜드만 값이 있다."""
+    try:
+        p = os.path.join(brands.brand_dir(bid), "channels.json")
+        return (json.load(open(p, encoding="utf-8")) if os.path.isfile(p) else {}).get("_thumb") or {}
+    except Exception:
+        return {}
+
+
+def thumb_title_from(meta, keyword, title):
+    """===META=== 썸네일 '1행 / 2행' → 두 줄 제목. 없으면 키워드(길면 두 줄로 쪼갬)."""
+    t = (meta or {}).get("썸네일", "").strip().strip("-")
+    if t:
+        parts = [p.strip() for p in re.split(r"\s*/\s*|\n", t) if p.strip()]
+        return "\n".join(parts[:2])
+    k = (keyword or "").strip()
+    if not k:
+        return (title or "")[:12]
+    if len(k) <= 6 or " " not in k:
+        return k
+    ws = k.split()
+    return ws[0] + "\n" + " ".join(ws[1:])
+
+
+def make_thumb_for_post(post, brand):
+    """생성 직후 브랜드 시그니처 템플릿으로 자동 썸네일. 실패해도 글은 그대로(post.thumb_err)."""
+    cfg = thumb_cfg(brand.get("id", ""))
+    if not cfg:
+        return
+    meta = (post.get("extra") or {}).get("meta") or {}
+    ttl = thumb_title_from(meta, post.get("keyword", ""), post.get("title", ""))
+    sub = (meta.get("썸네일부제") or "").strip().strip("-")
+    r = thumb_render(brand["id"], cfg.get("template", "sticker"), ttl, sub, cfg.get("size", "square"), "auto",
+                     topic=(post.get("title", "") + " " + post.get("keyword", "")))
+    if r.get("err"):
+        post["thumb_err"] = r["err"]
+    else:
+        post["thumb"] = r
+
+
+def apply_track_link(post, brand):
+    """CRM/UTM 성과추적 링크: crm.json link 템플릿 + 제목 기반 키 → post.track_link.
+    본문에 {{추적링크}} 토큰이 있으면 실제 링크로 치환(track_in_body=True → 복사 시 끝에 다시 붙이지 않음)."""
+    crm = brands.load_crm((brand or {}).get("id", "")) if brand else {}
+    link = ""
+    if crm.get("link") and post.get("track_hash"):
+        link = crm["link"].replace("{key}", (crm.get("prefix") or "") + post["track_hash"])
+    post["track_link"] = link
+    n = 0
+    for blk in post.get("blocks", []):
+        if blk.get("type") == "text" and brands.TRACK_TOKEN in (blk.get("text") or ""):
+            blk["text"] = blk["text"].replace(brands.TRACK_TOKEN, link)
+            n += 1
+    post["track_in_body"] = bool(n and link)
+    return post
 
 
 def _len_no_space(t):
@@ -463,6 +757,8 @@ def trim_manuscript(brand, keyword, ms, cur, lo, hi, model):
          + "\n".join(plan) + "\n"
          "[반드시 지킬 것]\n"
          "- '제목:' 줄, 소제목 개수, (사진N) 줄, (표N)/(차트N) 줄, Q&A, 마무리 CTA, '함께 보면 좋은 글'과 URL 줄을 모두 그대로 유지한다(지우거나 합치지 말 것).\n"
+         + ("- 넷째·다섯째 소제목 끝의 브랜드 홍보 문장과 마지막 소제목의 브랜드 홍보(4문장 이상, 강점별 이점 설명)는 살린 채로 둔다(줄일 때 홍보를 뭉개거나 지우지 말 것).\n"
+            if brands.final_faq_promo(brand) else "") +
          "- 숫자·규격·사실은 바꾸지 않는다. 항목을 통째로 빼기보다 설명 문장·중복 표현·군더더기 수식어를 덜어내고, 이어 쓸 수 있는 두 문장은 한 문장으로 합쳐 압축한다.\n"
          "- ★문장 리듬을 깨서 줄이지 말 것(가장 중요): 긴 문장을 둘로 쪼개거나 연결어미(~고/~는데/~어서/~니까/~라서/~지만/~기 때문에)를 끊어 단문 나열로 만들면 실패다. "
          "줄이는 방법은 '겹치는 설명 문장 자체를 통째로 덜어내기' 하나뿐이고, 남은 문장의 길이와 연결어미는 원문 그대로 유지한다.\n"
@@ -481,17 +777,67 @@ def trim_manuscript(brand, keyword, ms, cur, lo, hi, model):
     return re.split(r"\n\s*카드뉴스\s*[:：]", out)[0].strip()   # 카드 섹션을 뱉으면 잘라낸다
 
 
+def expand_manuscript(brand, keyword, ms, cur, lo, hi, model):
+    """하한보다 짧은 원고를 '구조 그대로, 정보 문장만 보강'으로 늘린다(length_fill 브랜드). 실패하면 ''.
+    앱이 구간별 글자수를 재서 어느 구간에 몇 자를 보탤지 지정한다(마지막 FAQ·홍보·CTA 구간은 늘리지 않음)."""
+    target = min(hi - 120, lo + 150)         # 모델은 지정보다 길게 쓰는 편 → 상한 안쪽에 떨어지게 잡는다
+    counts = _section_counts(ms)
+    need = max(0, target - cur)
+    body = [i for i, (label, _) in enumerate(counts) if i > 0 and i < len(counts) - 1]   # 첫째~다섯째 소제목
+    if not body:
+        body = list(range(len(counts)))
+    add_each = int(round(float(need) / len(body))) if body else need
+    plan = []
+    for i, (label, c) in enumerate(counts):
+        if i in body:
+            plan.append("· %s: 지금 %d자 → %d자 (%d자 보강)" % (label[:30], c, c + add_each, add_each))
+        else:
+            plan.append("· %s: 지금 %d자 (그대로 두기)" % (label[:30], c))
+    style = brands.build_style(brand) if brand else STYLE
+    p = (style + "\n\n[분량 보강 — 구조는 그대로, 정보 문장만 보탠다]\n"
+         f"이 원고는 공백 제외 {cur}자로 하한 {lo}자보다 {lo - cur}자 짧다. 전체를 {target}자 안팎으로 늘려라(상한 {hi}자는 절대 넘기지 말 것).\n"
+         "아래는 앱이 실제로 센 구간별 글자수와 이번에 보탤 양이다. 구간마다 지정된 만큼만 보탠다:\n"
+         + "\n".join(plan) + "\n"
+         "[반드시 지킬 것]\n"
+         "- '제목:' 줄, 소제목 개수와 문구, (사진N) 줄, (표N)/(차트N) 줄, 마지막 소제목(FAQ·홍보·CTA), '함께 보면 좋은 글'과 URL 줄을 모두 그대로 유지한다.\n"
+         "- 보탤 때는 그 소제목 주제 안에서 독자에게 실제로 쓸모 있는 구체적 기준·조건·사례 문장을 더한다. 같은 말 반복·군더더기 수식어·일반론으로 채우지 말 것.\n"
+         + ("- 보강은 정보 문장으로만 한다. 첫째~셋째 소제목에는 브랜드 홍보를 넣지 않고, 넷째·다섯째에 이미 있는 홍보 문장은 그대로 둔다(홍보를 늘리지 말 것). 지어낸 수치·사실 금지.\n"
+            if brands.final_faq_promo(brand) else
+            "- 첫째~다섯째 소제목에는 브랜드 홍보 문장을 넣지 않는다. 지어낸 수치·사실 금지.\n") +
+         "- 브랜드 문체·톤·문장 리듬 규칙과 메인키워드 사용 규칙을 그대로 지킨다.\n"
+         "- 설명·머리말·따옴표·코드블록 없이 '제목:'부터 마지막 줄까지 보강한 원고 전체만 출력한다(카드뉴스·표차트 섹션은 출력하지 말 것).\n\n"
+         f"[원고]\n{ms}")
+    out, err = run_claude(p, model, timeout=300)
+    if err or not (out or "").strip():
+        return ""
+    out = out.strip()
+    mt = re.search(r"제목\s*[:：]", out)
+    if mt and mt.start() > 0:
+        out = out[mt.start():]
+    return re.split(r"\n\s*카드뉴스\s*[:：]", out)[0].strip()
+
+
 def build_prompt(keyword, photo_files, project_hint="", brand=None, subkeyword="", title="", latest="", portfolio=False, photo_paths=None, question=""):
     if portfolio:
         return _portfolio_prompt(keyword, photo_files, photo_paths, project_hint, brand, title)
     photos = "\n".join(f"- {f}" for f in photo_files) if photo_files else "(없음 — (사진N) 자리표시만, 파일명은 비워둠)"
     project_hint = (project_hint or "").strip()
-    hint = (f"\n[★실제 프로젝트·사례 정보 — 이 글은 이 '실제 건'을 다루는 사례(포트폴리오) 글이다]\n{project_hint}\n"
-            f"- 위 실제 정보를 근거로, 어떤 요청이었고 어떻게 진행·해결됐는지 이 케이스의 실제 상황·서류·처리 과정을 구체적으로 살려 '사례 중심'으로 쓴다(막연한 일반론 금지). 사실 기준서의 가격·절차 규칙은 그대로 지킨다."
-            if project_hint else "")
+    is_ch = bool(brand and brand.get("channel"))
+    if is_ch and (brand.get("channel_cfg") or {}).get("media") == "thumb_only":
+        photos = "(이 채널은 본문 이미지 없음 — (사진N) 줄·카드뉴스·표차트 섹션을 쓰지 않는다)"
+    if project_hint and is_ch:
+        hint = (f"\n[★추가 실무 데이터·추가 지시 — 운영자 입력]\n{project_hint}\n"
+                "- 팩트 시트에 없는 확정 정보(새 케이스·트렌드)나 운영자 지시(예: '정보글 모드', '홍보 자제', 관련 글 URL)다. 여기와 팩트 시트에 없는 숫자·규정은 절대 창작하지 않는다.")
+    else:
+        hint = (f"\n[★실제 프로젝트·사례 정보 — 이 글은 이 '실제 건'을 다루는 사례(포트폴리오) 글이다]\n{project_hint}\n"
+                f"- 위 실제 정보를 근거로, 어떤 요청이었고 어떻게 진행·해결됐는지 이 케이스의 실제 상황·서류·처리 과정을 구체적으로 살려 '사례 중심'으로 쓴다(막연한 일반론 금지). 사실 기준서의 가격·절차 규칙은 그대로 지킨다."
+                if project_hint else "")
     subkeyword = (subkeyword or "").strip()
     title = (title or "").strip()
-    subblk = (f"\n[서브키워드] {subkeyword}\n- 쉼표로 구분된 각 서브키워드를 본문에 자연스럽게 녹인다. 관련 있는 대목에서 자연스럽게 몇 번씩 등장하게 하되, 억지로 똑같이 반복하거나 키워드를 나열식으로 쑤셔 넣지 말 것." if subkeyword else "")
+    if subkeyword and is_ch:
+        subblk = f"\n[서브키워드] {subkeyword}\n- 위 프롬프트의 서브 키워드 규칙대로(제목에 최소 1개 포함, 핵심 요약·소제목·본문에 자연 배치, 각 3~6회). 쉼표로 구분된 각각을 억지 나열 없이."
+    else:
+        subblk = (f"\n[서브키워드] {subkeyword}\n- 쉼표로 구분된 각 서브키워드를 본문에 자연스럽게 녹인다. 관련 있는 대목에서 자연스럽게 몇 번씩 등장하게 하되, 억지로 똑같이 반복하거나 키워드를 나열식으로 쑤셔 넣지 말 것." if subkeyword else "")
     titleblk = (f"\n[제목 — 반드시 이 제목을 그대로 사용]\n{title}\n- 출력의 '제목:' 줄에는 위 제목을 토씨 하나 바꾸지 말고 그대로 쓴다. 새 제목을 지어내지 않는다." if title else "")
     latest = (latest or "").strip()
     latestblk = (f"\n[참고 — 최신 일반 정보(웹검색 확인). ★공개 사실(정책·제도·법령·협약 상태 등)만 이걸로 최신화한다. "
@@ -505,15 +851,16 @@ def build_prompt(keyword, photo_files, project_hint="", brand=None, subkeyword="
         readblk = ("\n\n[★사진 먼저 보기 — 아래 파일을 Read 도구로 한 장씩 실제로 열어 본 뒤 쓴다]\n" + plist +
                    "\n- 사진에서 읽은 것(어떤 인쇄물인지·접지·용지 질감·인증마크·QR·색 구분·업종)이 이 글의 니치와 전문 디테일을 결정한다. 소감·확인 문구는 출력하지 말고 바로 '제목:'부터 원고만 출력한다.")
     qblk = question_block(question, keyword, subkeyword, title)
+    chblk = channel_block(brand, keyword) if is_ch else ""
     return (style + faqblk + "\n\n" + _variation_block(brand) +
-            f"\n\n[메인키워드] {keyword}{qblk}{hint}{subblk}{titleblk}{latestblk}{readblk}\n\n[사용 사진] (순서대로 적절한 슬롯에 배치)\n{photos}\n\n" +
+            f"\n\n[메인키워드] {keyword}{qblk}{hint}{subblk}{titleblk}{latestblk}{readblk}{chblk}\n\n[사용 사진] (순서대로 적절한 슬롯에 배치)\n{photos}\n\n" +
             _CORE_RULES + "\n\n위 규칙대로 지금 작성하라.")
 
 
 def run_claude(prompt, model="", acc_id=None, _tried=None, tools="", timeout=240):
     """활성 계정으로 claude -p 실행. 사용 한도에 걸리면 로그인된 다른 계정으로 자동 전환.
     tools 지정 시 해당 도구 허용(예: 'WebSearch' → 웹검색, 'Read' → 사진 파일 열어보기)."""
-    if not CLAUDE:
+    if not ensure_claude():
         return None, "claude 실행파일을 찾지 못했습니다. Claude 데스크톱 앱 또는 CLI를 설치하세요."
     d = load_accounts()
     if acc_id is None:
@@ -530,10 +877,12 @@ def run_claude(prompt, model="", acc_id=None, _tried=None, tools="", timeout=240
                            encoding="utf-8", errors="ignore", timeout=timeout, env=account_env(acc_id))
         out = (r.stdout or "").strip()
         combined = out + "\n" + (r.stderr or "")
-        auth_fail = ("Not logged in" in combined or "Please run /login" in combined
-                     or _AUTH_FAIL_PAT.search(combined))
-        if auth_fail or _LIMIT_PAT.search(combined):
-            # 한도 도달/인증 만료 → 로그인된 다른 계정으로 자동 전환
+        # 2026-10-22: 세션 만료 오류문(exit 0일 때도 있음)이 원고로 넘어가 '헤드라인을 뽑지 못했습니다'로만 보이던 문제
+        # 로그아웃 상태도 같은 취급 → 로그인된 다른 계정으로 자동 전환
+        auth_bad = ("Not logged in" in combined or "Please run /login" in combined
+                    or (len(out) < 300 and bool(_AUTH_ERR_PAT.search(out) or _AUTH_FAIL_PAT.search(combined))))
+        if auth_bad or _LIMIT_PAT.search(combined):
+            # 한도 도달·세션 만료 → 로그인된 다른 계정으로 자동 전환
             for a in d["accounts"]:
                 if a["id"] in _tried:
                     continue
@@ -543,13 +892,16 @@ def run_claude(prompt, model="", acc_id=None, _tried=None, tools="", timeout=240
                         d["active"] = a["id"]; save_accounts(d)
                         _AUTH_CACHE["t"] = 0
                     return o2, e2
-            if auth_fail:
-                return None, ("이 계정의 Claude 로그인(토큰)이 만료되었습니다. "
-                              "상단 👤계정에서 이 계정을 다시 로그인해 주세요.")
+            if auth_bad:
+                _AUTH_CACHE["t"] = 0
+                return None, ("Claude 계정 세션이 만료됐습니다. 상단 👤계정에서 해당 계정을 [로그인]으로 다시 연결해 주세요. "
+                              "(로그인된 다른 계정이 없어 자동 전환하지 못했습니다)")
             return None, ("모든 계정이 사용 한도에 도달했습니다. "
                           "상단 👤계정에서 다른 Claude 계정을 추가하거나, claude.ai에서 한도를 올려주세요.")
         if not out:
             return None, "빈 응답입니다. " + (r.stderr or "")[:200]
+        if r.returncode != 0 and len(out) < 300:
+            return None, "Claude 실행 오류: " + out[:200]
         return out, None
     except subprocess.TimeoutExpired:
         return None, "생성 시간이 초과됐습니다(240초). 다시 시도하세요."
@@ -589,6 +941,7 @@ def parse_manuscript(text, photo_files):
         m_title = re.match(r"^제목\s*[:：]\s*(.+)$", s)
         m_photo = re.match(r"^\(사진[^:：]*[:：]\s*(.*?)\)\s*$", s)
         m_chart = re.match(r"^\(\s*(표|차트)\s*(\d+)\s*\)\s*$", s)   # C6: (표1)/(차트1) 위치 표시
+        m_coll = re.match(r"^\(\s*모음\s*(\d+)\s*\)\s*$", s)          # C7: (모음1) 사진 모음 위치 표시
         m_alt = re.match(r"^\[alt\s*[:：]\s*(.+?)\]\s*$", s, re.I)     # 포트폴리오: 사진 alt 텍스트
         if m_title and not title:
             title = m_title.group(1).strip()
@@ -599,6 +952,10 @@ def parse_manuscript(text, photo_files):
         if m_chart:
             flush()
             blocks.append({"type": "chart", "cid": m_chart.group(1) + m_chart.group(2), "img": ""})
+            continue
+        if m_coll:
+            flush()
+            blocks.append({"type": "collage", "cid": "모음" + m_coll.group(1), "img": ""})
             continue
         if m_photo:
             flush()
@@ -621,7 +978,49 @@ def parse_manuscript(text, photo_files):
     body = "".join(b["text"] for b in blocks if b["type"] == "text")
     body = re.sub(r"https?://\S+", "", body)
     nospace = re.sub(r"\s", "", body)
-    return {"title": title, "blocks": blocks, "char_count": len(nospace)}
+    return {"title": title, "blocks": blocks, "char_count": len(nospace), "track_key": crm_track_key(title), "track_hash": crm_track_key(title)[2:]}
+
+
+_HEAD_LINE_RE = re.compile(r"^\s*\*\*.+\*\*\s*$")
+
+
+def insert_collage_markers(ms, n=3):
+    """(모음1~3) 마커를 원고에 꽂는다 — 위치는 앱이 정한다(모델에 맡기지 않는다).
+
+    사용자 지정 위치:
+      · 모음1 = 인사 다음, 첫 소제목 들어가기 직전
+      · 모음2 = 본문 중간(세 번째 소제목이 끝나는 자리) — 카드 사진 바로 밑에 붙지 않게 소제목 '앞'에 둔다
+      · 모음3 = 마무리 CTA 문단 바로 앞
+    """
+    lines = ms.split("\n")
+    if any(re.match(r"^\s*\(\s*모음\s*\d+\s*\)\s*$", l) for l in lines):
+        return ms                                        # 이미 들어 있으면 그대로
+    heads = [i for i, l in enumerate(lines) if _HEAD_LINE_RE.match(l)]
+    if len(heads) < 2:
+        return ms
+
+    # 모음3 — '함께 보면 좋은 글'(없으면 글 끝) 바로 앞 문단 = CTA. 그 문단 시작 줄에 꽂는다.
+    anchor = len(lines)
+    for i, l in enumerate(lines):
+        if "함께 보면 좋은 글" in l:
+            anchor = i
+            break
+    j = anchor - 1
+    while j >= 0 and not lines[j].strip():               # 빈 줄 건너뛰기
+        j -= 1
+    while j >= 0 and lines[j].strip():                   # CTA 문단의 첫 줄까지 거슬러 올라가기
+        j -= 1
+    pos3 = j + 1
+
+    pos1 = heads[0]                                      # 첫 소제목 앞 = 인사 다음
+    mid = heads[3] if len(heads) >= 4 else heads[len(heads) // 2]
+    pos2 = mid                                           # 소제목 '앞' = 앞 단락 끝 (사진 바로 밑 아님)
+    picks = sorted({pos1, pos2, pos3})[:n]
+    if len(picks) < n:
+        return ms
+    for k, p in enumerate(sorted(picks, reverse=True)):  # 뒤에서부터 넣어야 인덱스가 안 밀린다
+        lines[p:p] = ["(모음%d)" % (n - k), ""]
+    return "\n".join(lines)
 
 
 # ── C6: 표·차트 (내용 기반 이미지) ────────────────────────
@@ -672,6 +1071,15 @@ def _hex_rgb(hx, default=(37, 99, 175)):
     return tuple(int(hx[i:i+2], 16) for i in (0, 2, 4))
 
 
+def _apply_card_note(brand, tpl):
+    """선택한 카드 디자인(layout.json)의 card_note를 브랜드 프롬프트 규칙에 얹는다.
+    디자인마다 필요한 원고 형태가 달라서(예: 리스트 카드 = 짧은 구절 나열) 슬롯별로 둔다."""
+    note = jload(os.path.join(brands.assets_dir(brand.get("id") or "", tpl), "layout.json"), {}).get("card_note")
+    if note:
+        brand["card_note"] = ((brand.get("card_note") or "").strip() + " " + note).strip()
+    return brand
+
+
 def article_color(cardnews_dir, brand):
     """표·차트 색 = 그 글 카드뉴스 색(cards.json accent/theme). 없으면 브랜드 색."""
     try:
@@ -712,7 +1120,7 @@ _AUTH_CACHE = {"t": 0, "v": False, "id": None}
 
 
 def claude_logged_in():
-    if not CLAUDE:
+    if not ensure_claude():
         return False
     active = load_accounts()["active"]
     if (_AUTH_CACHE["v"] and _AUTH_CACHE["id"] == active
@@ -725,7 +1133,7 @@ def claude_logged_in():
 
 @app.route("/api/status")
 def api_status():
-    return jsonify(claude=bool(CLAUDE), claude_path=CLAUDE or "", cfg=load_cfg())
+    return jsonify(claude=bool(ensure_claude()), claude_path=CLAUDE or "", cfg=load_cfg())
 
 
 @app.route("/api/auth-status")
@@ -736,7 +1144,7 @@ def api_auth_status():
 @app.route("/api/login", methods=["POST"])
 def api_login():
     """활성(또는 지정) 계정으로 로그인 콘솔 띄우기."""
-    if not CLAUDE:
+    if not ensure_claude():
         return jsonify(ok=False, msg="claude 실행파일을 찾지 못했습니다.")
     aid = (request.get_json(silent=True) or {}).get("id")
     try:
@@ -754,7 +1162,7 @@ def api_accounts():
     d = load_accounts()
     out = []
     for a in d["accounts"]:
-        st = auth_status_of(a["id"]) if CLAUDE else {}
+        st = auth_status_of(a["id"]) if ensure_claude() else {}
         out.append({"id": a["id"], "label": a.get("label", a["id"]),
                     "logged_in": bool(st.get("loggedIn")),
                     "email": st.get("email", ""),
@@ -765,7 +1173,7 @@ def api_accounts():
 @app.route("/api/account-add", methods=["POST"])
 def api_account_add():
     """새 계정 슬롯 생성 + 그 계정 전용 로그인 콘솔 띄우기."""
-    if not CLAUDE:
+    if not ensure_claude():
         return jsonify(ok=False, msg="claude 실행파일을 찾지 못했습니다.")
     b = request.get_json(force=True) or {}
     label = (b.get("label") or "").strip() or "추가 계정"
@@ -816,8 +1224,9 @@ def api_account_remove():
     save_accounts(d)
     _AUTH_CACHE["t"] = 0
     try:
-        if acc and acc.get("dir") and os.path.isdir(acc["dir"]):
-            shutil.rmtree(acc["dir"], ignore_errors=True)
+        _d = account_dir(acc)
+        if _d and os.path.isdir(_d):
+            shutil.rmtree(_d, ignore_errors=True)
     except Exception:
         pass
     return jsonify(ok=True)
@@ -963,6 +1372,301 @@ def api_photos():
     folder = request.args.get("folder", "")
     files = list_images(folder)
     return jsonify(folder=folder, files=files)
+
+
+# ── Google Drive 링크로 사진 가져오기(brand.json drive_link=true 브랜드) ──────────
+# '링크가 있는 모든 사용자' 공개 폴더/파일만 가능(로그인 없음). 폴더 목록 = embeddedfolderview 스크레이핑,
+# 다운로드 = lh3(2000px) → 실패 시 uc?export=download. 출력/_drive/<폴더ID>/ 에 하위 폴더 구조째 저장(받은 파일은 재사용).
+DRIVE_JOBS = {}
+_DRIVE_IMG_EXT = (".jpg", ".jpeg", ".png", ".webp", ".gif")
+_DRIVE_UA = {"User-Agent": "Mozilla/5.0"}
+
+
+def _drive_id(url):
+    """Drive 링크 → ('folder'|'file', id). 못 찾으면 (None, None)."""
+    u = (url or "").strip()
+    m = re.search(r"/folders/([A-Za-z0-9_-]{10,})", u)
+    if m:
+        return "folder", m.group(1)
+    m = re.search(r"/file/d/([A-Za-z0-9_-]{10,})", u) or re.search(r"[?&]id=([A-Za-z0-9_-]{10,})", u)
+    if m:
+        return ("folder" if "embeddedfolderview" in u else "file"), m.group(1)
+    if re.fullmatch(r"[A-Za-z0-9_-]{25,}", u):
+        return "folder", u
+    return None, None
+
+
+def _drive_list(fid):
+    """공개 폴더 1단계 목록 [(id, is_folder, title)]. 공개가 아니면 None."""
+    req = urllib.request.Request("https://drive.google.com/embeddedfolderview?id=%s" % fid, headers=_DRIVE_UA)
+    try:
+        h = urllib.request.urlopen(req, timeout=20).read().decode("utf-8", "ignore")
+    except Exception:
+        return None
+    if "flip-entries" not in h:
+        return None
+    out = []
+    for m in re.finditer(r'<div class="flip-entry" id="entry-([^"]+)".*?<a href="([^"]+)".*?flip-entry-title">([^<]*)', h, re.S):
+        out.append((m.group(1), "/folders/" in m.group(2), html_lib.unescape(m.group(3)).strip()))
+    return out
+
+
+def _drive_safe(name):
+    return re.sub(r'[\\/:*?"<>|]', "_", name).strip(" .")[:80] or "_"
+
+
+def _drive_get(fid, dest):
+    """파일 1개 다운로드(이미 있으면 건너뜀). 이미지가 아니면 False."""
+    if os.path.isfile(dest) and os.path.getsize(dest) > 1000:
+        return True
+    for url in ("https://lh3.googleusercontent.com/d/%s=w2000" % fid,
+                "https://drive.google.com/uc?export=download&id=%s" % fid):
+        for _ in range(2):
+            try:
+                r = urllib.request.urlopen(urllib.request.Request(url, headers=_DRIVE_UA), timeout=60)
+                if not (r.headers.get("Content-Type") or "").startswith("image/"):
+                    break                      # HTML(차단·비공개) → 다음 URL
+                data = r.read()
+                os.makedirs(os.path.dirname(dest), exist_ok=True)
+                with open(dest + ".part", "wb") as f:
+                    f.write(data)
+                os.replace(dest + ".part", dest)
+                return True
+            except Exception:
+                time.sleep(1.5)
+    return False
+
+
+def _drive_job(jid, kind, fid):
+    job = DRIVE_JOBS[jid]
+    try:
+        root = os.path.join(OUT_DIR, "_drive", fid)
+        todo = []                                  # [(file_id, 로컬 경로)]
+        if kind == "file":
+            todo.append((fid, os.path.join(root, fid + ".jpg")))
+        else:
+            if _drive_list(fid) is None:
+                job.update(status="error", msg="폴더를 열 수 없어요. Drive 공유 설정이 '링크가 있는 모든 사용자'인지 확인해 주세요.")
+                return
+            stack = [(fid, root, 0)]
+            while stack and len(todo) < 300:
+                cur, path, depth = stack.pop()
+                for eid, is_dir, title in (_drive_list(cur) or []):
+                    if is_dir:
+                        if depth < 4:
+                            stack.append((eid, os.path.join(path, _drive_safe(title)), depth + 1))
+                    elif title.lower().endswith(_DRIVE_IMG_EXT):
+                        todo.append((eid, os.path.join(path, _drive_safe(title))))
+                job["listed"] = len(todo)
+        if not todo:
+            job.update(status="error", msg="이 링크에서 사진(jpg·png·webp)을 찾지 못했어요.")
+            return
+        job["total"] = len(todo)
+        from concurrent.futures import ThreadPoolExecutor
+        ok = [0]
+        def one(it):
+            if _drive_get(*it):
+                ok[0] += 1
+            job["done"] += 1
+        with ThreadPoolExecutor(6) as ex:
+            list(ex.map(one, todo))
+        if not ok[0]:
+            job.update(status="error", msg="사진을 내려받지 못했어요. 공유 설정(링크가 있는 모든 사용자)을 확인해 주세요.")
+            return
+        job.update(status="done", folder=root, ok=ok[0], failed=len(todo) - ok[0])
+    except Exception as e:
+        job.update(status="error", msg=str(e)[:200])
+
+
+@app.route("/api/drive-fetch", methods=["POST"])
+def api_drive_fetch():
+    b = request.get_json(force=True) or {}
+    if not brands.load_brand((b.get("brand") or "").strip()).get("drive_link"):
+        return jsonify(ok=False, msg="이 브랜드는 Drive 링크 가져오기를 쓰지 않습니다.")
+    kind, fid = _drive_id(b.get("url", ""))
+    if not fid:
+        return jsonify(ok=False, msg="Google Drive 폴더(또는 파일) 링크를 붙여 넣어 주세요.")
+    jid = uuid.uuid4().hex[:10]
+    DRIVE_JOBS[jid] = {"status": "running", "listed": 0, "total": 0, "done": 0}
+    threading.Thread(target=_drive_job, args=(jid, kind, fid), daemon=True).start()
+    return jsonify(ok=True, job=jid)
+
+
+@app.route("/api/drive-status")
+def api_drive_status():
+    return jsonify(DRIVE_JOBS.get(request.args.get("job", ""), {"status": "error", "msg": "작업을 찾을 수 없습니다."}))
+
+
+# ── 본문 합성 이미지(Drive 사진 2장 → 1장) 3장: 글 내용에 맞는 사진을 Claude가 직접 보고 골라 소제목 사이에 끼운다 ──
+COMBO_JOBS = {}
+COMBO_N = 3                     # 합성 이미지 개수(카드 7 + 합성 3 = 본문 이미지 10장)
+COMBO_SIZE = (1600, 600)        # 가로로 2장 나란히(각 800×600, 가운데 기준 꽉 채워 자름)
+
+
+def _crop_fill(im, W, H, cx=0.5, cy=0.5, zoom=1.0):
+    """칸(W×H)을 꽉 채우게 자르기. cx·cy = 보여줄 중심(사진 기준 0~1), zoom ≥1 이면 확대."""
+    from PIL import Image
+    iw, ih = im.size
+    if iw / ih > W / H:
+        ch = ih; cw = ih * W / H
+    else:
+        cw = iw; ch = iw * H / W
+    z = max(1.0, min(3.0, float(zoom or 1)))
+    cw, ch = cw / z, ch / z
+    x0 = min(max(0, cx * iw - cw / 2), iw - cw)
+    y0 = min(max(0, cy * ih - ch / 2), ih - ch)
+    return im.crop((int(x0), int(y0), int(x0 + cw), int(y0 + ch))).resize((W, H), Image.LANCZOS)
+
+
+def _combo_image(halves, out):
+    """halves = [{src, cx, cy, zoom}, …] → 가로로 나란히 합성(각 칸 꽉 채움)."""
+    from PIL import Image, ImageOps
+    W, H = COMBO_SIZE
+    canvas = Image.new("RGB", (W, H), (255, 255, 255))
+    half = W // len(halves)
+    for i, h in enumerate(halves):
+        im = ImageOps.exif_transpose(Image.open(h["src"])).convert("RGB")
+        canvas.paste(_crop_fill(im, half, H, h.get("cx", .5), h.get("cy", .5), h.get("zoom", 1)), (i * half, 0))
+    canvas.save(out, quality=92)
+    return out
+
+
+def _combo_state_path(d):
+    return os.path.join(d, "combos.json")
+
+
+def _combo_candidates(folder, files, cap=24):
+    """후보 사진 — 하위 폴더(프로젝트)별로 돌아가며 골고루 최대 cap장."""
+    groups = {}
+    for f in files:
+        groups.setdefault(os.path.dirname(f), []).append(f)
+    for g in groups.values():
+        random.shuffle(g)
+    keys = list(groups); random.shuffle(keys)
+    out = []
+    while len(out) < cap and any(groups[k] for k in keys):
+        for k in keys:
+            if groups[k] and len(out) < cap:
+                out.append(groups[k].pop())
+    return out
+
+
+def _combo_sections(ms):
+    """원고 → [(소제목 번호, 소제목, 본문 앞부분)] (첫째~다섯째만 — 여섯째 FAQ·CTA 뒤에는 넣지 않는다)."""
+    lines = ms.split("\n")
+    out = []
+    for k, sec in enumerate([s for s in _sections(lines) if s["id"] != "intro"][:5]):
+        body = " ".join(l.strip() for l in lines[sec["start"] + 1:sec["end"]]
+                        if l.strip() and not _PHOTO_LINE_RE.match(l) and not l.strip().startswith(("(표", "(차트", "[alt")))
+        out.append((k + 1, re.sub(r"\*", "", sec["label"]), body[:260]))
+    return out
+
+
+def _combo_job(jid, drive_folder, ms, keyword, out_dir, model):
+    job = COMBO_JOBS[jid]
+    try:
+        from PIL import Image, ImageOps
+        files = list_images(drive_folder)
+        secs = _combo_sections(ms)
+        if len(files) < 2 or not secs:
+            job.update(status="error", msg="합성할 Drive 사진이 부족합니다(2장 이상 필요).")
+            return
+        cand = _combo_candidates(drive_folder, files)
+        tdir = os.path.join(out_dir, "_합성후보")
+        os.makedirs(tdir, exist_ok=True)
+        tmap = {}
+        for i, f in enumerate(cand):                     # Claude가 읽기 쉽게 작은 사본(긴 변 640px)
+            nm = "p%02d.jpg" % (i + 1)
+            try:
+                im = ImageOps.exif_transpose(Image.open(os.path.join(drive_folder, f))).convert("RGB")
+                im.thumbnail((640, 640)); im.save(os.path.join(tdir, nm), quality=85)
+                tmap[nm] = f
+            except Exception:
+                pass
+        n = min(COMBO_N, len(tmap) // 2, len(secs))
+        picks = []
+        if n:
+            plist = "\n".join("- %s" % os.path.join(tdir, nm) for nm in tmap)
+            slist = "\n".join("%d. %s — %s" % s for s in secs)
+            prompt = (
+                f"블로그 글 '{keyword}'의 본문 사이에 넣을 '2장 합성 이미지' {n}장을 만들 사진을 고른다.\n"
+                "아래 사진 파일을 Read 도구로 모두 열어 보고, 각 소제목 내용과 가장 잘 맞는 사진을 고른다.\n"
+                f"[소제목(번호. 소제목 — 본문 앞부분)]\n{slist}\n\n[사진 후보]\n{plist}\n\n"
+                f"[규칙]\n- 서로 다른 소제목 {n}곳을 고르고, 소제목마다 사진 2장(한 쌍)을 고른다. 총 {n * 2}장은 모두 서로 달라야 한다.\n"
+                "- 한 쌍의 두 사진은 그 소제목 내용을 함께 보여줄 수 있는 같은 성격의 사진으로 고른다(비슷한 산출물·장면). 흐리거나 내용과 동떨어진 사진은 고르지 않는다.\n"
+                "- 출력은 JSON 배열 한 줄만(설명 금지): "
+                '[{"sec":1,"photos":["p03.jpg","p11.jpg"]},{"sec":3,"photos":["p05.jpg","p08.jpg"]}]')
+            out, err = run_claude(prompt, model, tools="Read", timeout=420)
+            used, seen_sec = set(), set()
+            try:
+                arr = json.loads(re.search(r"\[.*\]", out or "", re.S).group(0))
+                for it in arr:
+                    sec = int(it.get("sec", 0)); ph = [os.path.basename(str(x)) for x in (it.get("photos") or [])][:2]
+                    if 1 <= sec <= len(secs) and sec not in seen_sec and len(ph) == 2 \
+                            and all(p in tmap and p not in used for p in ph) and ph[0] != ph[1]:
+                        picks.append((sec, [tmap[p] for p in ph])); used.update(ph); seen_sec.add(sec)
+            except Exception:
+                pass
+            # Claude 응답이 모자라면 남은 사진·소제목으로 채움(서로 겹치지 않게)
+            rest = [nm for nm in tmap if nm not in used]
+            free = [s[0] for s in secs if s[0] not in seen_sec]
+            random.shuffle(rest)
+            while len(picks) < n and len(rest) >= 2 and free:
+                a, b2 = rest.pop(), rest.pop()
+                sec = free.pop(len(free) // 2)
+                picks.append((sec, [tmap[a], tmap[b2]]))
+        picks.sort()
+        combos = []
+        for i, (sec, pair) in enumerate(picks):
+            nm = "합성%d.jpg" % (i + 1)
+            halves = [{"src": os.path.join(drive_folder, p), "cx": .5, "cy": .5, "zoom": 1.0} for p in pair]
+            _combo_image(halves, os.path.join(out_dir, nm))
+            combos.append({"sec": sec, "img": nm, "src": pair, "halves": halves})
+        shutil.rmtree(tdir, ignore_errors=True)
+        with open(_combo_state_path(out_dir), "w", encoding="utf-8") as f:   # 사진 교체·위치·확대 상태
+            json.dump({"drive_folder": drive_folder, "combos": combos}, f, ensure_ascii=False, indent=1)
+        job.update(status="done", combos=combos, dir=out_dir)
+    except Exception as e:
+        job.update(status="error", msg=str(e)[:200])
+
+
+@app.route("/api/combo-edit", methods=["POST"])
+def api_combo_edit():
+    """합성 이미지 한 칸(왼쪽 0 / 오른쪽 1) 사진 교체·위치·확대 → 그 합성만 다시 렌더."""
+    b = request.get_json(force=True) or {}
+    d = b.get("dir") or ""
+    img = os.path.basename(str(b.get("img") or ""))
+    sp = _combo_state_path(d)
+    if not (d and os.path.isfile(sp) and re.match(r"^합성\d+\.jpg$", img)):
+        return jsonify(ok=False, msg="합성 이미지를 찾을 수 없습니다.")
+    st = jload(sp, {})
+    c = next((x for x in st.get("combos", []) if x.get("img") == img), None)
+    side = int(b.get("side", 0))
+    if not c or not (0 <= side < len(c.get("halves", []))):
+        return jsonify(ok=False, msg="합성 이미지 정보가 없습니다.")
+    h = c["halves"][side]
+    if b.get("src"):
+        src = str(b["src"])
+        if not (os.path.isfile(src) and src.lower().endswith(_DRIVE_IMG_EXT)):
+            return jsonify(ok=False, msg="사진 파일을 찾을 수 없습니다.")
+        h.update(src=src, cx=.5, cy=.5, zoom=1.0)          # 새 사진은 가운데·원래 크기부터
+    for k in ("cx", "cy"):
+        if k in b and b[k] is not None:
+            h[k] = max(0.0, min(1.0, float(b[k])))
+    if b.get("zoom") is not None:
+        h["zoom"] = max(1.0, min(3.0, float(b["zoom"])))
+    try:
+        _combo_image(c["halves"], os.path.join(d, img))
+    except Exception as e:
+        return jsonify(ok=False, msg="렌더 실패: " + str(e)[:120])
+    with open(sp, "w", encoding="utf-8") as f:
+        json.dump(st, f, ensure_ascii=False, indent=1)
+    return jsonify(ok=True, img=img, halves=c["halves"])
+
+
+@app.route("/api/combo-status")
+def api_combo_status():
+    return jsonify(COMBO_JOBS.get(request.args.get("id", ""), {"status": "unknown"}))
 
 
 # ── 사진 정리 (폴더명·파일명·비전으로 분류 → 원본 이름변경) ──────────
@@ -1514,12 +2218,27 @@ def api_generate():
     title = (b.get("title") or "").strip()
     question = (b.get("question") or "").strip()      # 독자의 실제 질문(선택) → 제목·글이 이 질문에 답함
     tpl = str(b.get("template") or "1")   # 카드 디자인 슬롯(b는 아래 루프에서 덮어써지므로 먼저 읽음)
+    channel = (b.get("channel") or "").strip()        # 채널 표준 프롬프트(blog/cafe) — channels.json 있는 브랜드만
+    drive_folder = (b.get("drive_folder") or "").strip()   # Drive 링크로 받은 사진 폴더 → 본문 합성 이미지용
     if not keyword:
         return jsonify(ok=False, msg="키워드를 입력하세요.")
     brand = brands.load_brand(b.get("brand") or "haofactory")
+    if channel:
+        brand = brands.apply_channel(brand, channel)   # 채널 프롬프트 전문을 brand.prompt에 얹음(없는 채널이면 그대로)
+        if brand.get("channel"):
+            try:
+                brands.refresh_links(brand["id"])        # 관련 글 후보(RSS·칼럼) 하루 1회 갱신 → links.txt
+            except Exception:
+                pass
+        else:
+            channel = ""
+    _apply_card_note(brand, tpl)     # 선택한 카드 디자인이 요구하는 본문 형식을 프롬프트에 얹는다
+    thumb_only = bool(channel and (brand.get("channel_cfg") or {}).get("media") == "thumb_only")   # 카페: 본문 이미지·카드 없음
     card_dir = (b.get("card_dir") or "").strip()
     card_lock = []                                      # ★카드 N번에 고정할 사진(사용자가 교체·배치한 그대로)
-    if b.get("use_card_photos") and card_dir and os.path.isdir(card_dir):
+    if thumb_only:
+        files = []
+    elif b.get("use_card_photos") and card_dir and os.path.isdir(card_dir):
         # 현재 카드뉴스에 들어 있는 사진(교체 반영된 cards.json src)을 입력 사진으로 사용 — 카드 순서 그대로
         st_c = jload(os.path.join(card_dir, "cards.json"), {})
         seen, files = set(), []
@@ -1533,7 +2252,7 @@ def api_generate():
     else:
         picked = [f for f in (b.get("files") or []) if os.path.isfile(os.path.join(folder, f))]
         files = picked[:150] if picked else None
-    if files:                                           # 특정 사진 지정(카드 사진 or 사용자가 고른 사진), 순서 그대로
+    if files or thumb_only:                             # 특정 사진 지정(카드 사진 or 사용자가 고른 사진) 또는 카페(사진 없음)
         pass
     else:
         files = list_images(folder, cap=20000)          # 전체 다 가져와서
@@ -1565,6 +2284,7 @@ def api_generate():
     mt = re.search(r"제목\s*[:：]", out)     # 앞에 붙는 머리말(포트폴리오: '사진 확인했습니다' 등) 제거
     if mt and mt.start() > 0:
         out = out[mt.start():]
+    out, extra = split_extra_blocks(out)      # 채널 글: ===CATEGORY/TAGS/COMMENTS/ANALYSIS/META=== 는 카드 파싱 전에 떼어낸다
     # 카드뉴스 헤드라인 분리
     parts = re.split(r"\n\s*카드뉴스\s*[:：]\s*\n?", out, maxsplit=1)
     cards, bodies = [], []
@@ -1606,14 +2326,63 @@ def api_generate():
             break                                   # 줄지 않으면 원본 유지
         _ms, post, _trims = _new, _np, _trims + 1
         out = _ms + _tail
+    # ★분량 하한 보정(brand.json length_fill=true 브랜드만) — 하한보다 짧으면 앱이 재요청해 보강(최대 2회).
+    #   보강 후 상한을 넘으면 한 번 더 압축한다. 늘지 않거나 실패하면 원본 유지.
+    _fills = 0
+    if brand.get("length_fill"):
+        for _ in range(2):
+            if post.get("char_count", 0) >= _lo:
+                break
+            _new = expand_manuscript(brand, keyword, _ms, post["char_count"], _lo, _hi, model)
+            if not _new:
+                break
+            _np = parse_manuscript(_new, files)
+            if not _np.get("char_count") or _np["char_count"] <= post["char_count"]:
+                break
+            if _np["char_count"] > _hi:
+                _t = trim_manuscript(brand, keyword, _new, _np["char_count"], _lo, _hi, model)
+                _tp = parse_manuscript(_t, files) if _t else None
+                if _tp and _tp.get("char_count") and _lo <= _tp["char_count"] <= _hi:
+                    _new, _np = _t, _tp
+                elif _np["char_count"] > _hi + 150:
+                    break                           # 너무 길어졌는데 압축도 실패 → 원본 유지
+            _ms, post, _fills = _new, _np, _fills + 1
+            out = _ms + _tail
     post["trimmed"] = _trims
+    post["filled"] = _fills
+    # C7: 분량 보정이 끝난 뒤에 (모음N) 마커를 꽂는다(재작성에 지워지지 않도록)
+    _csizes = brand.get("collage_sizes") or []
+    if _csizes:
+        _ms2 = insert_collage_markers(_ms, len(_csizes))
+        if _ms2 != _ms:
+            _keep_c, _keep_t, _keep_f = post.get("char_count", 0), _trims, _fills
+            _ms = _ms2
+            post = parse_manuscript(_ms, files)
+            post["char_count"] = _keep_c            # 마커는 글자수에 넣지 않는다
+            post["trimmed"], post["filled"] = _keep_t, _keep_f
+            out = _ms + _tail
     if title:
         post["title"] = title                 # 사용자가 정한 제목을 그대로 사용(C2)
+        post["track_key"] = crm_track_key(title); post["track_hash"] = post["track_key"][2:]
+    apply_track_link(post, brand)             # CRM/UTM 추적 링크(제목 키) — 본문 {{추적링크}} 토큰 치환 + post.track_link
+    post["channel"] = channel
+    post["channel_label"] = brand.get("channel_label") or ""
+    post["extra"] = extra                     # 채널 부가 블록(카테고리·태그·시딩 댓글·ANALYSIS·META)
+    if channel:
+        save_history(brand["id"], channel, {"date": datetime.date.today().isoformat(), "keyword": keyword,
+                                            "title": post.get("title", ""), "meta": extra.get("meta") or {},
+                                            "subs": re.findall(r"^\s*\*\*(.+?)\*\*\s*$", parts[0], re.M)[:15],
+                                            "cards": [c.replace("*", "") for c in cards[1:15]]})
     post["folder"] = folder
     post["keyword"] = keyword
     post["question"] = question
-    post["cards"] = cards[:7]
-    post["card_bodies"] = bodies[:7]
+    if channel == "cafe":                     # ★카페 글만: 카페 썸네일 생성기 연동(윈차이나 스티커 / 레드트랜스 증명서) — 실패해도 글은 유지
+        try:
+            make_thumb_for_post(post, brand)
+        except Exception as e:
+            post["thumb_err"] = str(e)
+    post["cards"] = cards
+    post["card_bodies"] = bodies
     post["subtitle"] = sub
     post["raw"] = out
     post["brand"] = brand["id"]
@@ -1630,8 +2399,9 @@ def api_generate():
     claude_picks = [b["file"] for b in post["blocks"] if b["type"] == "photo" and b.get("file")]
     adir = brands.assets_dir(brand["id"], tpl)
     has_tpl = os.path.isfile(os.path.join(adir, "layout.json"))
-    n_cards = 7
-    if has_tpl:
+    # 카드 장수 = 헤드라인 수(표지+소제목 수). 헤드라인이 없으면 레이아웃 기본 장수 폴백.
+    n_cards = len(cards)
+    if not n_cards and has_tpl:
         try:
             n_cards = len(jload(os.path.join(adir, "layout.json"), {}).get("slides", [])) or 7
         except Exception:
@@ -1645,14 +2415,403 @@ def api_generate():
         card_files = pick_diverse(files, claude_picks, n_cards)
     post["cardnews_pngs"] = []
     post["cardnews_job"] = ""
-    if card_files and len(cards) >= 6 and has_tpl:
+    png_dir = _card_dir_for(keyword)                    # 카드·표·합성 이미지를 한 폴더에(네이버로 옮길 때 폴더 하나만 열면 됨)
+    if card_files and len(cards) >= 4 and has_tpl:
+        jid = uuid.uuid4().hex[:10]
+        CARD_JOBS[jid] = {"status": "rendering"}
+        post["cardnews_job"] = jid
+        photo_paths = [os.path.join(folder, f) for f in card_files]
+        _extra = [os.path.join(folder, f) for f in files if f not in card_files][:12]
+        threading.Thread(target=_cardnews_job, args=(jid, photo_paths, cards, keyword, adir, sub, bodies, post.get("title", ""), chart_specs, brand.get("table_width"), png_dir, _extra, _csizes), daemon=True).start()
+    # ★Drive 사진 → 본문 합성 이미지 3장(drive_link 브랜드). 카드와 별도로 백그라운드에서 사진을 보고 골라 만든다.
+    post["combo_job"] = ""
+    post["combos"] = []
+    if brand.get("drive_link") and drive_folder and os.path.isdir(drive_folder):
+        os.makedirs(png_dir, exist_ok=True)
+        cj = uuid.uuid4().hex[:10]
+        COMBO_JOBS[cj] = {"status": "running"}
+        post["combo_job"] = cj
+        post["combo_dir"] = png_dir
+        threading.Thread(target=_combo_job, args=(cj, drive_folder, _ms, keyword, png_dir, model), daemon=True).start()
+    return jsonify(ok=True, post=post)
+
+
+# ── 원고 붙여넣기 → 카드뉴스만 생성 (원고는 고치지 않는다) ──────────
+_DRAFT_CARD_PROMPT = """아래는 이미 완성된 블로그 원고다. ★원고는 절대 고치지 말고, 이 원고에서 카드뉴스만 뽑아라.
+
+[브랜드] {bname} — {industry}
+[메인키워드] {keyword}
+
+[★카드 장수 — 원고 구조가 정한다. 고정 장수 아님]
+- 표지 1장 + 원고의 소제목(큰 구간) 1개당 카드 1장. 소제목이 5개면 총 6장, 8개면 총 9장.
+- 소제목 판정: 번호 소제목(1. 2. 3.)·굵은 소제목(**…**)·인용구 소제목(『…』)·마크다운 헤더 모두 소제목이다.
+  FAQ의 개별 질문·번호 요약 목록·해시태그·마무리 인사는 소제목이 아니다.
+- 소제목이 없는 원고면 내용 흐름을 4~6구간으로 나눠 그만큼 만든다.
+
+[카드 역할 참고 — 장수가 달라도 이 흐름을 유연하게 적용]
+{roles}
+
+[출력 형식 — 아래 3블록만. 설명·머리말·코드블록 금지]
+표지 부제:
+(표지 한 줄, 15자 내외)
+카드뉴스:
+1. 헤드라인 | 본문
+(… 위에서 정한 장수까지)
+사진배치:
+1. 파일명
+(… 카드 장수만큼)
+
+[규칙]
+- 헤드라인 12자 내외, 본문 25자 내외 한 줄. 짧고 강하게.
+- 헤드라인마다 강조할 핵심어 1곳(1~2어절)만 `*별표*`로 감싼다(예: 학력증명서 *원본 점검*). 문장 전체·2곳 이상 금지.
+- 헤드라인은 그 카드 내용에 딱 맞는 말로, 한국 블로그·카드뉴스에서 실제로 쓰는 자연스러운 표현으로(번역투·「~에 대한 안내」·「~의 중요성」·「핵심 포인트」 같은 틀 문구 금지, 카드끼리 같은 어미·같은 틀 반복 금지).
+- ★원고에 실제로 있는 내용만 쓴다. 원고에 없는 금액·기간·숫자를 지어내지 말 것.
+- 1번은 표지다(헤드라인은 메인키워드로 자동 고정되니 본문만 신경 쓰면 된다).
+- 2번부터는 원고 소제목 순서 그대로 1:1로 만든다(여러 소제목을 한 장에 합치거나 건너뛰지 말 것).
+- 사진배치는 아래 '사용 가능 사진' 목록에 있는 파일명만, 카드 장수만큼 서로 다른 파일로.
+
+[사용 가능 사진]
+{filelist}
+
+[원고]
+{draft}"""
+
+
+def _parse_card_block(out, files):
+    """claude 출력에서 '카드뉴스:' 헤드라인/본문과 '사진배치:' 파일명을 뽑는다."""
+    cards, bodies, picks = [], [], []
+    seg = re.split(r"\n\s*카드뉴스\s*[:：]\s*\n?", out, maxsplit=1)
+    if len(seg) < 2:
+        return cards, bodies, picks
+    tail = re.split(r"\n\s*사진\s*배치\s*[:：]\s*\n?", seg[1], maxsplit=1)
+    for ln in tail[0].split("\n"):
+        mm = re.match(r"^\s*\d+\s*[.)]\s*(.+)$", ln.strip())
+        if not mm:
+            continue
+        raw = mm.group(1)
+        hpart, bpart = (raw.split("|", 1) + [""])[:2] if "|" in raw else (raw, "")
+        h = re.sub(r"\([^)]*\)", "", hpart).strip() or hpart.strip()
+        cards.append(h)
+        bodies.append(re.sub(r"\([^)]*\)", "", bpart).strip())
+    if len(tail) > 1:
+        nameset = {f.lower(): f for f in files}
+        for ln in tail[1].split("\n"):
+            mm = re.match(r"^\s*\d+\s*[.)]\s*(.+)$", ln.strip())
+            if not mm:
+                continue
+            fn = mm.group(1).strip().strip("()").strip()
+            real = nameset.get(fn.lower())
+            if not real:
+                for k, v in nameset.items():
+                    if fn and (fn.lower() in k or k in fn.lower()):
+                        real = v
+                        break
+            if real and real not in picks:
+                picks.append(real)
+    return cards, bodies, picks
+
+
+@app.route("/api/cardnews-from-draft", methods=["POST"])
+def api_cardnews_from_draft():
+    """이미 써둔 원고를 그대로 받아 카드뉴스만 만든다(글은 새로 쓰지 않는다)."""
+    b = request.get_json(force=True)
+    draft = (b.get("draft") or "").strip()
+    keyword = (b.get("keyword") or "").strip()
+    folder = b.get("folder") or ""
+    title = (b.get("title") or "").strip()
+    tpl = str(b.get("template") or "1")
+    if not draft:
+        return jsonify(ok=False, msg="원고를 붙여넣어 주세요.")
+    if not keyword:
+        return jsonify(ok=False, msg="메인키워드를 입력하세요(표지 큰 글자로 들어갑니다).")
+    brand = brands.load_brand(b.get("brand") or "haofactory")
+    adir = brands.assets_dir(brand["id"], tpl)
+    if not os.path.isfile(os.path.join(adir, "layout.json")):
+        return jsonify(ok=False, msg="이 브랜드에 카드 디자인이 없습니다. 브랜드 설정에서 카드뉴스 PPTX를 먼저 등록하세요.")
+
+    picked = [f for f in (b.get("files") or []) if os.path.isfile(os.path.join(folder, f))]
+    if picked:
+        files = picked[:150]
+    else:
+        files = list_images(folder, cap=20000)
+        files = filter_by_keyword(files, keyword, brand["type_words"])
+        random.shuffle(files)
+        files = files[:150]
+    if not files:
+        return jsonify(ok=False, msg="사진 폴더를 지정해 주세요(카드뉴스는 배경 사진이 필요합니다).")
+
+    roles = brand.get("card_headlines") or []
+    roles_txt = "\n".join("%d. %s" % (i + 1, r) for i, r in enumerate(roles)) \
+        or "원고 흐름 순서대로"
+    _apply_card_note(brand, tpl)
+    if brand.get("card_note"):
+        roles_txt += "\n\n★" + brand["card_note"]
+    prompt = _DRAFT_CARD_PROMPT.format(
+        bname=brand.get("name", ""), industry=brand.get("industry", ""),
+        keyword=keyword, roles=roles_txt,
+        filelist="\n".join(files[:80]), draft=draft)
+    out, err = run_claude(prompt, (b.get("model") or "opus"))
+    if err:
+        return jsonify(ok=False, msg=err)
+
+    cards, bodies, picks = _parse_card_block(out, files)
+    if len(cards) < 3:
+        return jsonify(ok=False, msg="카드 헤드라인을 뽑지 못했습니다. 다시 시도해 주세요.")
+    n_cards = min(len(cards), 14)   # 카드 장수 = 표지 + 원고 소제목 수(안전 상한 14장)
+    cards = cards[:n_cards]
+    bodies = bodies[:n_cards]
+    cards[0] = keyword          # 표지 큰 제목은 항상 메인키워드(전 브랜드 공통)
+    sub = ""
+    ms = re.search(r"표지\s*부제\s*[:：]\s*\n?\s*(.+)", out)
+    if ms:
+        sub = re.sub(r"\([^)]*\)", "", ms.group(1)).strip() or ms.group(1).strip()
+
+    post = parse_manuscript(draft, files)
+    if title:
+        post["title"] = title
+    post["folder"] = folder
+    post["keyword"] = keyword
+    post["cards"] = cards
+    post["card_bodies"] = bodies
+    post["subtitle"] = sub
+    post["raw"] = draft
+    post["brand"] = brand["id"]
+    post["sections"] = _section_list(draft)
+    post["chart_specs"] = {}
+    post["cardnews"] = ""
+    post["cardnews_pngs"] = []
+    post["cardnews_job"] = ""
+    card_files = pick_diverse(files, picks, n_cards)
+    if card_files:
         import uuid
         jid = uuid.uuid4().hex[:10]
         CARD_JOBS[jid] = {"status": "rendering"}
         post["cardnews_job"] = jid
         photo_paths = [os.path.join(folder, f) for f in card_files]
-        threading.Thread(target=_cardnews_job, args=(jid, photo_paths, cards, keyword, adir, sub, bodies, post.get("title", ""), chart_specs, brand.get("table_width")), daemon=True).start()
+        threading.Thread(target=_cardnews_job,
+                         args=(jid, photo_paths, cards, keyword, adir, sub, bodies,
+                               post.get("title", ""), None), daemon=True).start()
     return jsonify(ok=True, post=post)
+
+
+# ── 탭 복구: 브라우저 탭을 실수로 닫았을 때 claude -p 대화 기록(~/.claude/projects)에서 그날 글을 다시 연다 ──
+# 생성(api_generate) → 글 전체 다듬기(_edit_whole)·부분 수정(_edit_call)을 시간순으로 다시 적용하고,
+# 출력 폴더의 카드뉴스(cards.json)를 붙인다. claude 재호출 없음.
+def _transcript_dirs():
+    slugs = {re.sub(r"[^A-Za-z0-9]", "-", p) for p in (HERE, os.getcwd())}
+    roots = [os.path.expanduser(r"~/.claude/projects")]
+    roots += glob.glob(os.path.join(ACCOUNTS_DIR, "*", "projects"))
+    return [os.path.join(r, s) for r in roots for s in slugs if os.path.isdir(os.path.join(r, s))]
+
+
+def _read_transcript(path):
+    prompt, texts = None, []
+    for line in open(path, encoding="utf-8", errors="ignore"):
+        try:
+            d = json.loads(line)
+        except Exception:
+            continue
+        c = (d.get("message") or {}).get("content")
+        if d.get("type") == "user" and prompt is None:
+            prompt = c if isinstance(c, str) else " ".join(x.get("text", "") for x in (c or []) if isinstance(x, dict))
+        elif d.get("type") == "assistant":
+            texts += [x["text"] for x in (c or []) if isinstance(x, dict) and x.get("type") == "text"]
+    return (prompt or "").replace("\r\n", "\n"), (texts[-1] if texts else "").replace("\r\n", "\n").strip()
+
+
+def _last_block(prompt, head):
+    """프롬프트에서 줄 맨 앞 '[head] 값' 또는 '[head...]\\n값' 형태의 마지막 값."""
+    ms = re.findall(r"(?m)^\[" + head + r"\]\s*(.*)$", prompt)
+    return ms[-1].strip() if ms else ""
+
+
+def _detect_brand(prompt):
+    first = prompt.lstrip().split("\n", 1)[0].strip()
+    for b in brands.list_brands():
+        for ch in b.get("channels") or []:
+            pt = brands.channel_prompt_text(b["id"], ch["id"])
+            if pt and pt.split("\n", 1)[0].strip() == first:
+                return b["id"], ch["id"]
+    head = prompt[:600]
+    for b in brands.list_brands():
+        if b["name"] and b["name"] in head:
+            return b["id"], ""
+    return "", ""
+
+
+def _find_cardnews(keyword, title, gen_ts):
+    """생성 직후 만들어진 카드 폴더(생성 시각 이후 가장 먼저 생긴 것) — 나중에 따로 만든 카드 세트와 헷갈리지 않게."""
+    safe = re.sub(r'[\\/:*?"<>|]', "_", keyword)
+    best = None
+    for d in glob.glob(os.path.join(OUT_DIR, safe + "_카드뉴스_*")):
+        cj = jload(os.path.join(d, "cards.json"), None)
+        ct = os.path.getctime(d)
+        if not cj or not (gen_ts - 120 <= ct <= gen_ts + 900):
+            continue
+        cs = cj.get("cards") or []
+        key = (0 if (cs and title and cs[0].get("title") == title) else 1, ct)
+        if not best or key < best[0]:
+            best = (key, d, cj)
+    return (best[1], best[2]) if best else ("", None)
+
+
+def _recover_post(gen_prompt, out, bid, ch, gen_ts):
+    keyword = _last_block(gen_prompt, "메인키워드")
+    subkw = _last_block(gen_prompt, "서브키워드")
+    m = re.findall(r"\[제목 — 반드시 이 제목을 그대로 사용\]\n(.+)", gen_prompt)
+    title_in = m[-1].strip() if m else ""
+    ph = re.split(r"\[사용 사진\][^\n]*\n", gen_prompt)
+    names = re.findall(r"(?m)^- (.+)$", ph[-1].split("\n\n")[0]) if len(ph) > 1 else []
+    brand = brands.load_brand(bid or "haofactory")
+    if ch:
+        brand = brands.apply_channel(brand, ch)
+    mt = re.search(r"제목\s*[:：]", out)
+    if mt and mt.start() > 0:
+        out = out[mt.start():]
+    out, extra = split_extra_blocks(out)
+    parts = re.split(r"\n\s*카드뉴스\s*[:：]\s*\n?", out, maxsplit=1)
+    cards, bodies = [], []
+    if len(parts) > 1:
+        for ln in parts[1].split("\n"):
+            mm = re.match(r"^\s*\d+\s*[.)]\s*(.+)$", ln.strip())
+            if mm:
+                raw = mm.group(1)
+                hpart, bpart = (raw.split("|", 1) + [""])[:2] if "|" in raw else (raw, "")
+                cards.append(re.sub(r"\([^)]*\)", "", hpart).strip() or hpart.strip())
+                bodies.append(re.sub(r"\([^)]*\)", "", bpart).strip())
+    if cards:
+        cards[0] = keyword
+    ms_sub = re.search(r"표지\s*부제\s*[:：]\s*(.+)", out)
+    sub = (re.sub(r"\([^)]*\)", "", ms_sub.group(1)).strip() or ms_sub.group(1).strip()) if ms_sub else ""
+    gen_title = title_in or (parse_manuscript(parts[0], []).get("title") or "")
+    cdir, cj = _find_cardnews(keyword, gen_title, gen_ts)
+    folder = ""
+    if cj:   # 카드 원본 사진 폴더(와 그 상위 2단계) 중 프롬프트의 사진 목록이 가장 많이 있는 곳 = 이 글의 사진 폴더
+        cands = set()
+        for c in cj.get("cards") or []:
+            d = os.path.dirname(c.get("src") or "")
+            for _ in range(3):
+                if d:
+                    cands.add(d)
+                d = os.path.dirname(d) if d and os.path.dirname(d) != d else ""
+        hit = lambda d: sum(os.path.isfile(os.path.join(d, n)) for n in names)
+        best = max(cands, key=lambda d: (hit(d), len(d)), default="")
+        folder = best if best and hit(best) else ""
+    files = [n for n in names if folder and os.path.isfile(os.path.join(folder, n))]
+    return {"keyword": keyword, "subkeyword": subkw, "title": title_in, "brand": bid, "channel": ch,
+            "folder": folder, "files": files, "gen_title": gen_title, "out": out, "extra": extra,
+            "parts0": parts[0], "cards": cards, "bodies": bodies, "sub": sub, "cdir": cdir, "cj": cj,
+            "brand_obj": brand}
+
+
+def _finish_post(r, ms):
+    """복구한 원고(ms)로 api_generate 와 같은 post 를 만든다."""
+    brand = r["brand_obj"]
+    tail = r["out"][len(r["parts0"]):]
+    post = parse_manuscript(ms, r["files"])
+    if r["title"] and not re.search(r"(?m)^제목\s*[:：]", ms):
+        post["title"] = r["title"]
+        post["track_key"] = crm_track_key(r["title"]); post["track_hash"] = post["track_key"][2:]
+    apply_track_link(post, brand)
+    post.update({"channel": r["channel"], "channel_label": brand.get("channel_label") or "",
+                 "extra": r["extra"], "folder": r["folder"], "keyword": r["keyword"], "question": "",
+                 "cards": r["cards"], "card_bodies": r["bodies"], "subtitle": r["sub"], "raw": ms + tail,
+                 "brand": brand["id"], "sections": _section_list(ms), "cardnews": "", "cardnews_job": "",
+                 "cardnews_pngs": [], "recovered": True})
+    post["len_min"], post["len_max"] = brands.length_range(brand)
+    specs = parse_charts(r["out"])
+    post["chart_specs"] = {cid: sp for cid, sp in specs.items()
+                           if any(b.get("cid") == cid for b in post["blocks"] if b.get("type") == "chart")}
+    if r["cdir"] and r["cj"]:
+        cs = r["cj"].get("cards") or []
+        pngs = []
+        for i in range(len(cs)):   # 카드 교체·조정으로 파일명이 바뀌었을 수 있어 같은 번호 중 최신 파일
+            cand = glob.glob(os.path.join(r["cdir"], "card%02d*.png" % (i + 1)))
+            if cand:
+                pngs.append(max(cand, key=os.path.getmtime))
+        post.update({"cardnews_pngs": pngs, "cardnews_dir": r["cdir"], "card_srcs": [c.get("src") for c in cs],
+                     "card_state": cs})
+        for b in post["blocks"]:
+            if b.get("type") == "chart" and os.path.isfile(os.path.join(r["cdir"], "chart_%s.png" % b["cid"])):
+                b["img"] = "chart_%s.png" % b["cid"]
+    if r["channel"] == "cafe":
+        try:
+            make_thumb_for_post(post, brand)
+        except Exception as e:
+            post["thumb_err"] = str(e)
+    return post
+
+
+def _apply_section_edit(ms, partname, newtxt):
+    lines = ms.split("\n")
+    if partname == "제목":
+        nt = newtxt.splitlines()[0].strip().lstrip("제목:： ").strip()
+        for i, l in enumerate(lines):
+            if _TITLE_LINE_RE.match(l):
+                lines[i] = "제목: " + nt
+                return "\n".join(lines)
+        return "제목: " + nt + "\n" + ms
+    sec = next((s for s in _sections(lines) if s["label"] == partname), None)
+    if not sec:
+        return None
+    seg = lines[sec["start"]:sec["end"]]
+    photos = [l for l in seg if _PHOTO_LINE_RE.match(l)]
+    nl = [l for l in newtxt.split("\n") if not _PHOTO_LINE_RE.match(l)]
+    if sec["id"].startswith("sub") and photos:
+        rebuilt = ([nl[0]] + photos + nl[1:]) if (nl and _HEAD_RE.match(nl[0].strip())) else (photos + nl)
+    else:
+        rebuilt = photos + nl
+    lines[sec["start"]:sec["end"]] = rebuilt
+    return "\n".join(lines)
+
+
+@app.route("/api/recover-tabs")
+def api_recover_tabs():
+    try:
+        day = datetime.date.fromisoformat(request.args.get("date") or datetime.date.today().isoformat())
+    except ValueError:
+        return jsonify(ok=False, msg="날짜 형식이 잘못됐습니다(YYYY-MM-DD).")
+    paths = []
+    for d in _transcript_dirs():
+        paths += [p for p in glob.glob(os.path.join(d, "*.jsonl"))
+                  if datetime.date.fromtimestamp(os.path.getmtime(p)) == day]
+    paths.sort(key=os.path.getmtime)
+    posts = []   # [{r, ms, edits}]
+    for p in paths:
+        prompt, out = _read_transcript(p)
+        if not out:
+            continue
+        if "[글 전체 다듬기" in prompt or "[부분 수정 작업" in prompt:
+            bid, ch = _detect_brand(prompt)
+            mk = re.search(r"'([^']+)' 블로그 (?:글 원고 전체다|글의 '(.+?)' 부분이다)", prompt)
+            if not mk:
+                continue
+            kw, part = mk.group(1), mk.group(2)
+            tgt = next((x for x in reversed(posts) if x["r"]["keyword"] == kw
+                        and x["r"]["brand"] == bid and x["r"]["channel"] == ch), None)
+            if not tgt:
+                continue
+            if part is None:
+                new_ms = out
+            else:
+                new_ms = _apply_section_edit(tgt["ms"], part, out)
+            if new_ms:
+                tgt["ms"] = new_ms
+                tgt["edits"] += 1
+        elif "\n[사용 사진]" in prompt and "[메인키워드]" in prompt and re.search(r"제목\s*[:：]", out):
+            bid, ch = _detect_brand(prompt)
+            r = _recover_post(prompt, out, bid, ch, os.path.getmtime(p))
+            if r["keyword"]:
+                posts.append({"r": r, "ms": r["parts0"], "edits": 0,
+                              "time": datetime.datetime.fromtimestamp(os.path.getmtime(p)).strftime("%H:%M")})
+    res = []
+    for x in posts:
+        r = x["r"]
+        post = _finish_post(r, x["ms"])
+        res.append({"brand": r["brand"], "channel": r["channel"], "keyword": r["keyword"],
+                    "subkeyword": r["subkeyword"], "title": r["title"], "folder": r["folder"],
+                    "files": r["files"], "post": post, "time": x["time"], "edits": x["edits"]})
+    return jsonify(ok=True, tabs=res)
 
 
 # ── C3: 생성 후 부분 수정 (chat으로 한 구간만 다시 쓰기) ──────────
@@ -1702,6 +2861,7 @@ def _edit_call(brand, keyword, partname, old_text, instruction, model):
          "- 브랜드 문체·톤·한 문장마다 줄바꿈 규칙을 그대로 유지한다.\n"
          "- (사진N: ...) 같은 사진 표시 줄은 출력에 절대 넣지 마라(자동으로 원위치 유지된다).\n"
          "- 맨 앞의 **소제목** 줄(별표 두 개)이 원문에 있으면 형식을 유지한다(요청이 소제목 변경이면 그 줄만 바꾼다).\n"
+         "- 원문에 {{추적링크}} 토큰이 있으면 그 자리에 토큰을 그대로 둔다(지우거나 URL로 바꾸지 말 것).\n"
          "- 특별한 요청이 없으면 길이는 원문과 비슷하게. 억지로 늘리거나 줄이지 마라.\n"
          "- 설명·머리말·따옴표·코드블록 없이 수정된 본문 텍스트만 출력한다.\n\n"
          f"[현재 '{partname}' 원문]\n{old_text}\n\n[수정본만 출력]")
@@ -1716,7 +2876,7 @@ def _edit_whole(brand, keyword, ms, instruction, model):
          f"'{keyword}' 블로그 글 원고 전체다. 사용자 요청을 글 전체에 적용해서 다시 써라.\n"
          f"[사용자 요청] {instruction}\n"
          "[반드시 지킬 것]\n"
-         "- '제목:' 줄, 소제목(정확히 6개), (사진N) 줄, (표N)/(차트N) 줄을 그대로 유지한다(개수·위치·순서 보존, 마커를 지우거나 옮기지 말 것).\n"
+         "- '제목:' 줄, 소제목(개수 그대로), (사진N) 줄, (표N)/(차트N) 줄, {{추적링크}} 토큰을 그대로 유지한다(개수·위치·순서 보존, 마커를 지우거나 옮기지 말 것).\n"
          f"- 브랜드 문체·톤·구조를 지키고, 요청한 부분만 바꾼다. 분량 요청이 없으면 공백 제외 {brands._fmt_len(brand)}자.\n"
          "- 설명·머리말·따옴표·코드블록 없이 '제목:'부터 마지막 문단까지 다듬은 원고 전체만 출력한다(카드뉴스/표차트 섹션은 출력하지 말 것).\n\n"
          f"[원고]\n{ms}")
@@ -1735,6 +2895,8 @@ def api_edit_section():
     if not sid:
         return jsonify(ok=False, msg="수정할 부분을 고르세요.")
     brand = brands.load_brand(b.get("brand") or post.get("brand") or "haofactory")
+    if (b.get("channel") or post.get("channel") or "").strip():
+        brand = brands.apply_channel(brand, b.get("channel") or post.get("channel"))   # 채널 글은 채널 프롬프트 기준으로 수정
     keyword = post.get("keyword") or ""
     folder = post.get("folder") or ""
     raw = post.get("raw") or ""
@@ -1797,6 +2959,8 @@ def api_edit_section():
     out["char_count"] = newpost["char_count"]
     out["raw"] = new_ms + tail
     out["sections"] = _section_list(new_ms)
+    out["track_key"] = crm_track_key(out["title"]); out["track_hash"] = out["track_key"][2:]   # 제목이 바뀌면 추적 키도 갱신
+    apply_track_link(out, brand)                              # raw의 {{추적링크}} 토큰을 새 링크로 다시 치환
     return jsonify(ok=True, post=out)
 
 
@@ -1822,7 +2986,40 @@ def api_recolor_cards():
         note = "하오스튜디오는 흰 로고와 겹쳐서 너무 밝은 색은 살짝 진하게 조정했어요."
     try:
         pngs = cardnews_pil.recolor_cards(cdir, tuple(col))
-        return jsonify(ok=True, pngs=pngs, color="%02X%02X%02X" % tuple(col), msg=note)
+        # 표·차트도 같은 색으로 다시 렌더(카드뉴스와 색 통일) — 프론트가 글의 chart 블록(cid·img·spec)을 보낸다
+        tw = brands.load_brand(brand).get("table_width") if brand else None
+        charts = 0
+        for ch in (b.get("charts") or []):
+            name = os.path.basename(str(ch.get("img") or ""))
+            spec = ch.get("spec")
+            if not (spec and re.match(r"^chart_.+\.png$", name)):
+                continue
+            try:
+                charts_pil.render_spec(os.path.join(cdir, name), spec, tuple(col), W=tw)
+                charts += 1
+            except Exception:
+                pass
+        return jsonify(ok=True, pngs=pngs, charts=charts, color="%02X%02X%02X" % tuple(col), msg=note)
+    except Exception as e:
+        return jsonify(ok=False, msg=str(e)[:200])
+
+
+@app.route("/api/emph-color", methods=["POST"])
+def api_emph_color():
+    """카드 헤드라인 강조 글자(*핵심어*)색만 바꾸기. color 비우면 자동(카드 색 따라감)."""
+    b = request.get_json(force=True)
+    cdir = b.get("cardnews_dir") or ""
+    if not (cdir and os.path.isdir(cdir) and os.path.isfile(os.path.join(cdir, "cards.json"))):
+        return jsonify(ok=False, msg="카드뉴스를 찾을 수 없습니다(먼저 카드 생성).")
+    if not cardnews_pil.supports_emph(cardnews_pil.load_state(cdir).get("assets_dir")):
+        return jsonify(ok=False, msg="이 카드 디자인은 강조 글자색 기능이 없어요.")
+    hx = re.sub(r"[^0-9A-Fa-f]", "", (b.get("color") or ""))
+    if hx and len(hx) != 6:
+        return jsonify(ok=False, msg="색상 코드(#RRGGBB)가 올바르지 않습니다.")
+    col = [int(hx[i:i+2], 16) for i in (0, 2, 4)] if hx else None
+    try:
+        pngs = cardnews_pil.set_emph_color(cdir, col)
+        return jsonify(ok=True, pngs=pngs, color=("%02X%02X%02X" % tuple(col)) if col else "")
     except Exception as e:
         return jsonify(ok=False, msg=str(e)[:200])
 
@@ -1912,6 +3109,8 @@ def api_title_suggest():
     if not keyword:
         return jsonify(ok=False, msg="메인키워드를 먼저 입력하세요.")
     brand = brands.load_brand(b.get("brand") or "haofactory")
+    if (b.get("channel") or "").strip():
+        brand = brands.apply_channel(brand, b.get("channel"))   # 채널 프롬프트의 '제목' 규칙(글자 수·서브키워드 포함·어미 로테이션)을 따르게
     subrule = (f"- 서브키워드 '{subkeyword}'가 있다. 메인키워드와 겹치는 부분은 빼고, 나머지 핵심어만 제목에 자연스럽게 녹인다.\n"
                if subkeyword else "")
     if question:
@@ -1964,6 +3163,37 @@ def api_title_suggest():
             if t:
                 titles.append(t)
     return jsonify(ok=True, titles=titles[:5], geo=used_geo, mode=mode)
+
+
+@app.route("/api/thumb-meta")
+def api_thumb_meta():
+    """썸네일 생성기 템플릿 목록(브랜드별) — UI 선택기용."""
+    bid = request.args.get("brand") or ""
+    thumb_ensure()
+    m = thumb_meta() or {}
+    b = (m.get("brands") or {}).get(bid) or {}
+    labels = m.get("templates") or {}
+    return jsonify(ok=bool(m), alive=bool(m), cfg=thumb_cfg(bid),
+                   templates=[{"id": t, "label": labels.get(t, t)} for t in (b.get("templates") or [])],
+                   sizes=[{"id": k, "label": v.get("label", k)} for k, v in (m.get("sizes") or {}).items()],
+                   stamps=(list((m.get("seals") or {}).keys()) if bid == "redtrans" else list((m.get("stamps") or {}).keys())))
+
+
+@app.route("/api/thumb", methods=["POST"])
+def api_thumb():
+    """썸네일 다시 만들기 — 제목(2줄)·부제·템플릿·사이즈·인장 수동 지정."""
+    b = request.get_json(force=True) or {}
+    bid = (b.get("brand") or "").strip()
+    title = (b.get("title") or "").strip()
+    if not bid or not title:
+        return jsonify(ok=False, msg="브랜드와 썸네일 제목이 필요합니다.")
+    cfg = thumb_cfg(bid)
+    r = thumb_render(bid, b.get("template") or cfg.get("template") or "sticker", title, (b.get("sub") or "").strip(),
+                     b.get("size") or cfg.get("size") or "square", b.get("stamp") or "auto",
+                     topic=(b.get("topic") or title), fs=b.get("fs") or 0, dx=b.get("dx") or 0, dy=b.get("dy") or 0)
+    if r.get("err"):
+        return jsonify(ok=False, msg=r["err"])
+    return jsonify(ok=True, thumb=r)
 
 
 @app.route("/api/crm-post", methods=["POST"])
@@ -2122,9 +3352,40 @@ def api_swap_card():
     if not (cdir and os.path.isdir(cdir) and os.path.isfile(photo)):
         return jsonify(ok=False, msg="파일을 찾을 수 없습니다.")
     try:
+        old_src = ""                                  # C7: 바꾸기 전 원본(모음에서 같은 사진을 찾아 교체)
+        try:
+            _cj = jload(os.path.join(cdir, "cards.json"), {}).get("cards") or []
+            old_src = (_cj[idx] or {}).get("src") or ""
+        except Exception:
+            old_src = ""
         png = cardnews_pil.edit_card(cdir, idx, src=photo)
         sync_card_sources(cdir)                       # 교체한 사진으로 원본사진/ 갱신
-        return jsonify(ok=True, png=png, name=os.path.basename(png), src=photo)
+        collages = []
+        try:
+            collages = collage_pil.replace_photo(cdir, old_src, photo)
+        except Exception:
+            collages = []
+        return jsonify(ok=True, png=png, name=os.path.basename(png), src=photo, collages=collages)
+    except Exception as e:
+        return jsonify(ok=False, msg=str(e)[:200])
+
+
+@app.route("/api/swap-collage", methods=["POST"])
+def api_swap_collage():
+    """사진 모음의 한 칸만 다른 사진으로 교체 → 그 모음 한 장만 재렌더(카드 교체와 같은 방식)."""
+    b = request.get_json(force=True)
+    cdir = b.get("cardnews_dir", "")
+    folder = b.get("folder", "")
+    gi = int(b.get("index", 0))                       # 몇 번째 모음(0부터)
+    ci = int(b.get("cell", 0))                        # 그 모음의 몇 번째 칸(0부터)
+    photo = b.get("path") or os.path.join(folder, b.get("file", ""))
+    if not (cdir and os.path.isdir(cdir)):
+        return jsonify(ok=False, msg="카드 폴더를 찾을 수 없습니다.")
+    if not os.path.isfile(photo):
+        return jsonify(ok=False, msg="파일을 찾을 수 없습니다.")
+    try:
+        name = collage_pil.set_cell(cdir, gi, ci, photo)
+        return jsonify(ok=True, name=name, src=photo)
     except Exception as e:
         return jsonify(ok=False, msg=str(e)[:200])
 
@@ -2140,6 +3401,27 @@ def api_card_text():
     kw = {k: b[k] for k in ("headline", "subtitle", "body", "title") if k in b}
     try:
         png = cardnews_pil.edit_card(cdir, idx, **kw)
+        return jsonify(ok=True, png=png, name=os.path.basename(png))
+    except Exception as e:
+        return jsonify(ok=False, msg=str(e)[:200])
+
+
+@app.route("/api/card-textadj", methods=["POST"])
+def api_card_textadj():
+    """카드 글자의 크기 배율(s)·위치(dx,dy)만 바꿔 그 카드만 재렌더.
+    body 예: {cardnews_dir, index, role:"headline", s:1.2, dx:0, dy:-20}  (또는 tadj로 통째)."""
+    b = request.get_json(force=True)
+    cdir = b.get("cardnews_dir", "")
+    idx = int(b.get("index", 0))
+    if not (cdir and os.path.isdir(cdir)):
+        return jsonify(ok=False, msg="카드 폴더를 찾을 수 없습니다.")
+    tadj = b.get("tadj")
+    if not tadj:
+        role = b.get("role") or "headline"
+        one = {k: b[k] for k in ("s", "dx", "dy") if k in b}
+        tadj = {role: one}
+    try:
+        png = cardnews_pil.edit_card(cdir, idx, text_adj=tadj)
         return jsonify(ok=True, png=png, name=os.path.basename(png))
     except Exception as e:
         return jsonify(ok=False, msg=str(e)[:200])
@@ -2198,13 +3480,23 @@ def api_docx():
         p = doc.add_paragraph(); p.paragraph_format.space_after = Pt(14)
         setf(p.add_run(post["title"]), 16, True)
     for blk in post.get("blocks", []):
-        if blk["type"] == "chart":                       # C6: 표·차트 이미지
+        if blk["type"] in ("chart", "collage"):          # C6 표·차트 / C7 사진 모음 이미지
             img = os.path.join(cdir, blk.get("img", "")) if (cdir and blk.get("img")) else None
             if img and os.path.isfile(img):
                 pp = doc.add_paragraph(); pp.alignment = WD_ALIGN_PARAGRAPH.CENTER
                 pp.paragraph_format.space_before = Pt(6); pp.paragraph_format.space_after = Pt(12)
                 try:
                     pp.add_run().add_picture(img, width=Cm(14))
+                except Exception:
+                    pass
+            continue
+        if blk["type"] == "combo":                       # Drive 사진 2장 합성 이미지
+            img = os.path.join(post.get("combo_dir") or cdir, blk.get("img", "")) if blk.get("img") else None
+            if img and os.path.isfile(img):
+                pp = doc.add_paragraph(); pp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                pp.paragraph_format.space_before = Pt(6); pp.paragraph_format.space_after = Pt(12)
+                try:
+                    pp.add_run().add_picture(img, width=Cm(15))
                 except Exception:
                     pass
             continue
@@ -2250,6 +3542,17 @@ def api_docx():
                     pp.add_run().add_picture(img, width=Cm(14))
                 except Exception:
                     pass
+    # 채널 글(카페 등): 카테고리·태그·시딩 댓글을 페이지 나눔 뒤에 덧붙임(카페 프롬프트 §10 워드 구성)
+    ex = post.get("extra") or {}
+    for key, label in (("category", "카테고리"), ("tags", "태그"), ("comments", "시딩 댓글")):
+        val = (ex.get(key) or "").strip()
+        if not val:
+            continue
+        doc.add_page_break()
+        pp = doc.add_paragraph(); setf(pp.add_run(label), 13, True)
+        for ln in val.splitlines():
+            pp = doc.add_paragraph(); pp.paragraph_format.space_after = Pt(3)
+            setf(pp.add_run(ln), 11)
     safe = re.sub(r"[\\/:*?\"<>|]", "_", post.get("keyword", "글"))
     stamp = datetime.datetime.now().strftime("%H%M%S")
     out = os.path.join(OUT_DIR, f"{safe}_{stamp}.docx")
@@ -2362,8 +3665,20 @@ select:focus{border-color:var(--brand)}
 .editq{font-size:12px;font-weight:700;color:var(--brand);display:flex;align-items:center;gap:6px}
 .chartwrap{position:relative;display:block;margin:14px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--sh)}
 .chartwrap img{display:block;width:100%}
+.combowrap{border:none;box-shadow:none;border-radius:0;overflow:visible}.combowrap img{width:100%!important;max-width:100%!important;height:auto!important;border-radius:8px;margin:0!important}
+.combobox{position:relative}
+.combohalf{position:absolute;top:0;bottom:0;width:50%}
+.combohalf .cardbar{white-space:nowrap}
+.combohalf:hover .cardbar{opacity:1;transform:translateX(-50%) translateY(0)}
+.combohalf:hover{box-shadow:inset 0 0 0 3px var(--brand);border-radius:8px}
 .chartdel{position:absolute;top:8px;right:8px;width:28px;height:28px;border:none;border-radius:50%;background:rgba(20,24,30,.55);color:#fff;font-size:14px;cursor:pointer;opacity:0;transition:.15s}
 .chartwrap:hover .chartdel{opacity:1}
+.collwrap{position:relative;display:block;margin:14px 0}
+.collwrap img{display:block;width:100%;border-radius:10px}
+.collcell{position:absolute;box-sizing:border-box;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .12s}
+.collcell span{background:rgba(17,17,20,.72);color:#fff;font-size:12px;font-weight:700;padding:6px 11px;border-radius:999px}
+.collwrap:hover .collcell{opacity:1;outline:2px dashed rgba(255,255,255,.75);outline-offset:-6px}
+.collcell:hover{background:rgba(253,111,34,.22);opacity:1}
 .chartpend{margin:14px 0;padding:18px;border:1px dashed var(--line);border-radius:12px;color:var(--brand);font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px;justify-content:center}
 .pfmode{display:flex;gap:9px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:12px;margin:2px 0 4px;cursor:pointer;background:#fafbfc;font-size:12.5px;color:var(--ink2);line-height:1.5}
 .pfmode.on{border-color:var(--brand);background:var(--brand-l)}
@@ -2373,6 +3688,7 @@ select:focus{border-color:var(--brand)}
 .altcap{font-size:11.5px;color:var(--muted);margin:-6px 0 12px;padding:5px 10px;background:#f6f7f9;border-radius:8px;display:inline-block;font-weight:600}
 .cpick{border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin:2px 0 10px;background:#fff;box-shadow:var(--sh)}
 .cpick-h{font-size:12.5px;font-weight:800;color:var(--ink2);margin-bottom:10px}
+.cpick-mode{display:flex;gap:6px;margin-bottom:10px}.cpick-mode .btn.on{background:var(--ink,#222);color:#fff;border-color:var(--ink,#222)}
 .cpick-sw{display:grid;grid-template-columns:repeat(13,1fr);gap:6px;margin-bottom:12px}
 .cpsw{aspect-ratio:1;border:1px solid rgba(0,0,0,.08);border-radius:7px;cursor:pointer;padding:0;transition:transform .1s}
 .cpsw:hover{transform:scale(1.18);box-shadow:var(--sh)}
@@ -2396,6 +3712,9 @@ select:focus{border-color:var(--brand)}
 .cardbar button.tb{font-size:11.5px}
 .cardbar button:hover{background:var(--brand);color:#fff}
 .cardbar .sep{width:1px;height:18px;background:rgba(255,255,255,.28);margin:0 2px}
+.cardbar.tbar{bottom:46px}
+.cardbar .tlab{font-size:11px;font-weight:800;color:rgba(255,255,255,.72);padding:0 3px}
+.cardbar select{height:28px;border:0;border-radius:7px;background:rgba(255,255,255,.92);color:#222;font-size:11.5px;font-weight:800;padding:0 5px;cursor:pointer}
 #swaplist img{transition:.12s}
 #swaplist img:hover{border-color:var(--brand)!important;transform:scale(1.06)}
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(16,22,34,.45);backdrop-filter:blur(2px);z-index:50}
@@ -2419,6 +3738,37 @@ select:focus{border-color:var(--brand)}
 .naver-box{background:var(--brand-l);border:1px solid transparent;border-radius:13px;padding:14px 16px;margin:4px 0}
 .naver-title{font-weight:800;font-size:14px;margin-bottom:10px}
 .naver-steps{font-size:12px;color:var(--ink2);margin-top:10px;line-height:1.6;font-weight:600}
+.chanrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chanopt{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:9px 16px;font-size:13.5px;font-weight:800;cursor:pointer;color:var(--ink2)}
+.chanopt:hover{border-color:var(--brand)}
+.chanopt.sel{border-color:var(--brand);background:var(--brand-l);color:var(--brand-d)}
+.chanver{font-size:12px;color:var(--muted);font-weight:600;margin-left:4px}
+.chanbadge{font-size:11px;font-weight:700;color:var(--brand-d);background:#fff;border:1px solid var(--brand);border-radius:99px;padding:2px 9px;margin-left:8px;vertical-align:middle}
+.thumbbox{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px 16px;margin:10px 0}
+.thumbrow{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.thumbimg{flex:0 0 240px}
+.thumbimg img{width:240px;height:auto;border-radius:10px;border:1px solid var(--line);display:block;box-shadow:var(--sh)}
+.thumbpath{font-size:11px;color:var(--muted);margin-top:5px;word-break:break-all}
+.thumbfail{width:240px;padding:14px;border-radius:10px;background:var(--errbg);color:var(--err);font-size:12px;font-weight:700}
+.thumbctl{flex:1 1 300px;min-width:260px}
+.thumbctl label{display:block;font-size:12px;font-weight:700;color:var(--ink2);margin:4px 0}
+.thumbctl textarea,.thumbctl input{width:100%;font-size:14px;font-weight:700;padding:8px 10px;border:1.5px solid var(--line);border-radius:9px;box-sizing:border-box;font-family:inherit}
+.thumbctl select{font-size:12px;padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;max-width:100%}
+.thumbadj{margin-top:10px;padding:10px 12px;background:var(--line2);border-radius:10px}
+.adjrow{display:flex;align-items:center;gap:10px;margin:4px 0}
+.adjlab{flex:0 0 64px;font-size:12px;font-weight:700;color:var(--ink2)}
+.adjauto{font-size:12px;font-weight:700;display:flex;align-items:center;gap:4px;flex:0 0 auto}
+.adjrow input[type=range]{flex:1 1 auto;min-width:120px;accent-color:var(--brand)}
+.adjval{flex:0 0 52px;font-size:12px;text-align:right;color:var(--brand-d)}
+.extrabox{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px 16px;margin:10px 0}
+.extrameta{font-size:12px;color:var(--ink2);font-weight:600;background:var(--line2);border-radius:8px;padding:8px 10px;margin-bottom:8px;line-height:1.6}
+.exd{border-top:1px solid var(--line2);padding:6px 0}
+.exd summary{cursor:pointer;font-weight:800;font-size:13px;display:flex;align-items:center;gap:10px;list-style:none}
+.exd summary::-webkit-details-marker{display:none}
+.exd summary::before{content:'▸';color:var(--muted);font-size:12px}
+.exd[open] summary::before{content:'▾'}
+.exhint{font-size:11.5px;color:var(--muted);font-weight:600}
+.expre{white-space:pre-wrap;word-break:break-all;font-family:inherit;font-size:12.5px;line-height:1.7;background:var(--line2);border-radius:9px;padding:10px 12px;margin:8px 0 2px;max-height:360px;overflow:auto}
 .naver-steps b{color:var(--brand-d)}
 .tplrow{display:flex;gap:10px;flex-wrap:wrap}
 .tplopt{cursor:pointer;border:2.5px solid transparent;border-radius:13px;padding:5px;background:#f3f5f7;transition:.15s;text-align:center}
@@ -2495,7 +3845,15 @@ select:focus{border-color:var(--brand)}
 <script>
 let TABS=[], CUR=0, REC=null, seq=1, BRAND='haofactory', BRANDS=[], BFORM=null;
 const el=id=>document.getElementById(id), esc=s=>(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-function newTab(){return {id:seq++, brand:((typeof BRAND!=='undefined'&&BRAND)||'haofactory'), keyword:'', subkeyword:'', question:'', title:'', titleSug:null, folder:'', files:[], hint:'', post:null, busy:false, model:'opus'};}
+function newTab(){return {id:seq++, brand:((typeof BRAND!=='undefined'&&BRAND)||'haofactory'), channel:'', keyword:'', subkeyword:'', question:'', title:'', titleSug:null, folder:'', files:[], hint:'', draft:'', post:null, busy:false, model:'opus'};}
+// ── 채널(네이버 블로그 / 카페) 표준 프롬프트 — channels.json 있는 브랜드(윈차이나·레드트랜스)만 선택기 표시 ──
+function chansOf(x){return brandOf(x).channels||[];}
+function curChan(x){const cs=chansOf(x);if(!cs.length)return '';return (x&&x.channel&&cs.find(c=>c.id==x.channel))?x.channel:cs[0].id;}
+function chanHtml(x){const cs=chansOf(x);if(!cs.length)return '';const cur=curChan(x);const c=cs.find(k=>k.id==cur)||{};
+  const icon={blog:'📝',cafe:'☕'};
+  return `<div class="field"><label>어디에 올릴 글인가요? <span style="font-weight:600;color:#b4bcc8">(채널별 표준 프롬프트로 작성 — 메인·서브키워드·제목만 넣으면 됩니다)</span></label>
+    <div class="chanrow">${cs.map(k=>`<button class="chanopt ${k.id==cur?'sel':''}" onclick="t().channel='${k.id}';render()">${icon[k.id]||'📄'} ${esc(k.label)}</button>`).join('')}
+      <span class="chanver">표준 프롬프트 ${esc(c.version||'')}${(c.length&&c.length.length==2)?' · 공백제외 '+c.length[0].toLocaleString()+'~'+c.length[1].toLocaleString()+'자':''}</span></div></div>`;}
 // ── 브랜드 ──
 function hexMix(hex,amt){hex=(hex||'#FD6F22').replace('#','');if(hex.length<6)hex='FD6F22';
   const r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16),m=v=>Math.round(v+(255-v)*amt);
@@ -2503,6 +3861,12 @@ function hexMix(hex,amt){hex=(hex||'#FD6F22').replace('#','');if(hex.length<6)he
 function hexA(hex,a){hex=(hex||'#FD6F22').replace('#','');if(hex.length<6)hex='FD6F22';
   return `rgba(${parseInt(hex.substr(0,2),16)},${parseInt(hex.substr(2,2),16)},${parseInt(hex.substr(4,2),16)},${a})`;}
 function curBrand(){return BRANDS.find(b=>b.id==BRAND)||{};}
+function brandOf(x){return BRANDS.find(b=>b.id==((x&&x.brand)||BRAND))||{};}   // 탭의 브랜드 설정(탭별 브랜드)
+function tplOf(x){return (x&&x.cardTpl)||brandOf(x).default_template||'1';}     // 카드 디자인: 탭 선택 > 브랜드 기본(brand.json default_template) > 1
+function applyBrandDefaults(x){   // 브랜드 기본 사진 폴더(brand.json photo_folder)를 빈 새 글 탭에 자동 입력(트래비티 등 사진 라이브러리 고정 브랜드)
+  const pf=brandOf(x).photo_folder; if(!x||!pf||x.folder)return;
+  x.folder=pf;x.picked=false;
+  fetch('/api/photos?folder='+encodeURIComponent(pf)).then(r=>r.json()).then(d=>{x.files=d.files||[];render();}).catch(()=>{});}
 function applyBrandColor(){const c=curBrand().color||'#FD6F22',R=document.documentElement;
   R.style.setProperty('--brand',c);R.style.setProperty('--brand-l',hexMix(c,0.9));R.style.setProperty('--brand-d',c);
   R.style.setProperty('--brand-2',hexMix(c,0.24));R.style.setProperty('--brand-sh',hexA(c,0.32));}
@@ -2511,10 +3875,10 @@ function renderBrandSel(){const s=el('brandsel');if(!s)return;
 function loadBrands(cb){return fetch('/api/brands').then(r=>r.json()).then(d=>{BRANDS=d.brands||[];
   if(!BRANDS.find(b=>b.id==BRAND))BRAND=(BRANDS[0]||{}).id||'haofactory';
   renderBrandSel();applyBrandColor();if(cb)cb();});}
-function switchBrand(id){BRAND=id;if(TABS[CUR])TABS[CUR].brand=id;   // 현재 탭의 브랜드만 바꿈(탭별 브랜드)
+function switchBrand(id){BRAND=id;if(TABS[CUR]){TABS[CUR].brand=id;TABS[CUR].cardTpl='';TABS[CUR].channel='';applyBrandDefaults(TABS[CUR]);}   // 현재 탭의 브랜드만 바꿈(탭별 브랜드)
   if(el('recbox')&&el('recbox').style.display=='block'){el('recbox').style.display='none';}
   render();toast('이 글 브랜드: '+(curBrand().name||id));}
-function init(){TABS=[newTab()];CUR=0;loadBrands();render();
+function init(){if(!loadTabs()){TABS=[newTab()];CUR=0;}loadBrands(()=>{applyBrandDefaults(t());render();});render();
   fetch('/api/version').then(r=>r.json()).then(d=>{if(el('ver'))el('ver').textContent='v'+d.version;}).catch(()=>{});
   fetch('/api/status').then(r=>r.json()).then(s=>{
     if(!s.claude){el('engine').textContent='● 엔진 없음';el('engine').className='pill off';el('loginwarn').style.display='block';el('loginwarn').textContent='⚠ claude 실행파일을 찾지 못했습니다. Claude 데스크톱 앱 또는 CLI 설치 필요.';return;}
@@ -2583,10 +3947,33 @@ function renderTabs(){
   el('tabs').innerHTML = TABS.map((tb,i)=>{const bn=(BRANDS.find(b=>b.id==tb.brand)||{}).name||'';
     const load=tb.titleSug&&tb.titleSug.loading?' <span class="spin" style="width:9px;height:9px;border-width:1.5px;vertical-align:0"></span>':'';
     return `<div class="tab ${i==CUR?'on':''}" onclick="sel(${i})">${bn?'<b style="color:var(--brand)">'+esc(bn)+'</b> · ':''}글 ${i+1}${tb.keyword?': '+esc(tb.keyword.slice(0,10)):''}${load}<span class="x" onclick="event.stopPropagation();delTab(${i})">×</span></div>`;}).join('')
-    + `<div class="addtab" onclick="addTab()">+ 새 글</div>`;
+    + `<div class="addtab" onclick="addTab()">+ 새 글</div>`
+    + `<div class="addtab" title="탭을 실수로 닫았을 때: 오늘 생성·수정한 글과 카드뉴스를 다시 엽니다" onclick="recoverTabs()">↺ 오늘 글 복구</div>`;
+  saveTabs();
 }
+// ── 탭 자동 저장(브라우저 localStorage) — 탭·창을 닫아도 다시 열면 그대로 ──
+const TABS_KEY='blogauto_tabs_v1';
+function saveTabs(){try{localStorage.setItem(TABS_KEY,JSON.stringify({cur:CUR,tabs:TABS.map(x=>Object.assign({},x,{busy:false,titleSug:null,undo:[],editActive:null,editQueue:[],colorBusy:false}))}));}catch(e){}}
+function loadTabs(){try{const d=JSON.parse(localStorage.getItem(TABS_KEY)||'null');if(!d||!d.tabs||!d.tabs.length)return false;
+  TABS=d.tabs;TABS.forEach(x=>{x.id=seq++;x.editActive=null;x.editQueue=[];x.colorBusy=false;});   // 새로고침 전 진행 중이던 수정은 이미 끊김 → '처리 중' 고착 방지CUR=Math.min(d.cur||0,TABS.length-1);
+  TABS.forEach(x=>{if(x.post&&x.post.cardnews_job&&!(x.post.cardnews_pngs||[]).length)pollCards(x.post.cardnews_job,x);});return true;}catch(e){return false;}}
+window.addEventListener('beforeunload',saveTabs);
+// ── 오늘 글 복구: 서버가 claude 대화 기록에서 오늘 생성·수정한 글을 다시 만들어 탭으로 연다 ──
+function recoverTabs(){toast('오늘 글 찾는 중…');
+  fetch('/api/recover-tabs').then(r=>r.json()).then(d=>{
+    if(!d.ok){toast(d.msg||'복구 실패','err');return;}
+    const have=new Set(TABS.filter(x=>x.post).map(x=>x.recKey||''));
+    const add=(d.tabs||[]).filter(r=>!have.has(r.brand+'|'+r.channel+'|'+r.keyword+'|'+r.time));
+    if(!add.length){toast('복구할 새 글이 없어요','err');return;}
+    if(TABS.length==1&&!TABS[0].post&&!TABS[0].keyword)TABS=[];
+    add.forEach(r=>{const x=Object.assign(newTab(),{brand:r.brand||BRAND,channel:r.channel||'',keyword:r.keyword,subkeyword:r.subkeyword||'',
+      title:r.title||'',folder:r.folder||'',files:r.files||[],picked:!!(r.files&&r.files.length),post:r.post,recKey:r.brand+'|'+r.channel+'|'+r.keyword+'|'+r.time});
+      TABS.push(x);});
+    CUR=TABS.length-add.length;render();
+    toast('↺ '+add.length+'개 글 복구됨 (수정 이력 '+add.reduce((a,r)=>a+(r.edits||0),0)+'건 반영)','ok');
+  }).catch(e=>toast('오류: '+e,'err'));}
 function sel(i){CUR=i;render();}
-function addTab(){TABS.push(newTab());CUR=TABS.length-1;render();}
+function addTab(){const x=newTab();TABS.push(x);CUR=TABS.length-1;applyBrandDefaults(x);render();}
 function delTab(i){if(TABS.length==1)return;TABS.splice(i,1);if(CUR>=TABS.length)CUR=TABS.length-1;render();}
 function t(){return TABS[CUR];}
 function render(){
@@ -2594,6 +3981,7 @@ function render(){
   if(x.brand&&BRANDS.find(b=>b.id==x.brand))BRAND=x.brand;   // 활성 탭의 브랜드로 동기화(색·선택기·카드디자인 반영)
   applyBrandColor();renderBrandSel();renderTabs();
   el('card').innerHTML=`
+    ${chanHtml(x)}
     <div class="field"><label>메인키워드</label>
       <div class="row"><input type="text" id="kw" value="${esc(x.keyword)}" placeholder="예: FRP조형물 — 입력 후 Enter로 바로 생성" oninput="t().keyword=this.value;renderTabs()" onkeydown="if(event.key=='Enter'){event.preventDefault();generate();}">
         <button class="btn" onclick="toggleRec()">📝 추천</button></div>
@@ -2618,19 +4006,29 @@ function render(){
         <button class="btn" onclick="pickFolder()">폴더 선택</button>
         <button class="btn" onclick="loadPhotos()">불러오기</button>
         ${x.folder&&x.files.length?`<button class="btn" onclick="organize()" title="파일명을 단계별(공정/완성 등)로 자동 정리">📷 사진 정리</button>`:''}</div>
+      ${curBrand().drive_link?`<div class="row" style="margin-top:6px"><input type="text" id="drivelink" value="${esc(x.driveUrl||'')}" placeholder="본문 합성 이미지용 Google Drive 폴더 링크 (공유: 링크가 있는 모든 사용자)" oninput="t().driveUrl=this.value">
+        <button class="btn" onclick="driveFetch()" ${x.driveBusy?'disabled':''}>☁ Drive에서 가져오기</button>
+        ${x.driveFolder?`<button class="btn" onclick="driveClear()" title="합성 이미지 없이 쓰기">✕</button>`:''}</div>
+      ${x.driveMsg?`<div class="hint ${x.driveErr?'bad':'ok'}">${esc(x.driveMsg)}</div>`:''}
+      ${x.driveFolder&&(x.driveFiles||[]).length?`<div class="photos">${x.driveFiles.slice(0,6).map(f=>`<img src="/img?folder=${encodeURIComponent(x.driveFolder)}&name=${encodeURIComponent(f)}" title="${esc(f)}">`).join('')}${x.driveFiles.length>6?`<div style="width:62px;height:62px;border-radius:7px;background:#eef1f4;display:flex;align-items:center;justify-content:center;font-size:12px;color:#889;font-weight:700">+${x.driveFiles.length-6}</div>`:''}</div>`:''}`:''}
       <div id="orgbar" style="margin-top:6px;font-size:12px;color:var(--brand);font-weight:700"></div>
       ${x.folder?`<div class="hint ${x.files.length?'ok':'bad'}">${x.files.length?(x.picked?('📌 선택한 사진 '+x.files.length+'장만 사용 (폴더 전체를 쓰려면 다시 [폴더 선택])'):('📷 사진 '+x.files.length+'장 (하위 폴더 포함) · 생성 시 키워드에 맞춰 자동 선택')):'이 폴더에 사진이 없습니다'}</div>
       <div class="photos">${x.files.slice(0,6).map(f=>`<img src="/img?folder=${encodeURIComponent(x.folder)}&name=${encodeURIComponent(f)}" title="${esc(f)}">`).join('')}${x.files.length>6?`<div style="width:62px;height:62px;border-radius:7px;background:#eef1f4;display:flex;align-items:center;justify-content:center;font-size:12px;color:#889;font-weight:700">+${x.files.length-6}</div>`:''}</div>`:''}
     </div>
     <details class="opt" ${x.hint?'open':''}><summary>＋ 프로젝트 정보 (선택 — 실제 작업 건이면 현장·소재·특이사항)</summary>
       <textarea id="hint" oninput="t().hint=this.value" placeholder="예: 전남 광양, 황소 캐릭터, 벤치 포토존, FRP">${esc(x.hint)}</textarea></details>
+    <details class="opt" ${x.draft?'open':''}><summary>🎴 원고 붙여넣기 → 이 원고로 카드뉴스만 만들기 (글은 새로 쓰지 않습니다)</summary>
+      <textarea id="draft" style="min-height:200px" oninput="t().draft=this.value" placeholder="이미 완성한 원고를 그대로 붙여넣으세요. 원고는 한 글자도 고치지 않고 헤드라인·표지 부제·사진 배치만 뽑아 카드뉴스를 만듭니다.">${esc(x.draft||'')}</textarea>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+        <button class="btn pri" onclick="cardsFromDraft()" ${x.busy?'disabled':''}>🎴 이 원고로 카드뉴스 만들기</button>
+        <span style="font-size:12px;color:var(--ink2);font-weight:600">표지 글자는 위 <b>메인키워드</b>, 배경은 위 <b>사진 폴더</b>를 그대로 씁니다</span></div></details>
     <label class="pfmode ${x.portfolio?'on':''}">
       <input type="checkbox" ${x.portfolio?'checked':''} onchange="t().portfolio=this.checked;render()">
       <span><b>📁 포트폴리오 모드</b> — 폴더의 사진을 직접 열어보고 '이 프로젝트 사례'로 작성 (정보성 대신). 사진마다 alt 텍스트도 붙여줍니다</span></label>
     ${x.portfolio?`<div class="pfhint">💡 이 프로젝트의 사진 폴더 + 키워드(예: <b>삼성병원 내과 브로슈어</b>)를 넣으세요. 사진으로 알 수 없는 정보(고객·요청)는 위 프로젝트 정보에 적어주면 더 정확합니다. (사진을 읽어서 조금 더 걸립니다)</div>`:''}
     ${(curBrand().card_templates||[]).length>1?`
     <div class="field"><label>카드 디자인 (클릭해서 선택)</label>
-      <div class="tplrow">${(curBrand().card_templates).map(tp=>`<div class="tplopt ${(x.cardTpl||'1')==tp?'sel':''}" onclick="t().cardTpl='${tp}';render()" title="디자인 ${tp}">
+      <div class="tplrow">${(curBrand().card_templates).map(tp=>`<div class="tplopt ${tplOf(x)==tp?'sel':''}" onclick="t().cardTpl='${tp}';render()" title="디자인 ${tp}">
         <img src="/api/template-thumb?brand=${BRAND}&template=${tp}" loading="lazy" alt="디자인 ${tp}"><span>디자인 ${tp}</span></div>`).join('')}</div></div>`:''}
     <div class="gen-row"><button class="btn pri lg" id="genbtn" onclick="generate()" ${x.busy?'disabled':''}>${x.busy?'<span class=spin></span> 생성 중…':'✍ 생성하기'}</button>
       <select onchange="t().model=this.value">
@@ -2676,7 +4074,7 @@ function titleBoxHtml(x){const s=x.titleSug;if(!s)return '';
 }
 function suggestTitle(mode){mode=mode||'geo';const x=t();if(!x.keyword){toast('메인키워드를 먼저 입력하세요','err');return;}
   x.titleSug={loading:true,mode:mode};render();                       // 상태를 탭에 저장 → 다른 작업(불러오기 등) 해도 안 끊김
-  fetch('/api/title-suggest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',question:x.question||'',brand:x.brand||BRAND,mode:mode})})
+  fetch('/api/title-suggest',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keyword:x.keyword,subkeyword:x.subkeyword||'',question:x.question||'',brand:x.brand||BRAND,mode:mode,channel:curChan(x)})})
    .then(r=>r.json()).then(d=>{
      x.titleSug = d.ok ? {items:d.titles||[],geo:d.geo,mode:d.mode||mode} : {err:d.msg||'실패',mode:mode};
      if(t()===x)render(); else {renderTabs();toast('📝 글 '+(TABS.indexOf(x)+1)+' 제목 추천 완료','ok');}   // 다른 탭이어도 완료 알림
@@ -2711,6 +4109,44 @@ function browse(path){
 }
 function selectFolder(){const x=t();x.folder=BR.path;x.picked=false;closeBrowse();
   fetch('/api/photos?folder='+encodeURIComponent(BR.path)).then(r=>r.json()).then(d=>{x.files=d.files;render();});}
+function driveFetch(){const x=t();const url=(el('drivelink')?el('drivelink').value:x.driveUrl||'').trim();x.driveUrl=url;
+  if(!url){toast('Google Drive 링크를 붙여 넣어 주세요','err');return;}
+  x.driveBusy=true;x.driveErr=false;x.driveMsg='☁ Drive 폴더를 읽는 중…';render();
+  fetch('/api/drive-fetch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,brand:x.brand||BRAND})})
+   .then(r=>r.json()).then(d=>{
+     if(!d.ok){x.driveBusy=false;x.driveErr=true;x.driveMsg=d.msg||'가져오기 실패';render();return;}
+     const poll=()=>fetch('/api/drive-status?job='+d.job).then(r=>r.json()).then(s=>{
+       if(s.status=='running'){x.driveMsg=s.total?('☁ 사진 내려받는 중… '+s.done+' / '+s.total):('☁ 폴더 읽는 중… 사진 '+(s.listed||0)+'장 찾음');render();setTimeout(poll,1200);return;}
+       x.driveBusy=false;
+       if(s.status=='done'){x.driveErr=false;x.driveMsg='✓ Drive 사진 '+s.ok+'장 가져옴'+(s.failed?(' (실패 '+s.failed+'장)'):'')+' · 생성 시 글 내용에 맞는 사진 2장씩 골라 본문 합성 이미지 3장을 만듭니다(카드뉴스에는 쓰지 않음)';
+         x.driveFolder=s.folder;
+         fetch('/api/photos?folder='+encodeURIComponent(s.folder)).then(r=>r.json()).then(v=>{x.driveFiles=v.files;render();});}
+       else{x.driveErr=true;x.driveMsg=s.msg||'가져오기 실패';render();}
+     }).catch(()=>setTimeout(poll,2000));
+     poll();
+   }).catch(()=>{x.driveBusy=false;x.driveErr=true;x.driveMsg='가져오기 실패(네트워크)';render();});}
+function driveClear(){const x=t();x.driveFolder='';x.driveFiles=[];x.driveMsg='';x.driveErr=false;render();}
+// 합성 이미지 블록을 원고에 끼움: 합성 k(sec=s) → s번째 소제목 끝(= s+1번째 소제목 줄 바로 앞). 여러 번 불러도 결과 동일.
+function applyCombos(p){if(!p||!p.blocks)return;
+  p.blocks=p.blocks.filter(b=>b.type!='combo');
+  const combos=(p.combos||[]).slice().sort((a,b)=>b.sec-a.sec);   // 뒤에서부터 넣어야 앞 위치가 안 밀림
+  combos.forEach(c=>{let hc=0,placed=false;
+    for(let bi=0;bi<p.blocks.length&&!placed;bi++){const b=p.blocks[bi];if(b.type!='text')continue;
+      const lines=b.text.split('\n');
+      for(let li=0;li<lines.length;li++){
+        if(/^\s*\*\*.+\*\*\s*$/.test(lines[li])){hc++;
+          if(hc==c.sec+1){const before=lines.slice(0,li).join('\n'),after=lines.slice(li).join('\n');
+            const nb=[];if(before.trim())nb.push({type:'text',text:before});nb.push({type:'combo',img:c.img,sec:c.sec});nb.push({type:'text',text:after});
+            p.blocks.splice(bi,1,...nb);placed=true;break;}}}}
+    if(!placed){   // 다음 소제목을 못 찾으면 마지막 텍스트 앞에
+      let idx=p.blocks.length;for(let i=p.blocks.length-1;i>=0;i--){if(p.blocks[i].type=='text'){idx=i;break;}}
+      p.blocks.splice(idx,0,{type:'combo',img:c.img,sec:c.sec});}
+  });}
+function pollCombos(job, tab){const iv=setInterval(()=>{fetch('/api/combo-status?id='+job).then(r=>r.json()).then(s=>{
+  if(s.status=='done'){clearInterval(iv);tab.post.combos=s.combos||[];tab.post.combo_dir=s.dir;tab.post.combo_busy=false;applyCombos(tab.post);
+    if(t()===tab)render();toast('🖼 본문 합성 이미지 '+(s.combos||[]).length+'장 완성','ok');}
+  else if(s.status=='error'||s.status=='unknown'){clearInterval(iv);tab.post.combo_busy=false;tab.post.combo_err=s.msg||'합성 이미지 실패';if(t()===tab)render();toast('합성 이미지 실패: '+(s.msg||''),'err');}
+}).catch(()=>{});},2500);}
 function loadPhotos(){const f=el('folder').value;const x=t();x.folder=f;x.picked=false;
   fetch('/api/photos?folder='+encodeURIComponent(f)).then(r=>r.json()).then(d=>{x.files=d.files;render();});}
 function organize(){const x=t();
@@ -2724,17 +4160,33 @@ function pollOrg(){const iv=setInterval(()=>{fetch('/api/organize-status').then(
 });},1500);}
 function generate(extra){const x=t();if(!x.keyword){toast('키워드를 입력하세요','err');return;}
   x.busy=true;render();
-  const pay=Object.assign({keyword:x.keyword,subkeyword:x.subkeyword||'',question:x.question||'',title:x.title||'',folder:x.folder,files:(x.picked&&x.files&&x.files.length)?x.files:null,hint:x.hint,model:x.model||'opus',brand:x.brand||BRAND,template:x.cardTpl||'1',portfolio:!!x.portfolio},extra||{});
+  const pay=Object.assign({keyword:x.keyword,subkeyword:x.subkeyword||'',question:x.question||'',title:x.title||'',folder:x.folder,files:(x.picked&&x.files&&x.files.length)?x.files:null,hint:x.hint,model:x.model||'opus',brand:x.brand||BRAND,template:tplOf(x),portfolio:!!x.portfolio,channel:curChan(x),
+    drive_folder:(curBrand().drive_link&&x.driveFolder)?x.driveFolder:''},extra||{});
   fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pay)})
    .then(r=>r.json()).then(d=>{x.busy=false;
      if(!d.ok){toast(d.msg||'생성 실패','err');render();return;}
-     x.post=d.post;render();toast('✍ 원고 완성','ok');
+     x.post=d.post;if(d.post.combo_job)x.post.combo_busy=true;render();toast('✍ 원고 완성','ok');
+     if(d.post.cardnews_job) pollCards(d.post.cardnews_job, x);
+     if(d.post.combo_job) pollCombos(d.post.combo_job, x);
+   }).catch(e=>{x.busy=false;toast('오류: '+e,'err');render();});
+}
+function cardsFromDraft(){const x=t();
+  const dr=((el('draft')&&el('draft').value)||x.draft||'').trim();
+  if(!dr){toast('원고를 붙여넣어 주세요','err');return;}
+  if(!x.keyword){toast('메인키워드를 입력하세요 (표지 큰 글자로 들어갑니다)','err');return;}
+  if(!x.folder){toast('사진 폴더를 선택하세요 (카드 배경 사진)','err');return;}
+  x.draft=dr;x.busy=true;render();
+  fetch('/api/cardnews-from-draft',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({draft:dr,keyword:x.keyword,title:x.title||'',folder:x.folder,files:(x.picked&&x.files&&x.files.length)?x.files:null,model:x.model||'opus',brand:x.brand||BRAND,template:tplOf(x)})})
+   .then(r=>r.json()).then(d=>{x.busy=false;
+     if(!d.ok){toast(d.msg||'카드뉴스 실패','err');render();return;}
+     x.post=d.post;render();toast('원고 그대로 사용 · 카드 만드는 중…','ok');
      if(d.post.cardnews_job) pollCards(d.post.cardnews_job, x);
    }).catch(e=>{x.busy=false;toast('오류: '+e,'err');render();});
 }
 function pollCards(job, tab){const iv=setInterval(()=>{fetch('/api/cardnews-status?id='+job).then(r=>r.json()).then(s=>{
   if(s.status=='done'){clearInterval(iv);tab.post.cardnews_pngs=s.pngs||[];tab.post.cardnews_dir=s.dir;tab.post.cardnews=s.pptx;tab.post.card_srcs=s.srcs||[];tab.post.card_state=s.cards||[];
     const ci=s.chart_imgs||{};(tab.post.blocks||[]).forEach(b=>{if(b.type=='chart'&&ci[b.cid])b.img=ci[b.cid];});   // C6: 표·차트 이미지 채우기
+    const gm=s.collage_meta||[];let gk=0;(tab.post.blocks||[]).forEach(b=>{if(b.type=='collage'){const m=gm[gk];if(m){b.img=m.img;b.n=m.n;b.gi=gk;}gk++;}});   // C7: 사진 모음 채우기
     if(t()===tab)render();toast('🎴 카드뉴스 '+(s.pngs||[]).length+'장 완성','ok');}
   else if(s.status=='error'){clearInterval(iv);tab.post.cardnews_png_err=s.msg||'카드 렌더 실패';if(t()===tab)render();toast('카드 렌더 실패','err');}
 }).catch(()=>{});},2000);}
@@ -2742,7 +4194,20 @@ function renderPost(p){
   const folder=p.folder||'', cdir=p.cardnews_dir||'';
   const pngs=p.cardnews_pngs||[], useCards=pngs.length>0;
   let pi=0;
+  let ki=0;
   let body=p.blocks.map((b,bi)=>{
+    if(b.type=='combo'){ki++;   // Drive 사진 2장 합성 이미지 — 왼쪽·오른쪽 칸마다 사진 교체·위치·확대
+      return `<div class="chartwrap combowrap"><div class="combobox"><img id="comboimg_${esc(b.img)}" src="/img?folder=${encodeURIComponent(p.combo_dir||cdir)}&name=${encodeURIComponent(b.img)}&v=${Date.now()}">
+        <div class="combohalf" style="left:0">${comboCtl(b.img,0)}</div><div class="combohalf" style="right:0">${comboCtl(b.img,1)}</div></div>
+        <div class="altcap">🖼 합성 ${ki} · 사진에 마우스를 올리면 왼쪽·오른쪽 칸을 따로 🔄 교체 · 위치 ▲▼◀▶ · 확대 ＋－</div></div>`;}
+    if(b.type=='collage'){     // C7: 본문 사진 모음 — 칸을 누르면 그 칸 사진만 교체
+      if(b.img){ const gi=(b.gi==null?0:b.gi), n=b.n||2, cols=(n==2||n==4)?2:(n==3?3:n), rows=Math.ceil(n/cols);
+        let cells='';
+        for(let i=0;i<n;i++){const r=Math.floor(i/cols),c=i%cols;
+          cells+=`<div class="collcell" style="left:${c*100/cols}%;top:${r*100/rows}%;width:${100/cols}%;height:${100/rows}%" onclick="swapCollage(${gi},${i})" title="이 칸 사진 교체"><span>🔄 사진 교체</span></div>`;}
+        return `<div class="collwrap" id="collwrap${gi}"><img id="collimg${gi}" src="/img?folder=${encodeURIComponent(cdir)}&name=${encodeURIComponent(b.img)}&v=${Date.now()}">${cells}</div>`; }
+      return `<div class="chartpend"><span class="spin"></span> 🖼 사진 모음 만드는 중…</div>`;
+    }
     if(b.type=='chart'){       // C6: 표·차트 이미지
       if(b.img) return `<div class="chartwrap"><img src="/img?folder=${encodeURIComponent(cdir)}&name=${encodeURIComponent(b.img)}&v=${Date.now()}"><button class="chartdel" onclick="delChart(${bi})" title="이 표/차트 삭제">✕</button></div>`;
       return `<div class="chartpend"><span class="spin"></span> 📊 표·차트 만드는 중…<button class="chartdel" style="position:static;margin-left:10px" onclick="delChart(${bi})" title="이 표 자리 삭제">✕</button></div>`;
@@ -2770,22 +4235,28 @@ function renderPost(p){
   if(!pngs.length && p.cardnews_err) extra=`<div style="font-size:11px;color:#d55;margin:8px 0">카드뉴스 오류: ${esc(p.cardnews_err)}</div>`;
   else if(!pngs.length && p.cardnews_png_err) extra=`<div style="font-size:11px;color:#d55;margin:8px 0">카드 렌더 실패: ${esc(p.cardnews_png_err)}</div>`;
   else if(!pngs.length && p.cardnews_job) extra=`<div style="font-size:12px;color:var(--brand);font-weight:700;margin:8px 0"><span class="spin" style="border-color:var(--brand);border-top-color:transparent"></span> 카드뉴스 만드는 중… (원고 먼저 확인하세요. 잠시 후 본문 이미지로 채워집니다)</div>`;
+  if(p.combo_busy) extra+=`<div style="font-size:12px;color:var(--brand);font-weight:700;margin:8px 0"><span class="spin" style="border-color:var(--brand);border-top-color:transparent"></span> Drive 사진을 보고 본문 합성 이미지 고르는 중… (1~3분)</div>`;
+  else if(p.combo_err) extra+=`<div style="font-size:11px;color:#d55;margin:8px 0">합성 이미지 실패: ${esc(p.combo_err)}</div>`;
+  const nCombo=p.blocks.filter(b=>b.type=='combo').length;
   const lmin=p.len_min||1500, lmax=p.len_max||2000;
   const cc=p.char_count||0, okLen=cc>=lmin&&cc<=lmax;
-  const lenmsg=(cc<lmin?(' · '+lmin+' 미달'):(cc>lmax?(' · '+lmax+' 초과'):''))+(p.trimmed?(' · 자동 축약 '+p.trimmed+'회'):'');
+  const lenmsg=(cc<lmin?(' · '+lmin+' 미달'):(cc>lmax?(' · '+lmax+' 초과'):''))+(p.trimmed?(' · 자동 축약 '+p.trimmed+'회'):'')+(p.filled?(' · 자동 보강 '+p.filled+'회'):'');
   return `<div class="pv-head"><div class="pv-title">${esc(p.title)}</div></div>
     <div class="badges">
       <span class="badge ${okLen?'ok':'warn'}">${okLen?'✓':'⚠'} 공백제외 ${cc}자${lenmsg}</span>
-      ${useCards?`<span class="badge brand">🎴 카드뉴스 ${pngs.length}장</span>`:`<span class="badge">📷 본문사진 ${p.blocks.filter(b=>b.type=='photo'&&b.file).length}장</span>`}</div>
+      ${useCards?`<span class="badge brand">🎴 카드뉴스 ${pngs.length}장</span>`:(p.thumb?`<span class="badge brand">🖼 카페 썸네일 1장 · 본문 이미지 없음</span>`:`<span class="badge">📷 본문사진 ${p.blocks.filter(b=>b.type=='photo'&&b.file).length}장</span>`)}
+      ${nCombo?`<span class="badge brand">🖼 합성 이미지 ${nCombo}장</span>`:''}</div>
     <div class="naver-box">
-      <div class="naver-title">📤 네이버 블로그로 옮기기</div>
+      <div class="naver-title">${p.channel=='cafe'?'📤 네이버 카페로 옮기기':'📤 네이버 블로그로 옮기기'}${p.channel_label?` <span class="chanbadge">${esc(p.channel_label)} 표준</span>`:''}</div>
       <div class="row" style="flex-wrap:wrap;gap:8px">
         <button class="btn pri" onclick="copyTitle()">① 제목 복사</button>
         <button class="btn pri" onclick="copyBody()">② 본문 복사</button>
         ${useCards?`<button class="btn" onclick="openFile(t().post.cardnews_dir)">③ 카드 이미지 폴더 열기</button>`:''}</div>
-      <div class="naver-steps">네이버 글쓰기 열기 → <b>①</b> 제목칸에 붙여넣기 → <b>②</b> 본문에 붙여넣기 → <b>③</b> 폴더 열고 <b>${useCards?'[사진N] 자리에 card 1~'+pngs.length+'을 순서대로':'사진을'}</b> 드래그${p.crm_line?` → <b>④</b> 게시 후 아래 [게시 완료] 클릭`:''}</div>
+      <div class="naver-steps">네이버 글쓰기 열기 → <b>①</b> 제목칸에 붙여넣기 → <b>②</b> 본문에 붙여넣기 → <b>③</b> 폴더 열고 <b>${useCards?'[사진N] 자리에 card 1~'+pngs.length+'을 순서대로':'사진을'}${nCombo?', [합성N] 자리에 합성1~'+nCombo+'.jpg':''}</b> 드래그${p.crm_line?` → <b>④</b> 게시 후 아래 [게시 완료] 클릭`:''}</div>
       ${p.crm_line?`<div class="row" style="margin-top:8px"><button class="btn" onclick="crmConfirm()">📊 ④ 네이버 게시 완료 — CRM 보고</button></div>`:''}
     </div>
+    ${thumbBox(p)}
+    ${extraPanel(p)}
     <div class="row" style="margin:10px 0;flex-wrap:wrap">
       <button class="btn" onclick="saveDocx()">📄 워드로 저장</button>
       <button class="btn" onclick="generate()">↻ 다시 생성</button>
@@ -2798,6 +4269,69 @@ function renderPost(p){
     ${extra}
     <div class="pv-body">${body}</div>`;
 }
+// 카페 썸네일(E:\cafe-thumbnail 5011 연동): 생성 직후 자동 1장 + 제목(2줄)·부제·템플릿·사이즈 바꿔 다시 만들기
+let THUMB_META={};   // brand → {templates,sizes,stamps,cfg}
+function thumbBox(p){const th=p.thumb;const x=t();
+  if(!th&&!p.thumb_err) return '';
+  const bid=p.brand||x.brand||BRAND; const tm=THUMB_META[bid];
+  if(!tm&&!x.thumbMetaBusy){x.thumbMetaBusy=true;fetch('/api/thumb-meta?brand='+encodeURIComponent(bid)).then(r=>r.json()).then(d=>{THUMB_META[bid]=d;x.thumbMetaBusy=false;if(t()===x)render();}).catch(()=>{x.thumbMetaBusy=false;});}
+  const ed=x.thumbEdit||{}; const title=ed.title!=null?ed.title:(th?th.title:''); const sub=ed.sub!=null?ed.sub:(th?th.sub:'');
+  const tpl=ed.template||(th?th.template:((tm&&tm.cfg&&tm.cfg.template)||'')); const size=ed.size||(th?th.size:'square'); const stamp=ed.stamp||(th?th.stamp:'auto');
+  const tpls=(tm&&tm.templates)||(th?[{id:th.template,label:th.template}]:[]); const sizes=(tm&&tm.sizes)||[{id:'square',label:'1000×1000'}];
+  const stamps=(tm&&tm.stamps)||[];
+  const fs=+(ed.fs!=null?ed.fs:(th?th.fs:0))||0, dx=+(ed.dx!=null?ed.dx:(th?th.dx:0))||0, dy=+(ed.dy!=null?ed.dy:(th?th.dy:0))||0;
+  return `<div class="thumbbox">
+    <div class="naver-title">🖼 카페 썸네일 <span class="exhint">${esc(bid=='redtrans'?'레드트랜스 · 증명서(공문서 시스템)':'윈차이나 · 비자 스티커')} — 카페 썸네일 생성기(5011)로 저장</span></div>
+    <div class="thumbrow">
+      <div class="thumbimg">${th?`<img src="/img?folder=${encodeURIComponent((th.file||'').replace(/[\\\\/][^\\\\/]*$/,''))}&name=${encodeURIComponent((th.file||'').split(/[\\\\/]/).pop())}&v=${Date.now()}" alt="썸네일">`:`<div class="thumbfail">⚠ ${esc(p.thumb_err||'')}</div>`}
+        ${th?`<div class="thumbpath" title="${esc(th.file)}">${esc((th.file||'').split(/[\\\\/]/).pop())}</div>`:''}</div>
+      <div class="thumbctl">
+        <label>썸네일 제목 (2줄 — 1행 키워드 / 2행 각도)</label>
+        <textarea id="thtitle" rows="2" oninput="(t().thumbEdit=t().thumbEdit||{}).title=this.value">${esc(title)}</textarea>
+        ${bid=='redtrans'?`<label>부제 (제목 아래 한 줄)</label><input type="text" id="thsub" value="${esc(sub)}" oninput="(t().thumbEdit=t().thumbEdit||{}).sub=this.value">`:''}
+        <div class="row" style="gap:6px;flex-wrap:wrap;margin-top:6px">
+          <select onchange="(t().thumbEdit=t().thumbEdit||{}).template=this.value;render()">${tpls.map(o=>`<option value="${o.id}" ${o.id==tpl?'selected':''}>${esc(o.label)}</option>`).join('')}</select>
+          <select onchange="(t().thumbEdit=t().thumbEdit||{}).size=this.value">${sizes.map(o=>`<option value="${o.id}" ${o.id==size?'selected':''}>${esc(o.label)}</option>`).join('')}</select>
+          ${stamps.length?`<select onchange="(t().thumbEdit=t().thumbEdit||{}).stamp=this.value"><option value="auto" ${stamp=='auto'?'selected':''}>인장/도장 자동</option>${stamps.map(s=>`<option value="${s}" ${s==stamp?'selected':''}>${s}</option>`).join('')}</select>`:''}
+        </div>
+        <div class="thumbadj">
+          <div class="adjrow"><span class="adjlab">글자 크기</span>
+            <label class="adjauto"><input type="checkbox" ${fs?'':'checked'} onchange="thumbAdj('fs',this.checked?0:100)"> 자동</label>
+            <input type="range" min="30" max="220" step="1" value="${fs||100}" ${fs?'':'disabled'} oninput="thumbAdj('fs',+this.value,this)"><b class="adjval">${fs?fs+'px':'자동'}</b></div>
+          <div class="adjrow"><span class="adjlab">가로 위치</span><input type="range" min="-300" max="300" step="2" value="${dx}" oninput="thumbAdj('dx',+this.value,this)"><b class="adjval">${dx>0?'+':''}${dx}</b></div>
+          <div class="adjrow"><span class="adjlab">세로 위치</span><input type="range" min="-300" max="300" step="2" value="${dy}" oninput="thumbAdj('dy',+this.value,this)"><b class="adjval">${dy>0?'+':''}${dy}</b></div>
+          <span class="exhint">1000px 기준 단위 · 값을 바꾼 뒤 [다시 만들기]를 누르면 반영됩니다</span>
+        </div>
+        <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">
+          <button class="btn pri" onclick="regenThumb()" ${x.thumbBusy?'disabled':''}>${x.thumbBusy?'<span class=spin></span> 만드는 중…':'🖼 썸네일 다시 만들기'}</button>
+          ${th?`<button class="btn" onclick="openFile(t().post.thumb.file)">파일 열기</button><button class="btn" onclick="copyClip(t().post.thumb.file,'썸네일 경로 복사됨')">경로 복사</button>`:''}
+          <button class="btn" onclick="window.open('http://127.0.0.1:5011/?brand=${bid}','_blank')">생성기 열기</button>
+        </div>
+        <div class="exhint" style="margin-top:6px">자동 인식: 국가 코드·라틴 라벨은 글 제목에서 잡습니다. 미세 조정(글자 크기·위치)은 생성기에서.</div>
+      </div></div></div>`;}
+function thumbAdj(k,v,el){const x=t();const ed=(x.thumbEdit=x.thumbEdit||{});ed[k]=v;
+  if(k=='fs'&&!el){render();return;}                                   // 자동 체크 토글 → 슬라이더 활성/비활성 갱신
+  const b=el&&el.parentNode&&el.parentNode.querySelector('.adjval'); if(b)b.textContent=k=='fs'?(v?v+'px':'자동'):((v>0?'+':'')+v);}
+function regenThumb(){const x=t();const p=x.post;if(!p)return;const bid=p.brand||x.brand||BRAND;const ed=x.thumbEdit||{};const th=p.thumb||{};
+  const title=((ed.title!=null?ed.title:th.title)||'').trim(); if(!title){toast('썸네일 제목을 입력하세요','err');return;}
+  x.thumbBusy=true;render();
+  const fs=+(ed.fs!=null?ed.fs:th.fs)||0, dx=+(ed.dx!=null?ed.dx:th.dx)||0, dy=+(ed.dy!=null?ed.dy:th.dy)||0;
+  fetch('/api/thumb',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({brand:bid,title:title,sub:(ed.sub!=null?ed.sub:th.sub)||'',template:ed.template||th.template||'',size:ed.size||th.size||'square',stamp:ed.stamp||th.stamp||'auto',fs:fs,dx:dx,dy:dy,topic:(p.title||'')+' '+(p.keyword||'')})})
+   .then(r=>r.json()).then(d=>{x.thumbBusy=false;if(d.ok){p.thumb=d.thumb;p.thumb_err='';toast('🖼 썸네일 저장됨','ok');}else toast(d.msg||'썸네일 실패','err');render();})
+   .catch(()=>{x.thumbBusy=false;toast('썸네일 실패(네트워크)','err');render();});}
+// 채널 글 부가 패널: 성과추적 링크(CRM/UTM) · 카테고리 · 태그 · 시딩 댓글 · ANALYSIS · META(로테이션 기록)
+function extraPanel(p){const ex=p.extra||{};const items=[];
+  if(p.track_link) items.push(['🔗 성과추적 링크 (CRM/UTM)','track',p.track_link,p.track_in_body?'본문 안에 들어가 있습니다':'본문에 없음 — ② 본문 복사 시 맨 끝에 자동 추가']);
+  if(ex.category) items.push(['📂 카테고리','category',ex.category,'']);
+  if(ex.tags) items.push(['#️⃣ 태그','tags',ex.tags,p.channel=='cafe'?'카페 태그란에 한 줄씩':'네이버 태그란에 등록']);
+  if(ex.comments) items.push(['💬 시딩 댓글 (2→2→1 분산)','comments',ex.comments,'']);
+  if(ex.analysis) items.push(['🔍 ANALYSIS — 운영자 확인용(검증·수작업 체크)','analysis',ex.analysis,'']);
+  const m=ex.meta||{};const metaTxt=Object.keys(m).map(k=>k+': '+m[k]).join('  ·  ');
+  if(!items.length&&!metaTxt) return '';
+  return `<div class="extrabox"><div class="naver-title">📎 ${esc(p.channel_label||'채널')} 부가 블록</div>
+    ${metaTxt?`<div class="extrameta">🧭 로테이션 기록 — ${esc(metaTxt)}</div>`:''}
+    ${items.map(([lb,k,v,hint])=>`<details class="exd" ${(k=='analysis')?'':'open'}><summary><span>${lb}</span><button class="btn sm" onclick="event.preventDefault();event.stopPropagation();copyExtra('${k}')">복사</button>${hint?`<span class="exhint">${esc(hint)}</span>`:''}</summary><pre class="expre">${esc(v)}</pre></details>`).join('')}</div>`;}
+function copyExtra(k){const p=t().post;const v=k=='track'?(p.track_link||''):(((p.extra||{})[k])||'');if(!v){toast('내용 없음','err');return;}copyClip(v,'복사됨');}
 function editPanel(p){const x=t();const sid=x.editSid||'';
   const q=x.editQueue||[]; const pending=(x.editActive?1:0)+q.length;
   const undoN=(x.undo&&x.undo.length)||0;
@@ -2837,9 +4371,9 @@ function runEditQueue(tab){
   if(!q.length){ if(tab===t())render(); return; }
   const job=q.shift(); tab.editActive=job.sid;
   if(tab===t())render();
-  fetch('/api/edit-section',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({post:tab.post,section:job.sid,instruction:job.instr,brand:tab.brand||BRAND,model:tab.model||'opus'})})
+  fetch('/api/edit-section',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({post:tab.post,section:job.sid,instruction:job.instr,brand:tab.brand||BRAND,model:tab.model||'opus',channel:(tab.post&&tab.post.channel)||''})})
    .then(r=>r.json()).then(d=>{
-     if(d.ok){(tab.undo=tab.undo||[]).push(tab.post);if(tab.undo.length>30)tab.undo.shift();tab.post=d.post;toast('✏️ 한 부분 반영됨','ok');}
+     if(d.ok){(tab.undo=tab.undo||[]).push(tab.post);if(tab.undo.length>30)tab.undo.shift();tab.post=d.post;applyCombos(tab.post);toast('✏️ 한 부분 반영됨','ok');}
      else toast(d.msg||'수정 실패','err');
      tab.editActive=null; if(tab===t())render();
      runEditQueue(tab);                  // 다음 대기 작업 이어서
@@ -2850,9 +4384,11 @@ const CPAL=['#111111','#4B4B4B','#8A8A8A','#C4C4C4','#E9ECEF',
   '#F0806A','#F6B93B','#7FB069','#2FA69A','#4C9BE8','#6C79D6','#B072C4',
   '#E24A34','#E1730F','#3E7D33','#188A7B','#1668C7','#3B44A0','#7A2E9B'];
 function colorPicker(p){const x=t();if(!x.colorOpen)return '';
-  const cur=x.cardColor||'#63794B';
+  const em=x.colorMode==='emph';
+  const cur=(em?x.emphColor:x.cardColor)||(em?'#D4AF37':'#63794B');
   return `<div class="cpick" onclick="event.stopPropagation()">
-    <div class="cpick-h">🎨 이 글 카드 전체 색상 바꾸기</div>
+    <div class="cpick-mode"><button class="btn sm ${em?'':'on'}" onclick="setColorMode('all')">카드 전체 색</button><button class="btn sm ${em?'on':''}" onclick="setColorMode('emph')">강조 글자색만</button>${em?'<button class="btn sm" onclick="applyEmphColor(0)" title="카드 대표색을 따라가게 되돌리기">자동으로</button>':''}</div>
+    <div class="cpick-h">${em?'✨ 헤드라인 강조 글자(*핵심어*) 색만 바꾸기 — 나머지 글자·카드 색은 그대로':'🎨 이 글 카드 전체 색상 바꾸기'}</div>
     <div class="cpick-sw">${CPAL.map(c=>`<button class="cpsw" style="background:${c}" onclick="pickColor('${c}')" title="${c}"></button>`).join('')}</div>
     <div class="cpick-row">
       <label class="cpspec" title="색상환에서 직접 고르기"><input type="color" value="${cur}" onchange="pickColor(this.value)"><span>🌈 색상환</span></label>
@@ -2862,16 +4398,29 @@ function colorPicker(p){const x=t();if(!x.colorOpen)return '';
       ${x.colorBusy?'<span class="cpbusy"><span class=spin></span> 바꾸는 중…</span>':''}
     </div></div>`;
 }
+function setColorMode(m){const x=t();x.colorMode=m;render();}
+function applyEmphColor(hex){const x=t();const p=x.post;
+  if(!p||!p.cardnews_dir){toast('먼저 카드뉴스를 만들어 주세요','err');return;}
+  x.colorBusy=true;render();
+  fetch('/api/emph-color',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cardnews_dir:p.cardnews_dir,color:hex||''})})
+   .then(r=>r.json()).then(d=>{x.colorBusy=false;
+     if(d.ok){p.cardnews_pngs=(d.pngs||[]).slice();x.emphColor=d.color?'#'+d.color:'';toast(d.color?'✨ 강조 글자색이 바뀌었어요':'강조 글자색을 자동으로 되돌렸어요','ok');}
+     else toast(d.msg||'색 변경 실패','err');
+     render();
+   }).catch(()=>{x.colorBusy=false;toast('색 변경 실패(네트워크)','err');render();});
+}
 function openColorPicker(e){if(e)e.stopPropagation();const x=t();x.colorOpen=!x.colorOpen;render();}
 function pickColor(hex){hex=(hex||'').trim();if(hex[0]!=='#')hex='#'+hex;
   if(!/^#[0-9a-fA-F]{6}$/.test(hex)){toast('색상 코드가 올바르지 않아요 (예: #3B82F6)','err');return;}
-  applyCardColor(hex);}
+  if(t().colorMode==='emph')applyEmphColor(hex);else applyCardColor(hex);}
 function applyCardColor(hex){const x=t();const p=x.post;
   if(!p||!p.cardnews_dir){toast('먼저 카드뉴스를 만들어 주세요','err');return;}
   x.cardColor=hex;x.colorBusy=true;render();
-  fetch('/api/recolor-cards',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cardnews_dir:p.cardnews_dir,color:hex,brand:x.brand||p.brand||BRAND})})
+  const cs=p.chart_specs||{};   // 표·차트도 같은 색으로 다시 그리도록 함께 보냄
+  const charts=(p.blocks||[]).filter(b=>b.type=='chart'&&b.img).map(b=>({cid:b.cid,img:b.img,spec:b.spec||cs[b.cid]||null})).filter(c=>c.spec);
+  fetch('/api/recolor-cards',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cardnews_dir:p.cardnews_dir,color:hex,brand:x.brand||p.brand||BRAND,charts})})
    .then(r=>r.json()).then(d=>{x.colorBusy=false;
-     if(d.ok){p.cardnews_pngs=(d.pngs||[]).slice();x.cardColor='#'+d.color;toast(d.msg||'🎨 카드 색이 바뀌었어요','ok');}
+     if(d.ok){p.cardnews_pngs=(d.pngs||[]).slice();x.cardColor='#'+d.color;toast(d.msg||(d.charts?'🎨 카드·표 색이 바뀌었어요':'🎨 카드 색이 바뀌었어요'),'ok');}
      else toast(d.msg||'색 변경 실패','err');
      render();
    }).catch(()=>{x.colorBusy=false;toast('색 변경 실패(네트워크)','err');render();});
@@ -2892,9 +4441,11 @@ function crmConfirm(){const x=t();const p=x.post;if(!p)return;
    .then(r=>r.json()).then(d=>toast(d.ok?'📊 CRM 게시 현황에 보고됐어요':'CRM 보고 실패: '+(d.msg||'?'),d.ok?'ok':'err'))
    .catch(e=>toast('CRM 보고 실패: '+e,'err'));}
 function copyBody(){const p=t().post;const pngs=p.cardnews_pngs||[],useCards=pngs.length>0;let pi=0;const out=[];
-  let ti=0;
+  let ti=0,ki=0,gi=0;
   p.blocks.forEach(b=>{
-    if(b.type=='chart'){ if(b.img){ti++;out.push('📊 [표차트'+ti+']');} }
+    if(b.type=='combo'){ki++;out.push('🖼 [합성'+ki+']');}
+    else if(b.type=='chart'){ if(b.img){ti++;out.push('📊 [표차트'+ti+']');} }
+    else if(b.type=='collage'){ gi++; out.push('🖼 [모음'+gi+']'); }
     else if(b.type=='photo'){
       const altx=b.alt?'  (alt: '+b.alt+')':'';
       if(useCards){if(pi<pngs.length){pi++;out.push('📷 [사진'+pi+']'+altx);}else pi++;}
@@ -2902,8 +4453,11 @@ function copyBody(){const p=t().post;const pngs=p.cardnews_pngs||[],useCards=png
     } else { b.text.split('\n\n').forEach(para=>{const tx=para.replace(/\*\*/g,'').trim();if(tx)out.push(tx);}); }
   });
   if(useCards){while(pi<pngs.length){pi++;out.push('📷 [사진'+pi+']');}}
-  try{ if(p.crm_line){ out.push(p.crm_line); } }catch(e){}
-  copyClip(out.join('\n\n'),'② 본문 복사됨 · [사진N]자리에 카드, [표차트N]자리에 표·차트 이미지를 드래그');}
+  try{ if(p.track_in_body){ /* 본문에 이미 추적링크가 들어가 있음 — 중복 추가 안 함 */ }
+    else if(p.crm_line){ out.push(p.crm_line); }
+    else { var _bid=(t().brand||BRAND||''); var _cb=((BRANDS||[]).find(function(b){return b.id==_bid;})||{}).crm||{};
+      if(_cb.link && p.track_hash){ var _k=(_cb.prefix||'')+p.track_hash; out.push((_cb.cta||'▶ 문의: ')+_cb.link.replace('{key}',_k)); } } }catch(e){}
+  copyClip(out.join('\n\n'),'② 본문 복사됨 · [사진N]자리에 카드, [표차트N]자리에 표·차트'+(ki?', [합성N]자리에 합성N.jpg':'')+' 이미지를 드래그');}
 function delChart(bi){const x=t();const b=x.post.blocks[bi];if(!b||b.type!='chart')return;
   x.post.blocks.splice(bi,1);toast('표·차트 삭제됨','ok');render();}
 function addChart(){const x=t();const p=x.post;
@@ -2934,8 +4488,91 @@ function openSwap(ci){   // 네이티브 Windows 파일 선택창으로 바로 �
       }).catch(e=>toast('오류: '+e,'err'));
    }).catch(e=>toast('오류: '+e,'err'));
 }
+// ── 합성 이미지: 칸(side 0=왼쪽, 1=오른쪽)별 사진 교체 / 위치 / 확대 ──
+function comboCtl(img,s){const a=`'${img}',${s}`;return `<div class="cardbar">
+  <button class="tb" onclick="comboSwap(${a})" title="이 칸 사진 교체">🔄 사진</button>
+  <span class="sep"></span>
+  <button onclick="comboNudge(${a},0,-.08)" title="위로">▲</button>
+  <button onclick="comboNudge(${a},-.08,0)" title="왼쪽">◀</button>
+  <button onclick="comboEdit(${a},{cx:.5,cy:.5,zoom:1})" title="가운데/초기화">⟳</button>
+  <button onclick="comboNudge(${a},.08,0)" title="오른쪽">▶</button>
+  <button onclick="comboNudge(${a},0,.08)" title="아래로">▼</button>
+  <span class="sep"></span>
+  <button onclick="comboZoom(${a},.15)" title="확대">＋</button>
+  <button onclick="comboZoom(${a},-.15)" title="축소">－</button></div>`;}
+function _comboHalf(img,s){const c=(t().post.combos||[]).find(c=>c.img==img);return c&&c.halves&&c.halves[s];}
+function comboNudge(img,s,dx,dy){const h=_comboHalf(img,s);if(!h)return;
+  comboEdit(img,s,{cx:Math.max(0,Math.min(1,(h.cx??.5)+dx)),cy:Math.max(0,Math.min(1,(h.cy??.5)+dy))});}
+function comboZoom(img,s,dz){const h=_comboHalf(img,s);if(!h)return;comboEdit(img,s,{zoom:Math.max(1,Math.min(3,(h.zoom||1)+dz))});}
+function comboEdit(img,s,chg){const x=t();const p=x.post;const c=(p.combos||[]).find(c=>c.img==img);
+  if(!c||!c.halves){toast('합성 이미지 정보가 없어요(다시 생성해 주세요)','err');return;}
+  const im=el('comboimg_'+img); if(im)im.style.opacity='.4';
+  fetch('/api/combo-edit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({dir:p.combo_dir,img,side:s},chg))})
+   .then(r=>r.json()).then(d=>{if(im)im.style.opacity='1';
+     if(!d.ok){toast(d.msg||'조정 실패','err');return;}
+     c.halves=d.halves; if(im)im.src='/img?folder='+encodeURIComponent(p.combo_dir)+'&name='+encodeURIComponent(img)+'&v='+Date.now();
+     if(chg.src)toast('🔄 사진 교체됨','ok');
+   }).catch(e=>{if(im)im.style.opacity='1';toast('오류: '+e,'err');});}
+function comboSwap(img,s){const x=t();   // Windows 사진 선택 창(Drive 사진 폴더에서 시작)
+  toast('📂 사진 선택 창을 여는 중…');
+  fetch('/api/pick-file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({folder:x.driveFolder||x.folder||''})})
+   .then(r=>r.json()).then(d=>{if(!d.ok||!d.path)return;comboEdit(img,s,{src:d.path});})
+   .catch(e=>toast('오류: '+e,'err'));}
 // ── 카드별 위치 이동 / 확대 ──
-function cardCtl(ci){return `<div class="cardbar">
+// 글자 크기·위치 조정 (역할별: 헤드라인/부제/본문/체크리스트)
+const TLBL={headline:'헤드라인',subtitle:'부제',body:'본문',bullets:'체크리스트'};
+const TROLE={};
+function troles(ci){const c=((t().post||{}).card_state||[])[ci]||{};
+  return c.adj_roles||((c.fields||[]).filter(f=>f!='title'));}
+function trole(ci){const rs=troles(ci);return TROLE[ci]||rs[0]||'headline';}
+function setTrole(ci,v){TROLE[ci]=v;}
+function _tadj(ci,role){const x=t().post;const A=(x.card_tadj=x.card_tadj||{});
+  const C=A[ci]||(A[ci]={});return C[role]||(C[role]={s:1,dx:0,dy:0});}
+function txtSize(ci,d){const r=trole(ci);const a=_tadj(ci,r);
+  a.s=Math.round(Math.max(.5,Math.min(2.2,(a.s||1)+d))*100)/100;applyTadj(ci,r);}
+function txtMove(ci,dx,dy){const r=trole(ci);const a=_tadj(ci,r);
+  a.dx=(a.dx||0)+dx;a.dy=(a.dy||0)+dy;applyTadj(ci,r);}
+function txtReset(ci){const r=trole(ci);const a=_tadj(ci,r);a.s=1;a.dx=0;a.dy=0;applyTadj(ci,r);}
+function applyTadj(ci,role){const x=t().post;const a=_tadj(ci,role);
+  const img=el('cardimg'+ci); if(img)img.style.opacity='.4';
+  fetch('/api/card-textadj',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({cardnews_dir:x.cardnews_dir,index:ci,role:role,s:a.s,dx:a.dx,dy:a.dy})})
+   .then(r=>r.json()).then(d=>{if(img)img.style.opacity='1';
+     if(!d.ok){toast(d.msg||'글자 조정 실패','err');return;}
+     if(img)img.src='/img?folder='+encodeURIComponent(x.cardnews_dir)+'&name='+encodeURIComponent(d.name)+'&v='+Date.now();
+     toast('글자 '+(TLBL[role]||role)+' '+Math.round((a.s||1)*100)+'%','ok');
+   }).catch(e=>{if(img)img.style.opacity='1';toast('오류: '+e,'err');});}
+function textCtl(ci){const rs=troles(ci); if(!rs.length)return '';
+  const sel=rs.length>1?`<select onchange="setTrole(${ci},this.value)">${rs.map(r=>`<option value="${r}">${TLBL[r]||r}</option>`).join('')}</select>`
+    :`<span class="tlab">${TLBL[rs[0]]||rs[0]}</span>`;
+  return `<div class="cardbar tbar"><span class="tlab">글자</span>${sel}
+  <button onclick="txtSize(${ci},-.08)" title="글자 작게">가－</button>
+  <button onclick="txtSize(${ci},.08)" title="글자 크게">가＋</button>
+  <span class="sep"></span>
+  <button onclick="txtMove(${ci},0,-14)" title="위로">▲</button>
+  <button onclick="txtMove(${ci},-14,0)" title="왼쪽">◀</button>
+  <button onclick="txtReset(${ci})" title="글자 크기·위치 초기화">⟳</button>
+  <button onclick="txtMove(${ci},14,0)" title="오른쪽">▶</button>
+  <button onclick="txtMove(${ci},0,14)" title="아래로">▼</button></div>`;}
+function swapCollage(gi,ci){   // 사진 모음의 한 칸만 교체(카드 교체와 같은 네이티브 선택창)
+  const x=t(), p=x.post;
+  if(!p||!p.cardnews_dir){toast('카드뉴스가 만들어진 뒤에 바꿀 수 있어요','err');return;}
+  toast('📂 사진 선택 창을 여는 중…');
+  fetch('/api/pick-file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({folder:x.folder})})
+   .then(r=>r.json()).then(d=>{
+     if(!d.ok||!d.path)return;                      // 취소
+     toast('🔄 교체 중…');
+     fetch('/api/swap-collage',{method:'POST',headers:{'Content-Type':'application/json'},
+       body:JSON.stringify({cardnews_dir:p.cardnews_dir,index:gi,cell:ci,path:d.path})})
+      .then(r=>r.json()).then(s=>{
+        if(!s.ok){toast(s.msg||'교체 실패','err');return;}
+        const img=el('collimg'+gi);
+        if(img) img.src='/img?folder='+encodeURIComponent(p.cardnews_dir)+'&name='+encodeURIComponent(s.name)+'&v='+Date.now();
+        toast('🔄 모음 사진 교체됨','ok');
+      }).catch(e=>toast('오류: '+e,'err'));
+   }).catch(e=>toast('오류: '+e,'err'));
+}
+function cardCtl(ci){return textCtl(ci)+`<div class="cardbar">
   <button class="tb" onclick="openTextEdit(${ci})" title="카드 글 수정">✏️ 글</button>
   <button class="tb" onclick="openSwap(${ci})" title="사진 교체">🔄 사진</button>
   <span class="sep"></span>
@@ -2962,7 +4599,7 @@ function adjustCard(ci){const x=t().post;const a=_adj(ci);const src=(x.card_srcs
 // ── 카드 글 수정 ──
 let TXT_CI=0;
 function openTextEdit(ci){TXT_CI=ci;const x=t().post;const c=(x.card_state||[])[ci]||{};
-  const flds=c.fields||[];const lbl={title:'제목 (블로그 글 제목)',headline:'헤드라인',subtitle:'부제',body:'본문 설명'};
+  const flds=c.fields||[];const lbl={title:'제목 (블로그 글 제목)',headline:'헤드라인 (*핵심어* 만 강조색)',subtitle:'부제',body:'본문 설명'};
   let html='';
   flds.forEach(f=>{const big=(f=='body'||f=='title');
     html+=`<div class="field"><label>${lbl[f]||f}</label>${big?`<textarea id="tx_${f}" style="height:64px">${esc(c[f]||'')}</textarea>`:`<input type="text" id="tx_${f}" value="${esc(c[f]||'')}">`}</div>`;});
@@ -2979,7 +4616,7 @@ function applyText(){const x=t().post;const c=(x.card_state||[])[TXT_CI]||{};con
 // ── 카드 미리보기 (최종 체크용) ──
 function pvBrandOptions(cur){return '<select onchange="openCardPreview(this.value)" style="border:1.5px solid var(--line);border-radius:9px;padding:6px 9px;font-size:12px;font-weight:700">'+
   BRANDS.filter(b=>b.has_cards).map(b=>`<option value="${b.id}" ${b.id==cur?'selected':''}>${esc(b.name)}</option>`).join('')+'</select>';}
-function previewTpl(){openCardPreview(BRAND,(t().cardTpl||'1'));}
+function previewTpl(){openCardPreview(BRAND,tplOf(t()));}
 function openCardPreview(bid,tpl){tpl=tpl||'1';el('previewmodal').style.display='block';el('pvbrandsel').innerHTML=pvBrandOptions(bid);
   el('pvtitle').textContent='🎴 카드 미리보기';
   el('pvgrid').innerHTML='<div style="padding:44px;color:#889;font-size:13px"><span class="spin" style="border-color:var(--brand);border-top-color:transparent;margin-right:8px"></span>샘플 사진으로 카드 그리는 중…</div>';

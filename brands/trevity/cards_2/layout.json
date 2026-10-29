@@ -1,0 +1,320 @@
+{
+ "size": 1080,
+ "pt_height": 1080.0,
+ "bg": "FFFFFF",
+ "slide_bg": [
+  "FFFFFF",
+  "FFFFFF",
+  "FFFFFF"
+ ],
+ "theme_recolor": false,
+ "auto_theme": false,
+ "photo_round": 0.0,
+ "bg_palette": [
+  "FA6781"
+ ],
+ "pick_by_content": {
+  "default": 1,
+  "list": 2
+ },
+ "card_note": "헤드라인은 12자 내외의 짧은 명사형으로(질문형·문장형 금지). 본문설명은 그 소제목이 말하는 바를 한 문장(35자 내외)으로 쓴다. ★' / '로 짧은 구절을 잇는 체크리스트 형식은 쓰지 않는다(2026-09-16 사용자 지시 — 문단 안의 세부 항목을 카드로 쪼개지 않고, 그 소제목 내용에 맞는 사진 한 장으로 대신한다). 모든 카드는 사진 + 한 문장 형식으로 통일한다.",
+ "slides": [
+  [
+   {
+    "role": "deco",
+    "box": [
+     0,
+     0,
+     1080,
+     1080
+    ],
+    "asset": "coverbg.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     60,
+     120,
+     960,
+     840
+    ],
+    "asset": "card.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     391,
+     226,
+     298,
+     80
+    ],
+    "asset": "logo.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     504,
+     330,
+     72,
+     8
+    ],
+    "asset": "dash.png",
+    "recolor": false
+   },
+   {
+    "role": "headline",
+    "box": [
+     150,
+     372,
+     780,
+     330
+    ],
+    "size": 94,
+    "color": "1F1F1F",
+    "font": "Gmarket Sans Bold",
+    "align": "center",
+    "line_gap": 22
+   },
+   {
+    "role": "subtitle",
+    "box": [
+     170,
+     728,
+     740,
+     64
+    ],
+    "size": 36,
+    "color": "434343",
+    "font": "Pretendard Bold",
+    "align": "center",
+    "oneline": true
+   },
+   {
+    "role": "deco",
+    "box": [
+     390,
+     828,
+     300,
+     64
+    ],
+    "asset": "pill.png",
+    "recolor": false
+   },
+   {
+    "role": "label",
+    "box": [
+     390,
+     840,
+     300,
+     40
+    ],
+    "size": 26,
+    "color": "FFFFFF",
+    "font": "Pretendard Bold",
+    "align": "center",
+    "text": "trevity.com"
+   }
+  ],
+  [
+   {
+    "role": "photo",
+    "box": [
+     0,
+     0,
+     1080,
+     660
+    ],
+    "round": 0
+   },
+   {
+    "role": "deco",
+    "box": [
+     0,
+     430,
+     1080,
+     231
+    ],
+    "asset": "fade.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     60,
+     56,
+     430,
+     52
+    ],
+    "asset": "tag.png",
+    "recolor": false
+   },
+   {
+    "role": "label",
+    "box": [
+     60,
+     56,
+     430,
+     52
+    ],
+    "size": 21,
+    "color": "FA6781",
+    "font": "Pretendard Bold",
+    "align": "center",
+    "text": "GLOBAL INFLUENCER MARKETING"
+   },
+   {
+    "role": "deco",
+    "box": [
+     72,
+     706,
+     10,
+     96
+    ],
+    "asset": "vbar.png",
+    "recolor": false
+   },
+   {
+    "role": "headline",
+    "box": [
+     106,
+     690,
+     900,
+     130
+    ],
+    "size": 54,
+    "color": "1F1F1F",
+    "font": "Gmarket Sans Bold",
+    "align": "left"
+   },
+   {
+    "role": "body",
+    "box": [
+     106,
+     838,
+     890,
+     130
+    ],
+    "size": 31,
+    "color": "434343",
+    "font": "Pretendard Medium",
+    "align": "left",
+    "phrase_break": true
+   },
+   {
+    "role": "label",
+    "box": [
+     72,
+     992,
+     400,
+     36
+    ],
+    "size": 22,
+    "color": "FA6781",
+    "font": "Pretendard Bold",
+    "align": "left",
+    "text": "trevity.com"
+   },
+   {
+    "role": "deco",
+    "box": [
+     858,
+     986,
+     150,
+     40
+    ],
+    "asset": "logo_sm.png",
+    "recolor": false
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     0,
+     0,
+     1080,
+     440
+    ],
+    "asset": "pinkblock.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     72,
+     70,
+     172,
+     46
+    ],
+    "asset": "logo_white.png",
+    "recolor": false
+   },
+   {
+    "role": "headline",
+    "box": [
+     72,
+     150,
+     936,
+     190
+    ],
+    "size": 58,
+    "color": "FFFFFF",
+    "font": "Gmarket Sans Bold",
+    "align": "left"
+   },
+   {
+    "role": "deco",
+    "box": [
+     36,
+     336,
+     1008,
+     712
+    ],
+    "asset": "whitepanel.png",
+    "recolor": false
+   },
+   {
+    "role": "bullets",
+    "box": [
+     112,
+     392,
+     856,
+     600
+    ],
+    "size": 36,
+    "color": "1F1F1F",
+    "font": "Pretendard Bold",
+    "panel": "",
+    "pad": 28,
+    "row_h": 108,
+    "inset": 36,
+    "icon": 40,
+    "icon_gap": 30,
+    "rule": "F1F1F1",
+    "rule_w": 2,
+    "max_rows": 5,
+    "min_size": 27,
+    "row_lines": 2,
+    "fill": 0.72,
+    "row_h_max": 1.6
+   },
+   {
+    "role": "label",
+    "box": [
+     0,
+     1034,
+     1080,
+     30
+    ],
+    "size": 21,
+    "color": "FA6781",
+    "font": "Pretendard Bold",
+    "align": "center",
+    "text": "trevity.com"
+   }
+  ]
+ ]
+}

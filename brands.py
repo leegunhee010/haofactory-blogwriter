@@ -124,11 +124,27 @@ def save_brand(cfg):
     bid = cfg.get("id") or slugify(cfg.get("name", ""))
     cfg["id"] = bid
     os.makedirs(brand_dir(bid), exist_ok=True)
-    keep = {k: cfg.get(k, DEFAULTS.get(k)) for k in DEFAULTS}
+    keep = {}
+    try:   # 기존 brand.json 의 DEFAULTS 밖 설정(length·final_faq_promo·faq_list 등)은 그대로 보존
+        old = json.load(open(os.path.join(brand_dir(bid), "brand.json"), encoding="utf-8"))
+        keep.update({k: v for k, v in old.items() if k not in DEFAULTS})
+    except Exception:
+        pass
+    keep.update({k: cfg.get(k, DEFAULTS.get(k)) for k in DEFAULTS})
     keep["id"] = bid
     json.dump(keep, open(os.path.join(brand_dir(bid), "brand.json"), "w", encoding="utf-8"),
               ensure_ascii=False, indent=1)
     return bid
+
+
+def load_crm(bid):
+    """brands/<id>/crm.json — 성과추적 링크 설정(link:{key} 템플릿, cta:앞말, prefix:키 접두어).
+    brand.json과 분리해 두어 앱 UI의 브랜드 저장(save_brand/save_override)에 지워지지 않음."""
+    p = os.path.join(brand_dir(bid), "crm.json")
+    try:
+        return json.load(open(p, encoding="utf-8")) if os.path.isfile(p) else {}
+    except Exception:
+        return {}
 
 
 def list_brands():
@@ -137,8 +153,255 @@ def list_brands():
         if os.path.isfile(os.path.join(BRANDS_DIR, d, "brand.json")):
             b = load_brand(d)
             out.append({"id": d, "name": b["name"] or d, "color": b["color"],
-                        "has_cards": b["has_cards"], "card_templates": b.get("card_templates", [])})
+                        "has_cards": b["has_cards"], "card_templates": b.get("card_templates", []),
+                        # 브랜드 기본값(brand.json 선택 키): 기본 카드 디자인 슬롯 · 기본 사진 폴더(새 글 탭에 자동 입력)
+                        "default_template": str(b.get("default_template") or "1"),
+                        "photo_folder": b.get("photo_folder") or "",
+                        "crm": load_crm(d),
+                        # 채널 표준 프롬프트(네이버 블로그/카페) — brands/<id>/channels.json 이 있는 브랜드만
+                        "channels": channel_list(d),
+                        "drive_link": bool(b.get("drive_link"))})
     return out
+
+
+# ── 채널(네이버 블로그 / 카페) 표준 프롬프트 ─────────────────────────────────
+# brands/<id>/channels.json — sync_channel_prompts.py 가 운영자 원본 프롬프트(E:\13. red&win blog 0812\prompt)에서 생성.
+#   {"blog": {label, prompt(파일명), version, length[min,max], links(bool), extra_files[], track_hint, blocks{NAME:설명}}, "cafe": {...}, "_links": {...}}
+# 채널을 고르면 그 채널 프롬프트 전문이 brand["prompt"](완전 커스텀)로 얹히고, 출력 형식은 channel_output_format()이 앱 형식으로 강제한다.
+TRACK_TOKEN = "{{추적링크}}"
+
+
+def load_channels(bid):
+    p = os.path.join(brand_dir(bid), "channels.json")
+    try:
+        d = json.load(open(p, encoding="utf-8")) if os.path.isfile(p) else {}
+    except Exception:
+        d = {}
+    return {k: v for k, v in d.items() if not k.startswith("_") and isinstance(v, dict)}
+
+
+def links_cfg(bid):
+    p = os.path.join(brand_dir(bid), "channels.json")
+    try:
+        d = json.load(open(p, encoding="utf-8")) if os.path.isfile(p) else {}
+        return d.get("_links") or {}
+    except Exception:
+        return {}
+
+
+def channel_list(bid):
+    return [{"id": k, "label": v.get("label") or k, "version": v.get("version", ""),
+             "length": v.get("length") or []} for k, v in load_channels(bid).items()]
+
+
+def channel_prompt_text(bid, ch):
+    cfg = load_channels(bid).get(ch) or {}
+    fn = cfg.get("prompt") or f"prompt_{ch}.md"
+    try:
+        p = os.path.join(brand_dir(bid), fn)
+        if os.path.isfile(p):
+            return open(p, encoding="utf-8-sig").read().strip()
+    except Exception:
+        pass
+    return ""
+
+
+def apply_channel(b, ch):
+    """브랜드 dict(load_brand 결과)에 채널 표준 프롬프트를 얹은 복사본을 돌려준다.
+    prompt=채널 프롬프트 전문(완전 커스텀 경로), length=채널 분량, channel/channel_label/channel_cfg 추가.
+    채널이 없거나 파일이 없으면 원본 그대로(기존 동작)."""
+    ch = (ch or "").strip()
+    if not b or not ch:
+        return b
+    cfg = load_channels(b.get("id", "")).get(ch)
+    if not cfg:
+        return b
+    txt = channel_prompt_text(b["id"], ch)
+    if not txt:
+        return b
+    out = dict(b)
+    out["prompt"] = txt
+    out["channel"] = ch
+    out["channel_label"] = cfg.get("label") or ch
+    out["channel_cfg"] = cfg
+    if cfg.get("length"):
+        out["length"] = cfg["length"]
+    return out
+
+
+def _extra_files_block(b):
+    """채널 설정 extra_files(예: 원고_로테이션_뱅크.md) — 운영자가 관리하는 파일을 생성 시점에 그대로 읽어 부착."""
+    out = ""
+    for f in (b.get("channel_cfg") or {}).get("extra_files") or []:
+        try:
+            if os.path.isfile(f):
+                name = os.path.splitext(os.path.basename(f))[0]
+                txt = open(f, encoding="utf-8-sig").read().strip()
+                out += (f"\n\n[{name} — 운영자가 관리하는 파일 그대로. '사용 이력'과 아래 [직전 글 정보]를 보고 "
+                        f"직전 3편과 겹치지 않는 형식을 고른다(고른 형식은 ===META===에 기록)]\n----- 파일 시작 -----\n{txt}\n----- 파일 끝 -----")
+        except Exception:
+            pass
+    return out
+
+
+def channel_output_format(b):
+    """채널 글의 출력 형식 — 앱이 파싱하는 제목:/(사진N)/**소제목**/카드뉴스: 형식 + 채널 프롬프트가 요구하는 ===부가 블록===."""
+    cfg = b.get("channel_cfg") or {}
+    blocks = cfg.get("blocks") or {}
+    crm = load_crm(b.get("id", ""))
+    note = (b.get("card_note") or "").strip()
+    card_extra = ("\n- ★" + note) if note else ""
+    order = [n for n in ("CATEGORY", "TAGS", "COMMENTS", "ANALYSIS") if n in blocks]
+    extra_fmt = "".join(f"==={n}===\n({blocks[n]})\n" for n in order)
+    extra_rules = "".join(f"  · ==={n}=== : {blocks[n].splitlines()[0]}\n" for n in order)
+    track = ""
+    if crm.get("link"):
+        hint = cfg.get("track_hint") or "문의 채널을 말하는 자리에 「홈페이지 {{추적링크}}」 형태로"
+        track = (f"- ★성과추적 링크(CRM/UTM): {hint} — URL 대신 토큰 `{TRACK_TOKEN}` 을 **정확히 1회** 넣는다. "
+                 "앱이 이 토큰을 글별 추적 링크(UTM)로 치환한다. 위 프롬프트의 'URL 창작 금지' 규칙은 이 토큰에는 적용하지 않는다. "
+                 "그 외 다른 URL(카카오톡 링크·전화번호 등)은 위 프롬프트가 허용한 것만.\n")
+    if (cfg.get("media") or "photos") == "thumb_only":
+        # 카페: 본문 이미지·카드뉴스·표 이미지 없음(썸네일 1장은 앱이 따로 만든다) — 순수 텍스트 + 부가 블록
+        return f"""[출력 형식 — 앱 전용 ★위 프롬프트의 '출력 형식'(===TITLE===/===BODY===)은 쓰지 않고 이 형식으로만 출력한다. 설명·머리말·코드블록 금지]
+제목: (제목 — 위 프롬프트의 제목 규칙대로. 제목이 지정돼 있으면 그대로)
+(첫 줄 인사부터 본문 시작 — 위 프롬프트의 본문 구조·골격·문체·줄바꿈 규칙을 그대로 따른다)
+**1. 소제목**
+본문...
+**2. 소제목**
+본문...
+(... 위 프롬프트가 요구하는 소제목 수만큼. FAQ·클로징·오피스 블록·태그 줄까지 본문 전부 여기에 쓴다 ...)
+{extra_fmt}===META===
+골격: (이 글에 쓴 골격/글 유형 — A/B/C/D 또는 S/I)
+인사: (첫 줄 인사에 쓴 전문성 수식어 문구 그대로)
+도입: (도입 방식 한 줄)
+요약: (핵심 요약 블록의 형식·제목·위치 한 줄)
+마무리: (마무리·CTA 방식 한 줄)
+썸네일: (카페 목록 썸네일용 초단문 제목 — "1행 / 2행" 형식, 각 행 3~6자. 1행=메인 키워드 축약(예: 번역공증), 2행=이 글의 각도(예: 비용 기준). 문장 금지·조사 최소)
+썸네일부제: (썸네일 제목 아래 한 줄 10~18자, 이 글의 핵심 대비·기준. 예: 일한·중한 직접번역 vs 전문업체)
+
+[형식 규칙 — 앱이 파싱하므로 반드시]
+- 소제목: 위 프롬프트가 요구하는 대로 짓되(번호 1. 2. 3. 포함 여부·명사형 등 그대로), **소제목 줄은 반드시 `**` 로 감싼 한 줄**로 출력한다(앱 인식용 — 복사할 때 자동으로 제거돼 순수 텍스트가 된다). 마크다운 # 은 쓰지 않는다. ✔ 줄·Q./A. 줄·오피스 블록 줄은 소제목이 아니므로 `**` 를 붙이지 않는다.
+- ★이 채널은 본문 이미지가 없다: (사진N) 줄·[이미지N] 마커·'카드뉴스:'·'표차트:' 섹션을 **모두 쓰지 않는다**. 표가 필요하면 "항목 : 값" 텍스트 나열로. 썸네일 1장은 앱이 ===META=== 썸네일 문구로 따로 만든다.
+{track}- ===부가 블록===: 본문이 끝난 뒤 위 순서대로 붙인다. 각 블록은 위 프롬프트의 해당 규칙대로, 한국어로.
+{extra_rules}- ===META===: 다음 글 로테이션용 기록 + 썸네일 문구. 일곱 줄 그대로(해당 없으면 '-').
+- 본문의 줄바꿈은 위 프롬프트의 줄바꿈 규칙(짧은 구절마다 줄바꿈, 의미 덩어리 사이 빈 줄)을 그대로 유지한다."""
+    return f"""[출력 형식 — 앱 전용 ★위 프롬프트의 '출력 형식'(===TITLE===/===BODY===)은 쓰지 않고 이 형식으로만 출력한다. 설명·머리말·코드블록 금지]
+제목: (제목 — 위 프롬프트의 제목 규칙대로. 제목이 지정돼 있으면 그대로)
+(사진1: 파일명)
+(첫 줄 인사부터 본문 시작 — 위 프롬프트의 본문 구조·골격·문체·줄바꿈 규칙을 그대로 따른다)
+**1. 소제목**
+(사진2: 파일명)
+본문...
+**2. 소제목**
+(사진3: 파일명)
+본문...
+(... 위 프롬프트가 요구하는 소제목 수만큼. FAQ·관련 글·서비스/접수 안내·연락처·태그 줄까지 본문 전부 여기에 쓴다 ...)
+카드뉴스:
+1. 메인키워드 그대로 | 표지 한 줄 설명
+2. 첫째 소제목 핵심 12자 내외 | 그 소제목 내용 한 문장 35자 내외
+3. 둘째 소제목 핵심 12자 내외 | 그 소제목 내용 한 문장 35자 내외
+(... 본문의 `**소제목**` 전부(FAQ·관련 글·서비스 문단 포함) 수만큼, 같은 순서 1:1. 헤드라인·설명을 괄호로 감싸지 말 것 ...)
+표지부제: 표지 큰제목 아래 한 줄 부제 — 이 글 주제를 요약하는 짧은 후킹 문장, 18자 내외
+표차트: 없음
+{extra_fmt}===META===
+골격: (이 글에 쓴 골격/글 유형 — A/B/C/D 또는 S/I)
+인사: (첫 줄 인사에 쓴 전문성 수식어 문구 그대로)
+도입: (도입 방식 한 줄)
+요약: (핵심 요약 블록의 형식·제목·위치 한 줄)
+마무리: (마무리·CTA 방식 한 줄)
+썸네일: (카페/블로그 목록 썸네일용 초단문 제목 — "1행 / 2행" 형식, 각 행 3~6자. 1행=메인 키워드 축약(예: 번역공증), 2행=이 글의 각도(예: 비용 기준). 문장 금지·조사 최소)
+썸네일부제: (썸네일 제목 아래 한 줄 10~18자, 이 글의 핵심 대비·기준. 예: 일한·중한 직접번역 vs 전문업체)
+
+[형식 규칙 — 앱이 파싱하므로 반드시]
+- 소제목: 위 프롬프트가 요구하는 대로 짓되(번호 1. 2. 3. 포함 여부·명사형 등 그대로), **소제목 줄은 반드시 `**` 로 감싼 한 줄**로 출력한다(앱 인식용 — 복사할 때 자동으로 제거돼 순수 텍스트가 된다). 위 프롬프트의 [인용구] 마커·마크다운 # 은 쓰지 않는다. 📌 요약 줄·✔ 줄·Q./A. 줄·『』볼드·해시태그 줄·오피스 블록 줄은 소제목이 아니므로 `**` 를 붙이지 않는다.
+- 사진 슬롯: 위 프롬프트의 [이미지N] 마커는 쓰지 않는다. 대신 (사진N: 파일명) 한 줄을 **도입 직후 1개 + 본문 `**소제목**` 바로 아래 1개씩** 넣는다 — ★FAQ·관련 글·서비스/접수 안내 소제목까지 **모든 `**소제목**` 아래에 예외 없이** 1개씩(카드뉴스와 1:1). 파일명은 아래 '사용 사진' 목록에 있는 것만, 슬롯마다 서로 다른 사진, 없는 파일명 창작 금지. 사진이 슬롯보다 적으면 있는 만큼만 넣고 나머지 슬롯은 생략한다. 사진 목록이 '(없음)'이면 (사진N: ) 처럼 파일명을 비워 둔다.
+- 표: 위 프롬프트가 [표]를 요구하면 그 자리에 (표1) 마커 한 줄 + 바로 아래 표 요지를 텍스트 2~3줄로 다시 적고(AEO — 이미지 속 글자는 AI가 못 읽는다), 맨 끝 '표차트:' 섹션에 `표1 | 제목 | 헤더1,헤더2,헤더3 ; 항목,값,값 ; 항목,값,값` 형식으로 데이터를 준다. 표를 안 넣으면 '표차트: 없음'. 차트는 넣지 않는다.
+- 카드뉴스: 표지 1장 + 본문 `**소제목**` 전부 수만큼(FAQ·관련 글·서비스 문단 소제목 포함, 같은 순서 1:1 — 카드N(2~)의 주제 = (N-1)번째 소제목. 소제목이 9개면 카드 10장). FAQ 카드는 대표 질문·답 한 줄, 관련 글 카드는 '함께 보면 좋은 글' 성격의 한 줄, 서비스 문단 카드는 문의 안내 한 줄로. 헤드라인은 그 소제목 핵심을 12자 내외로, 본문설명은 1문장 35자 내외. ★헤드라인마다 강조하고 싶은 핵심어 1곳(1~2어절)만 `*별표*`로 감싼다(예: 학력증명서 *원본 점검* / 대사관 예약은 *불필요*) — 문장 전체를 감싸거나 2곳 이상 감싸지 말 것(앱이 그 부분만 강조색으로 칠한다). 표지 헤드라인은 앱이 메인키워드로 고정한다.{card_extra}
+{track}- ===부가 블록===: 본문(카드뉴스·표차트)이 끝난 뒤 위 순서대로 붙인다. 각 블록은 위 프롬프트의 해당 규칙대로, 한국어로.
+{extra_rules}- ===META===: 다음 글 로테이션용 기록 + 썸네일 문구. 일곱 줄 그대로(해당 없으면 '-').
+- 본문의 줄바꿈은 위 프롬프트의 줄바꿈 규칙(한 문장/짧은 구절마다 줄바꿈, 의미 덩어리 사이 빈 줄)을 그대로 유지한다."""
+
+
+def channel_selfcheck(b):
+    lo, hi = length_range(b)
+    cfg = b.get("channel_cfg") or {}
+    names = "·".join(f"==={n}===" for n in ("CATEGORY", "TAGS", "COMMENTS", "ANALYSIS") if n in (cfg.get("blocks") or {}))
+    crm = load_crm(b.get("id", ""))
+    tk = f"\n- 성과추적 토큰 {TRACK_TOKEN} 이 본문에 정확히 1회 있는가." if crm.get("link") else ""
+    return ("[발행 전 자가 점검 — 스스로 확인한 뒤 최종본만 출력한다. 점검 결과·체크리스트는 절대 출력하지 말 것]\n"
+            "- 위 프롬프트의 '발행 전 자가 체크' 항목을 전부 통과했는가(팩트 시트 값만·인증 경로·인사 형태·서브 키워드 배치·상투 문형 금지 등).\n"
+            f"- ★분량이 공백 제외 {lo:,}~{hi:,}자 범위인가(목표 약 {(lo + hi) // 2:,}자. {hi:,}자를 넘기면 안 된다 — 출력 전에 실제로 세어 보고, 넘으면 사례·설명 문장을 덜어내 {hi:,}자 아래로 맞춘 뒤 출력한다).\n"
+            "- [직전 글 정보]의 직전 골격·인사 수식어·도입·마무리 방식과 겹치지 않는가.\n"
+            + ("- '제목:' 줄, `**소제목**` 형식이 있고 (사진N)·카드뉴스·표차트 섹션은 없는가(이 채널은 본문 이미지 없음).\n"
+               if (cfg.get("media") or "photos") == "thumb_only" else
+               "- '제목:' 줄, `**소제목**` 형식, (사진N: 파일명) 슬롯(도입 1 + 모든 소제목별 1 — FAQ·관련 글·서비스 문단 포함), '카드뉴스:'(표지+모든 소제목 1:1, 소제목 수와 카드 수-1 이 같은가), '표지부제:', '표차트:' 가 모두 있는가.\n")
+            +
+            f"- 부가 블록 {names}·===META=== 를 빠짐없이, 지정 순서로 붙였는가." + tk)
+
+
+def build_style_channel(b):
+    """채널 표준 프롬프트 브랜드용 시스템 프롬프트: 채널 프롬프트 전문(팩트 시트 내장) + 운영자 파일(로테이션 뱅크 등)
+    + [내부링크 후보](블로그 채널만) + 앱 전용 출력 형식 + 자연스러운 말투 + 자가 점검. guide.md는 채널 프롬프트에 팩트 시트가 있으므로 붙이지 않는다."""
+    head = (b.get("prompt") or "").replace("{name}", b.get("name", ""))
+    cfg = b.get("channel_cfg") or {}
+    lk = links_block(b) if cfg.get("links") else ""
+    return (head + _extra_files_block(b) + lk + "\n\n" + channel_output_format(b) +
+            "\n\n" + _NATURAL_TONE + "\n\n" + channel_selfcheck(b))
+
+
+def refresh_links(bid, force=False):
+    """channels.json _links(rss·pages) → brands/<id>/links.txt('제목 | URL') 갱신. ttl_hours 안이면 건너뜀. 실패해도 조용히."""
+    cfg = links_cfg(bid)
+    if not cfg:
+        return False
+    p = os.path.join(brand_dir(bid), "links.txt")
+    ttl = float(cfg.get("ttl_hours") or 24) * 3600
+    try:
+        import time
+        if not force and os.path.isfile(p) and (time.time() - os.path.getmtime(p)) < ttl:
+            return False
+    except Exception:
+        pass
+    rows = []
+    try:
+        import urllib.request, html as _html
+        def fetch(u):
+            req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"})
+            return urllib.request.urlopen(req, timeout=12).read().decode("utf-8", "ignore")
+        half = max(4, int(cfg.get("max") or 15) // 2)
+        for pg in cfg.get("pages") or []:          # 홈페이지 칼럼(1순위) — 절반까지
+            try:
+                x = fetch(pg["url"])
+                for href, title in re.findall(pg["pattern"], x, re.S)[:half]:
+                    title = re.sub(r"<[^>]+>", "", _html.unescape(title)).strip()
+                    if title:
+                        rows.append(f"{title} | {pg.get('base', '')}{href}")
+            except Exception:
+                pass
+        for u in cfg.get("rss") or []:             # 네이버 블로그 RSS(2순위)
+            try:
+                x = fetch(u)
+                for it in re.findall(r"<item>(.*?)</item>", x, re.S):
+                    t = re.search(r"<title><!\[CDATA\[(.*?)\]\]></title>", it, re.S)
+                    g = re.search(r"<guid>(.*?)</guid>", it, re.S)
+                    if t and g:
+                        rows.append(f"{_html.unescape(t.group(1).strip())} | {g.group(1).strip()}")
+            except Exception:
+                pass
+    except Exception:
+        pass
+    if not rows:
+        return False
+    seen, uniq = set(), []
+    for r in rows:
+        if r not in seen:
+            seen.add(r); uniq.append(r)
+    uniq = uniq[: int(cfg.get("max") or 15)]
+    try:
+        open(p, "w", encoding="utf-8").write("# 자동 생성(refresh_links) — RSS·칼럼 목록 최신 글. 제목 | URL\n" + "\n".join(uniq) + "\n")
+        return True
+    except Exception:
+        return False
 
 
 def _output_format(b):
@@ -239,7 +502,12 @@ def _shared_structure(b):
     cta = (b.get("cta") or "").strip().replace("{name}", label) or \
         f'부담을 덜어주는 한 줄로 자연스럽게 닫되, 메인키워드를 제대로 하고 싶다면 {label}을(를) 떠올리게 한다.'
     placement = (b.get("brand_placement") or "each").strip()
-    if placement == "end":
+    ffp = final_faq_promo(b)
+    if ffp:
+        flow = (f"- 첫째~셋째 소제목 본문은 **오직 독자에게 유용한 정보**만 담는다. 고객이 실제로 궁금해하는 것"
+                f"(비용·기간·소재/방식 선택 기준·주의점·자주 하는 실수 등)에 곧바로, 구체적으로 답한다. 이 세 구간에는 {label} 소개·홍보를 넣지 않는다.\n"
+                f"- 넷째·다섯째 소제목은 정보 + {label} 홍보, 여섯째(마지막) 소제목은 FAQ + {label} 홍보 + 후킹 CTA로 쓴다(아래 [넷째·다섯째]·[여섯째] 규칙).")
+    elif placement == "end":
         flow = (f"- 각 소제목 본문은 **오직 독자에게 유용한 정보**만 담는다. 고객이 실제로 궁금해하는 것"
                 f"(비용·필요서류·절차·선택 기준·주의점·자주 하는 실수 등)에 곧바로, 구체적으로 답한다.\n"
                 f"- 본문(도입~여섯 번째 소제목)에서는 회사({label}) 소개·홍보·강점 언급을 넣지 않는다. 정보 자체로 신뢰를 준다.\n"
@@ -249,6 +517,9 @@ def _shared_structure(b):
     else:
         flow = (f"- 각 단락은 [고객의 흔한 고민·궁금증 → 그래서 이게 왜 중요한지 → {label}은 이렇게 합니다"
                 f"(강점·디테일)] 흐름으로 전개한다.")
+    sixth_note = " ★단, 넷째·다섯째·여섯째 소제목은 아래 [넷째·다섯째]·[여섯째] 규칙을 따른다." if ffp else ""
+    min_note = f" / ★{length_range(b)[0]:,}자보다 짧아도 안 된다" if ffp else ""
+    ending = _final_section_block(b, label, cta) if ffp else "[마무리]\n" + cta
     return f"""너는 '{name}'{('(' + industry + ')') if industry else ''}의 네이버 블로그 글을 쓰는 카피라이터다.
 
 [회사 소개 — 이 회사의 서비스·강점(브랜드별)]
@@ -259,17 +530,90 @@ def _shared_structure(b):
 
 [블로그 구조 — 모든 글 공통(기술 규칙)]
 - 도입: "안녕하세요"로 인사하고 {label}을(를) 한 줄로 소개한 뒤, "오늘은 ... (메인키워드) 이야기를 해볼까 해요" 식으로 주제를 안내한다.
-- 소제목 **정확히 6개**. 각 소제목 아래 본문 단락. 소제목 스타일은 위 톤에 맞춘다(질문형/선언형/넘버링 등).
+- 소제목 **정확히 6개**. 각 소제목 아래 본문 단락. 소제목 스타일은 위 톤에 맞춘다(질문형/선언형/넘버링 등).{sixth_note}
 {flow}
 - 제목·소제목·본문이 서로 어긋나지 않게 한다: 본문 전체는 **제목 주제에서 벗어나지 않고**, 각 소제목 아래 내용은 **그 소제목이 말하는 범위만** 다룬다(딴 얘기·범위 이탈 금지).
-- 제목에 메인키워드를 포함한다. 분량은 공백 제외 {_fmt_len(b)}자(★{length_range(b)[1]:,}자를 절대 넘기지 말 것 — 넘칠 것 같으면 덜 중요한 문장·군더더기·중복 설명을 덜어낸다). 메인키워드를 제목·소제목·본문에 자연스럽게 5~8회 녹인다(억지 반복 금지).
+- 제목에 메인키워드를 포함한다. 분량은 공백 제외 {_fmt_len(b)}자(★{length_range(b)[1]:,}자를 절대 넘기지 말 것 — 넘칠 것 같으면 덜 중요한 문장·군더더기·중복 설명을 덜어낸다{min_note}). 메인키워드를 제목·소제목·본문에 자연스럽게 5~8회 녹인다(억지 반복 금지).
 - 한 문장(또는 의미단위)마다 줄바꿈(네이버 모바일 가독성). 과장·AI티('~에 대해 알아보겠습니다' 등) 금지.
 
 {_AEO_BLOCK}
 
-[마무리]
-{cta}"""
+{ending}"""
 
+
+
+def final_faq_promo(b):
+    """brand.json final_faq_promo=true 인 브랜드(하오디자인·하오스튜디오·하오팩토리):
+    여섯째(마지막) 소제목 = FAQ 3~4개 + 브랜드 홍보 + 후킹 CTA 로 글을 끝낸다(그 뒤 별도 마무리 문단 없음)."""
+    return bool((b or {}).get("final_faq_promo"))
+
+
+# 여섯째 소제목 '브랜드 홍보'의 전개 방식 — 매 글 무작위로 하나를 지정해 홍보 문단이 같은 틀로 굳지 않게 한다
+_PROMO_ANGLES = [
+    "독자가 이 주제에서 가장 걱정할 문제 하나를 짚고 → {label}의 작업 구조가 그 문제를 어떻게 막는지 보여주기",
+    "의뢰 후 결과물을 받기까지의 흐름을 따라가며 → 단계마다 {label}{ga} 직접 챙기는 지점을 보여주기",
+    "흔히 여러 업체에 나눠 맡길 때 생기는 문제와 → {label}에서 한곳에 맡길 때의 차이를 대비하기",
+    "이번 글 주제(이 업종·이 산출물)의 실제 작업 장면 하나를 그리며 → 그 장면에서 드러나는 {label}의 강점 보여주기",
+    "결과물 품질을 좌우하는 포인트 2~3가지를 짚고 → {label}{ga} 그 포인트를 어떻게 관리하는지 보여주기",
+    "{label}{ga} 어떤 곳인지 한 문장으로 정의한 뒤 → 이번 주제와 맞닿은 강점을 구체적 장면·이점으로 풀어가기",
+]
+
+
+def _eun(word):
+    """받침 있으면 '은', 없으면 '는'(하오디자인은 / 하오스튜디오는)."""
+    ch = (word or " ")[-1]
+    return "은" if "가" <= ch <= "힣" and (ord(ch) - 0xAC00) % 28 else "는"
+
+
+# 넷째·다섯째 소제목 '정보 + 브랜드 홍보' 연결 방식 — 매 글 무작위로 2개를 골라 두 소제목이 같은 틀이 되지 않게 한다
+_MIX_STYLES = [
+    "정보의 결론(그래서 무엇이 중요한가)을 말한 뒤 → '그래서 {label}{eun} ~합니다' 식으로 실제 작업 방식을 이어 붙이기",
+    "흔한 실수·실패 사례를 짚은 뒤 → {label}의 작업 구조가 그 실수를 어떻게 막는지 한두 문장으로 보여주기",
+    "체크포인트를 제시한 뒤 → 그중 하나를 {label}{ga} 어떻게 챙기는지 구체적 장면으로 보여주기",
+    "정보 속 사례 장면에 {label}의 작업을 증거로 녹이기(사례 → 그 사례에서 드러난 강점)",
+    "독자가 직접 하면 번거로운 부분을 짚은 뒤 → {label}에 맡기면 무엇이 덜어지는지 보여주기",
+    "두 선택지를 비교한 정보 끝에 → {label}{ga} 그 선택을 어떻게 도와주는지 한두 문장으로 잇기",
+]
+
+
+def _ga(word):
+    """받침 있으면 '이', 없으면 '가'(하오디자인이 / 하오스튜디오가)."""
+    return "이" if _eun(word) == "은" else "가"
+
+
+def _final_section_block(b, label, cta):
+    """넷째·다섯째 소제목(정보+홍보) + 여섯째 소제목(FAQ+홍보+CTA) 규칙. 홍보 재료를 매 글 무작위로
+    세 소제목에 '겹치지 않게' 나눠 배정 → 홍보끼리 같은 강점·같은 의미가 반복되지 않는다."""
+    lo, hi = length_range(b)
+    pts = [str(p).strip() for p in ((b or {}).get("promo_points") or []) if str(p).strip()]
+    random.shuffle(pts)                      # 배정·나열 순서가 매번 달라지게
+    p4, p5, p6 = (pts[0], pts[1], pts[2:]) if len(pts) >= 3 else ("", "", pts)
+    s4, s5 = (st.format(label=label, eun=_eun(label), ga=_ga(label)) for st in random.sample(_MIX_STYLES, 2))
+    angle = random.choice(_PROMO_ANGLES).format(label=label, eun=_eun(label), ga=_ga(label))
+    note = ((b or {}).get("promo_note") or "").strip()
+    notel = ("\n  ※ 홍보 공통 주의: " + note) if note else ""
+    mat = lambda p: p if p else "이번 주제와 맞닿은 강점 하나(여섯째에서 쓸 강점과 겹치지 않게)"
+    ptsblk = ("\n    [여섯째 소제목 홍보 재료 — 사실 그대로만. ★ 항목은 이 브랜드의 핵심이라 되도록 넣되 표현·각도는 매번 바꾸고, 나머지에서 이번 주제와 맞는 것을 더한다. 목록에 없는 실적·수치·설비는 지어내지 않는다]\n"
+              + "\n".join("    · " + p for p in p6)) if p6 else ""
+    return f"""[★넷째·다섯째 소제목 — 정보 + {label} 홍보를 함께 쓴다]
+- 넷째·다섯째도 소제목 문구는 독자가 궁금한 '정보' 주제로 짓는다(소제목에 브랜드명을 넣지 않는다).
+- 본문 앞부분(약 2/3)은 그 소제목의 정보로 채우고, 뒷부분 1~2문장(공백 제외 약 60~90자)에서 그 정보와 자연스럽게 이어지는 {label}의 강점 하나를 보여준다. 광고 문구를 툭 끼워 넣지 말고, 앞 정보의 결론·해결책으로 이어지게 쓴다.
+  · 넷째 소제목 — 홍보 재료: {mat(p4)} / 연결 방식: {s4}
+  · 다섯째 소제목 — 홍보 재료: {mat(p5)} / 연결 방식: {s5}
+- ★넷째·다섯째·여섯째의 홍보는 서로 다른 강점·다른 이점을 다룬다. 같은 강점이나 같은 의미를 표현만 바꿔 되풀이하지 않는다. 지정 재료가 이번 주제와 도저히 안 맞으면 아래 여섯째 재료 중 하나와 바꿔 써도 되지만, 그때도 세 곳이 겹치지 않게 한다.
+- 첫째~셋째 소제목에는 {label} 홍보를 넣지 않는다(정보만).{notel}
+
+[★여섯째(마지막) 소제목 — FAQ + {label} 홍보 + 후킹 CTA 로 글을 끝낸다]
+- 여섯째 소제목은 '자주 묻는 질문'임이 드러나게 짓고(예: "OO 자주 묻는 질문"), 아래 ①→②→③ 순서 그대로 쓴다. 이 소제목 뒤에 별도 마무리 문단·소제목을 더 만들지 않는다.
+  ① FAQ **3~4개**: 'Q. (질문)' 줄 다음에 'A. (답)' 줄. 질문은 이 글의 타겟 고객이 실제로 묻는 말투 그대로(비용·기간·가능 여부·선택 기준 등), 답은 1~2문장으로 구체적으로(기준·범위·조건). 앞 소제목에서 한 설명을 그대로 되풀이하지 말고 남은 궁금증을 짚는다. 답에는 {label} 이름·홍보를 넣지 않는다(정보성 답이어야 AI가 인용한다).
+  ② {label} 홍보 **4~5문장(공백 제외 약 200~250자)** — 독자가 '여기에 맡기면 이런 점이 확실히 낫겠다'고 느끼게 구체적으로 쓴다:
+    - 강점을 이름만 나열하지 말고, 각 강점이 독자에게 주는 실제 이점(무슨 문제를 막아 주는지·무엇이 편해지는지)까지 풀어 준다. 예) '내부 인쇄소' → 디자인 시안에서 본 색과 실제 인쇄 색이 달라지는 문제를 같은 곳에서 바로 잡는다.
+    - 넷째·다섯째에서 이미 쓴 강점은 다시 쓰지 않는다. 아래 재료에서 이번 글 주제와 연결되는 2~3개를 쓴다. 매 글 같은 순서·같은 문장으로 쓰지 않는다.
+    - 이번 글의 홍보 전개 방식: {angle}. (내용에 도저히 안 맞으면 가장 가까운 다른 방식으로 바꿔도 되지만, 정형화된 '회사 소개문' 틀로 돌아가지 말 것)
+    - '{label}{_eun(label)} ~하는 곳입니다'처럼 회사를 정의하는 문장은 한 번만, 위치는 자유롭게. 과장(최고·최초·완벽)·이모지 금지.{ptsblk}
+  ③ 후킹 CTA 1~2문장: 독자가 '지금' 문의할 이유를 만드는 문장으로 끝낸다 — 독자의 구체적 고민(일정·예산·소재/방식 선택 등)을 짚고, 문의하면 바로 무엇을 받을 수 있는지(예: 상황에 맞는 방식 제안·견적 범위 안내)를 보여준다. 과장·명령조·이모지 없이, 아래 브랜드 CTA 기준을 바탕으로 이번 글 주제에 맞게 매번 새 문장으로 쓴다.
+    브랜드 CTA 기준: {cta}
+- 분량 배분(공백 제외, 전체 {lo:,}~{hi:,}자): 맨 앞 요약+인사+도입 약 200자 / 첫째~셋째 소제목 각 약 190자 / 넷째·다섯째 소제목 각 약 230자(정보 약 150자 + 홍보 약 60~90자) / 여섯째 소제목 약 500자(FAQ 약 240자 + 홍보 약 200~250자 + CTA 약 60자)."""
 
 
 def photo_layout(b):
@@ -326,6 +670,10 @@ def title_rules(b):
     if not txt:
         return ""
     m = re.search(r"^\[제목[^\]]*\]\s*\n(.*?)(?=^\[|\Z)", txt, re.S | re.M)
+    if m:
+        return m.group(1).strip()
+    # 채널 표준 프롬프트(마크다운): "## 1. 제목 ..." / "## 2. 제목 (25~45자)" / "## 1. 제목 규칙" 섹션
+    m = re.search(r"^## \d+(?:-\d+)?\. 제목[^\n]*\n(.*?)(?=^## |\Z)", txt, re.S | re.M)
     return m.group(1).strip() if m else ""
 
 
@@ -400,8 +748,9 @@ def links_block(b):
         pass
     if not rows:
         return ""
-    return ("\n\n[내부링크 후보 — 운영 중인 블로그들의 기존 글. 본문 중간 내부 링크와 마지막 '함께 보면 좋은 글'은 반드시 이 목록에서만 고른다]\n"
-            "- ★제목과 URL을 반드시 세트로 출력한다 — 제목만 쓰고 URL을 빼먹는 것 금지. 본문 내부 링크는 `▶ ~는 「제목」에 정리해 뒀어요.` 바로 다음 줄에 URL 한 줄, "
+    return ("\n\n[내부링크 후보 — 운영 중인 블로그들의 기존 글. 맨 끝 '함께 보면 좋은 글'은 반드시 이 목록에서만 고른다]\n"
+            "- ★본문 중간에는 링크를 넣지 않는다. 관련 글 안내는 맨 끝 '함께 보면 좋은 글' 한 곳에서만 한다.\n"
+            "- ★제목과 URL을 반드시 세트로 출력한다 — 제목만 쓰고 URL을 빼먹는 것 금지. "
             "'함께 보면 좋은 글'은 `「제목」` 다음 줄에 URL 한 줄 형식으로 쓴다(네이버에 붙일 때 그대로 링크로 바꿀 수 있게).\n"
             "- 제목은 목록의 표기 그대로, URL도 목록의 값 그대로. 이 글 주제와 가장 관련 있는 것을 고르고, 목록에 없는 제목·URL을 지어내지 않는다.\n"
             + "\n".join("- " + r for r in rows))
@@ -472,7 +821,9 @@ def faq_block(b, keyword="", subkeyword="", title="", n=25):
             cat = "마케팅"
         else:
             cat = "홍보물 디자인"
-        pool = [s for s in blocks.get(cat, []) if s not in cand]
+        # 추정 분야가 이 브랜드 리스트에 없으면(예: 트래비티) 전체 리스트에서 보충
+        src = blocks.get(cat) or [s for lst in blocks.values() for s in lst]
+        pool = [s for s in src if s not in cand]
         if pool:
             cand += random.sample(pool, min(n - len(cand), len(pool)))
     if not cand:
@@ -511,6 +862,12 @@ def _selfcheck(b):
             f"- ★분량이 공백 제외 {lo:,}~{hi:,}자 범위인가({hi:,}자를 넘지 않았는가 — 넘으면 군더더기를 덜어낸다).\n"
             "- 본문 내용이 제목·각 소제목이 말하는 주제와 정확히 맞물리는가(범위 이탈·딴 얘기 없는가).\n"
             "- 문체가 지정한 톤(어미)은 지키되, 'AI가 쓴 티'가 나지 않고 사람이 쓴 것처럼 자연스러운가.\n"
+            + (f"- ★분량이 {lo:,}자보다 짧지 않은가(짧으면 첫째~다섯째 소제목에 구체적 기준·사례 문장을 보탠다).\n"
+               "- 첫째~셋째 소제목은 정보만 있는가. 넷째·다섯째 소제목은 정보 뒤에 브랜드 홍보 1~2문장이 자연스럽게 이어지는가.\n"
+               "- 여섯째(마지막) 소제목이 FAQ 3~4개(Q./A.) → 브랜드 홍보 4~5문장 → 후킹 CTA 순서이고, 그 뒤에 다른 문단이 없는가.\n"
+               "- 넷째·다섯째·여섯째의 홍보가 서로 다른 강점을 다루는가(같은 강점·같은 의미 반복 없음).\n"
+               "- 홍보가 강점 이름 나열이 아니라, 강점마다 독자가 얻는 이점까지 구체적으로 풀었는가. 홍보 재료 목록에 없는 실적·수치를 지어내지 않았는가.\n"
+               if final_faq_promo(b) else "")
             + tbl)
 
 
@@ -522,6 +879,8 @@ def build_style(b):
     prompt(완전 커스텀)가 있으면 그걸 쓰고, 없으면 전 브랜드 공통 구조 + 회사 소개. 출력 형식은 항상 부착.
     브랜드 폴더에 guide.md(사실 기준서)가 있으면 '반드시 준수' 블록으로 함께 부착.
     발행 전 자가 점검(AEO·사실 정확성)은 모든 글에 부착."""
+    if b and b.get("channel"):          # 채널 표준 프롬프트(네이버 블로그/카페) — apply_channel()로 얹힌 경우
+        return build_style_channel(b)
     custom = custom_prompt(b)
     head = custom.replace("{name}", b.get("name", "")) if custom else _shared_structure(b)
     return (head + _guide_block(b) + links_block(b) + "\n\n" + _output_format(b) +

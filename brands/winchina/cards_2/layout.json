@@ -1,0 +1,287 @@
+{
+ "size": 1080,
+ "pt_height": 1080.0,
+ "bg": "FFFFFF",
+ "slide_bg": [
+  "FFFFFF",
+  "FFFFFF",
+  "FFFFFF"
+ ],
+ "theme_recolor": false,
+ "photo_round": 0.0,
+ "auto_theme": true,
+ "accent_min_sat": 0.45,
+ "accent_max_val": 0.56,
+ "bg_palette": [
+  "1F4E79",
+  "0F8C84",
+  "1E965C",
+  "5B5FC7",
+  "96508C",
+  "C85060"
+ ],
+ "pick_by_content": {
+  "default": 1,
+  "list": 2
+ },
+ "card_note": "절차·단계·순서·필요서류·주의사항·체크리스트 성격의 카드는 본문설명을 한 문장 대신 **짧은 구절 3~5개를 ' / '로 이어서** 쓴다(예: 전 과정 통합 관리 / 서류 목적 및 제출 국가 분석 / 전문 번역 및 검수 / 공증·아포스티유 연계). 각 구절 14자 이내, 서술어 없이 명사형으로 끝낸다. 그 외 카드는 지금처럼 한 문장으로 쓴다.",
+ "slides": [
+  [
+   {
+    "role": "deco",
+    "box": [
+     0,
+     0,
+     1080,
+     1080
+    ],
+    "asset": "coverbg.png",
+    "recolor": true
+   },
+   {
+    "role": "deco",
+    "box": [
+     50,
+     44,
+     980,
+     984
+    ],
+    "asset": "paper.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     368,
+     52,
+     350,
+     110
+    ],
+    "asset": "tape.png",
+    "recolor": true
+   },
+   {
+    "role": "deco",
+    "box": [
+     108,
+     104,
+     230,
+     230
+    ],
+    "asset": "bulb.png",
+    "recolor": false
+   },
+   {
+    "role": "headline",
+    "box": [
+     130,
+     300,
+     820,
+     370
+    ],
+    "size": 132,
+    "color": "1F4E79",
+    "font": "Gmarket Sans Bold",
+    "align": "center",
+    "lines": 2,
+    "auto_color": true
+   },
+   {
+    "role": "subtitle",
+    "box": [
+     150,
+     690,
+     780,
+     68
+    ],
+    "size": 38,
+    "color": "1A1A1A",
+    "font": "Pretendard Bold",
+    "align": "center",
+    "oneline": true
+   },
+   {
+    "role": "deco",
+    "box": [
+     412,
+     838,
+     256,
+     68
+    ],
+    "asset": "logo.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     862,
+     612,
+     216,
+     433
+    ],
+    "asset": "pencil.png",
+    "recolor": false
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     0,
+     0,
+     1080,
+     1080
+    ],
+    "asset": "frame.png",
+    "recolor": true
+   },
+   {
+    "role": "deco",
+    "box": [
+     73,
+     117,
+     155,
+     41
+    ],
+    "asset": "logo_sm.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     258,
+     72,
+     8,
+     132
+    ],
+    "asset": "bar.png",
+    "recolor": true
+   },
+   {
+    "role": "headline",
+    "box": [
+     297,
+     66,
+     700,
+     144
+    ],
+    "size": 50,
+    "color": "1F4E79",
+    "font": "Pretendard Bold",
+    "align": "left",
+    "auto_color": true
+   },
+   {
+    "role": "deco",
+    "box": [
+     70,
+     440,
+     880,
+     500
+    ],
+    "asset": "photopanel.png",
+    "recolor": true
+   },
+   {
+    "role": "photo",
+    "box": [
+     190,
+     250,
+     700,
+     394
+    ]
+   },
+   {
+    "role": "body",
+    "box": [
+     150,
+     686,
+     780,
+     194
+    ],
+    "size": 30,
+    "color": "333333",
+    "font": "Pretendard Medium",
+    "align": "center"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     0,
+     0,
+     1080,
+     1080
+    ],
+    "asset": "frame.png",
+    "recolor": true
+   },
+   {
+    "role": "deco",
+    "box": [
+     73,
+     117,
+     155,
+     41
+    ],
+    "asset": "logo_sm.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     258,
+     72,
+     8,
+     132
+    ],
+    "asset": "bar.png",
+    "recolor": true
+   },
+   {
+    "role": "headline",
+    "box": [
+     297,
+     66,
+     700,
+     144
+    ],
+    "size": 50,
+    "color": "1F4E79",
+    "font": "Pretendard Bold",
+    "align": "left",
+    "auto_color": true
+   },
+   {
+    "role": "bullets",
+    "box": [
+     83,
+     210,
+     914,
+     800
+    ],
+    "size": 40,
+    "color": "1F4E79",
+    "font": "Pretendard Bold",
+    "auto_color": true,
+    "panel": "auto",
+    "panel_tint": 0.22,
+    "panel_round": 6,
+    "pad": 40,
+    "row_h": 139,
+    "inset": 53,
+    "icon": 46,
+    "icon_gap": 37,
+    "rule": "auto",
+    "rule_tint": 0.45,
+    "rule_w": 2,
+    "max_rows": 5,
+    "min_size": 30,
+    "row_lines": 2,
+    "fill": 0.62,
+    "row_h_max": 1.55
+   }
+  ]
+ ]
+}

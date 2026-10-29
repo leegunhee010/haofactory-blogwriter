@@ -1,0 +1,6 @@
+{
+ "link": "https://redtrans.co.kr/?utm_source=naver&utm_medium=post&utm_campaign=content_{key}",
+ "cta": "▶ 번역·공증·아포스티유 문의: ",
+ "prefix": "rt",
+ "_note": "CRM 미지원(2026-09-08 확인: /go/는 무조건 dfirst.co.kr로 감). GA4/GTM utm_campaign으로 글별 집계. vigo가 CRM 열어주면 link만 교체."
+}

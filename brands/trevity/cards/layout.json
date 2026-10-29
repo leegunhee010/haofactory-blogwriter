@@ -1,0 +1,279 @@
+{
+ "size": 1080,
+ "pt_height": 1080.0,
+ "bg": "FFFFFF",
+ "slide_bg": [
+  "FFFFFF",
+  "FFFFFF",
+  "FFFFFF"
+ ],
+ "theme_recolor": false,
+ "auto_theme": false,
+ "photo_round": 0.035,
+ "bg_palette": [
+  "FA6781"
+ ],
+ "pick_by_content": {
+  "default": 1,
+  "list": 2
+ },
+ "card_note": "헤드라인은 12자 내외의 짧은 명사형으로(질문형·문장형 금지). 절차·순서·비용 구조·체크리스트·주의사항 성격의 카드는 본문설명을 한 문장 대신 **짧은 구절 3~5개를 ' / '로 이어서** 쓴다(예: 위생허가 전 인지도 확보 / KOC 다수 후기 선점 / 쇼피 입점 동시 진행). 각 구절 14자 이내, 서술어 없이 명사형으로 끝낸다. 그 외 카드는 한 문장(35자 내외)으로 쓴다.",
+ "slides": [
+  [
+   {
+    "role": "deco",
+    "box": [
+     0,
+     0,
+     1080,
+     1080
+    ],
+    "asset": "coverbg.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     60,
+     120,
+     960,
+     840
+    ],
+    "asset": "card.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     391,
+     226,
+     298,
+     80
+    ],
+    "asset": "logo.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     504,
+     330,
+     72,
+     8
+    ],
+    "asset": "dash.png",
+    "recolor": false
+   },
+   {
+    "role": "headline",
+    "box": [
+     150,
+     372,
+     780,
+     330
+    ],
+    "size": 94,
+    "color": "1F1F1F",
+    "font": "Gmarket Sans Bold",
+    "align": "center",
+    "lines": 2
+   },
+   {
+    "role": "subtitle",
+    "box": [
+     170,
+     728,
+     740,
+     64
+    ],
+    "size": 36,
+    "color": "434343",
+    "font": "Pretendard Bold",
+    "align": "center",
+    "oneline": true
+   },
+   {
+    "role": "deco",
+    "box": [
+     390,
+     828,
+     300,
+     64
+    ],
+    "asset": "pill.png",
+    "recolor": false
+   },
+   {
+    "role": "label",
+    "box": [
+     390,
+     840,
+     300,
+     40
+    ],
+    "size": 26,
+    "color": "FFFFFF",
+    "font": "Pretendard Bold",
+    "align": "center",
+    "text": "trevity.com"
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     0,
+     0,
+     1080,
+     1080
+    ],
+    "asset": "frame.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     64,
+     60,
+     190,
+     51
+    ],
+    "asset": "logo_sm.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     64,
+     132,
+     56,
+     6
+    ],
+    "asset": "dash.png",
+    "recolor": false
+   },
+   {
+    "role": "headline",
+    "box": [
+     64,
+     148,
+     952,
+     60
+    ],
+    "size": 44,
+    "color": "1F1F1F",
+    "font": "Pretendard Bold",
+    "align": "left"
+   },
+   {
+    "role": "deco",
+    "box": [
+     90,
+     268,
+     900,
+     520
+    ],
+    "asset": "photopanel.png",
+    "recolor": false
+   },
+   {
+    "role": "photo",
+    "box": [
+     90,
+     268,
+     878,
+     498
+    ],
+    "round": 0.035
+   },
+   {
+    "role": "body",
+    "box": [
+     120,
+     812,
+     840,
+     170
+    ],
+    "size": 30,
+    "color": "434343",
+    "font": "Pretendard Medium",
+    "align": "center",
+    "phrase_break": true
+   }
+  ],
+  [
+   {
+    "role": "deco",
+    "box": [
+     0,
+     0,
+     1080,
+     1080
+    ],
+    "asset": "frame.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     64,
+     60,
+     190,
+     51
+    ],
+    "asset": "logo_sm.png",
+    "recolor": false
+   },
+   {
+    "role": "deco",
+    "box": [
+     64,
+     132,
+     56,
+     6
+    ],
+    "asset": "dash.png",
+    "recolor": false
+   },
+   {
+    "role": "headline",
+    "box": [
+     64,
+     148,
+     952,
+     60
+    ],
+    "size": 44,
+    "color": "1F1F1F",
+    "font": "Pretendard Bold",
+    "align": "left"
+   },
+   {
+    "role": "bullets",
+    "box": [
+     90,
+     262,
+     900,
+     720
+    ],
+    "size": 38,
+    "color": "1F1F1F",
+    "font": "Pretendard Bold",
+    "panel": "FFF0F3",
+    "panel_round": 18,
+    "pad": 44,
+    "row_h": 132,
+    "inset": 52,
+    "icon": 44,
+    "icon_gap": 34,
+    "rule": "FFD3DC",
+    "rule_w": 2,
+    "max_rows": 5,
+    "min_size": 28,
+    "row_lines": 2,
+    "fill": 0.62,
+    "row_h_max": 1.55
+   }
+  ]
+ ]
+}

@@ -156,7 +156,9 @@
     "color": "90CCB8",
     "font": "210 Musical Regular",
     "align": "center",
-    "auto_color": true
+    "auto_color": true,
+    "emph": true,
+    "emph_base": "FFFFFF"
    }
   ],
   [
@@ -227,7 +229,9 @@
     "size": 50.0,
     "color": "FFFFFF",
     "font": "210 Musical Regular",
-    "align": "center"
+    "align": "center",
+    "emph": true,
+    "emph_base": "FFFFFF"
    }
   ],
   [
@@ -298,7 +302,9 @@
     "size": 50.0,
     "color": "FFFFFF",
     "font": "210 Musical Regular",
-    "align": "center"
+    "align": "center",
+    "emph": true,
+    "emph_base": "FFFFFF"
    }
   ],
   [
@@ -369,7 +375,9 @@
     "size": 50.0,
     "color": "FFFFFF",
     "font": "210 Musical Regular",
-    "align": "center"
+    "align": "center",
+    "emph": true,
+    "emph_base": "FFFFFF"
    }
   ],
   [
@@ -441,7 +449,9 @@
     "color": "90CCB8",
     "font": "210 Musical Regular",
     "align": "center",
-    "auto_color": true
+    "auto_color": true,
+    "emph": true,
+    "emph_base": "FFFFFF"
    }
   ],
   [
@@ -513,7 +523,9 @@
     "color": "90CCB8",
     "font": "210 Musical Regular",
     "align": "center",
-    "auto_color": true
+    "auto_color": true,
+    "emph": true,
+    "emph_base": "FFFFFF"
    }
   ]
  ],
