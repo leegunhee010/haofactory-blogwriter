@@ -356,6 +356,8 @@ _VAR_HOOK = ["고객이 자주 하는 고민·질문을 짚으며", "흔한 오�
              "예전 방식과 지금을 비교하며", "비슷한 고민을 했던 사례를 떠올리게 하며"]
 _VAR_SUB = ["질문형 소제목 위주로", "단정·선언형 소제목 위주로",
             "호기심을 자극하는 소제목으로", "핵심 키워드 + 짧은 구절형 소제목으로"]
+_VAR_SUB_NQ = ["명사구형 소제목 위주로(질문형 1~2개 섞어)", "질문형 소제목 위주로(명사구형 1~2개 섞어)",
+               "명사구형과 질문형을 고루 섞어"]   # subhead_noun_q 브랜드(하디·하스·하팩)
 _VAR_EMPH = ["왜 필요한지(필요성)", "흔한 실수·실패 사례", "선택 기준과 체크포인트",
              "작업 과정과 디테일", "결과와 효과", "자주 묻는 질문 관점", "비용·기간의 현실"]
 _VAR_RHYTHM = ["사례 중심으로", "실용 정보·팁 중심으로", "공감·스토리 중심으로"]
@@ -403,7 +405,7 @@ def _variation_block(brand=None):
                if ffp else "블로그 뼈대(도입 인사 → 소제목 정확히 6개 → 마무리)·브랜드 톤·정체성·키워드 SEO 규칙은 지키되, ") +
             "그 안에서 쓰는 방식은 매번 확실히 다르게 한다.]\n"
             f"- 이번 글은 {random.choice(_VAR_FORMAT)}으로 전개한다(6개 소제목의 구성·순서·풀어가는 방식을 이 접근에 맞춘다).\n"
-            f"- 도입은 {random.choice(_VAR_HOOK)} 시작하고, 소제목은 {random.choice(_VAR_SUB)} 구성한다.\n"
+            f"- 도입은 {random.choice(_VAR_HOOK)} 시작하고, 소제목은 {random.choice(_VAR_SUB_NQ if brands.subhead_noun_q(brand) else _VAR_SUB)} 구성한다.\n"
             f"- 이번 글은 특히 '{emph[0]}'·'{emph[1]}' 관점을 조금 더 살리고, 전체 전개는 {random.choice(_VAR_RHYTHM)} 풀어간다.\n"
             "- ★가장 중요: 이전 글의 구조·문장·소제목 문구·예시·비유를 재활용해 '단어만 바꾸는' 식으로 쓰지 말 것. "
             "같은 키워드·같은 정보라도 첫 문장·소제목·설명 순서·예시·비유를 전부 새로 짜서, 매번 완전히 다른 글처럼 읽히게 한다.\n"
@@ -466,6 +468,7 @@ def _portfolio_prompt(keyword, photo_files, photo_paths, project_hint, brand, ti
         + (brands._final_section_block(b, name, cta) + "\n" if ffp else
            f"[마무리 — {name} 정리]\n"
            f"- 이 글 주제(이 업종·이 산출물)와 엮어 {name}이(가) 어떤 회사이고 왜 이런 일에 강한지 또렷이 정리한다: 기획→디자인→(다국어 번역)→인쇄까지 한 곳에서 하는 원스톱, 관련 경력·강점을 1~2문장으로(정형화된 나열 복붙 금지). 그런 다음 자연스럽게: {cta}\n")
+        + (brands.SUBHEAD_RULE + "\n" if brands.subhead_noun_q(b) else "")
         + hintblk + titleblk)
     return (head + brands._guide_block(b) + brands.faq_block(b, keyword, "", title) +
             "\n\n" + brands._output_format(b) +
