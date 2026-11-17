@@ -1,2 +1,2 @@
-# 내부링크 후보 — 수동 추가분만 여기에 (RSS 자동 수집: gnsl0091 · stiff9345 · stomachugu326 → brand.json link_blogs)
+# 내부링크 후보 — 수동 추가분만 여기에 (RSS 자동 수집: stomachugu326 · 4a72ksl9kes · identa4600 → brand.json link_blogs)
 # 한 줄에 하나: 제목 | URL   ('#'로 시작하는 줄은 무시). RSS 최신 50개보다 오래된 글을 노출시키고 싶을 때 사용.
