@@ -105,7 +105,7 @@
  ],
  "photo_layout": "pairs",
  "table_rule": "required",
- "read_photos": true,
+ "read_photos": false,
  "table_width": 2000,
  "link_blogs": [
   "stomachugu326",
